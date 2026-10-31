@@ -22,19 +22,30 @@ jobs:
         run: |
           python vendor/validator.py --data vendor/cit_public.json \
             --schedule exports/schedule.json --json ci-report.json
+          python vendor/validator.py --data vendor/cit_public.json \
+            --schedule exports/schedule_after.json \
+            --disruption vendor/sample_disruption.json --baseline exports/schedule.json \
+            --json ci-report-after.json
       - name: Fail on any hard violation
         run: |
           python - <<'PY'
           import json, sys
           r = json.load(open("ci-report.json"))
-          print("hard:", r["hard_by_rule"], "soft:", r["soft_total"],
+          a = json.load(open("ci-report-after.json"))
+          print("timetable:", r["hard_by_rule"], "soft:", r["soft_total"],
                 "bookings:", r["bookings"]["booking_score"])
-          sys.exit(1 if r["hard_violation_count"] else 0)
+          print("after disruption:", a["hard_by_rule"], "moved:",
+                a["stability"]["sessions_moved"],
+                f'({a["stability"]["room_only_changed"]} room only)')
+          bad = r["hard_violation_count"] + a["hard_violation_count"]
+          sys.exit(1 if bad else 0)
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: validation-report
-          path: ci-report.json
+          name: validation-reports
+          path: |
+            ci-report.json
+            ci-report-after.json
 
   regenerate:
     # proves the exports are produced by the app, not typed by hand

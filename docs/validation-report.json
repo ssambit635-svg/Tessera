@@ -10,7 +10,7 @@
     "timetable": {
       "status": "OPTIMAL",
       "objective": 3,
-      "wall_time": 33.35,
+      "wall_time": 28.17,
       "scheduled": 189,
       "expected": 189
     },
