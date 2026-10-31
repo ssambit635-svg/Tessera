@@ -1,0 +1,8 @@
+#!/bin/sh
+# Install with:  sh tools/install_hooks.sh
+# Blocks a commit that carries a real-looking API key.
+python3 tools/check_secrets.py || {
+    echo ""
+    echo "commit blocked: remove the secret, put it in .env (gitignored), then rotate it."
+    exit 1
+}

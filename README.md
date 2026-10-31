@@ -77,10 +77,14 @@ Two ways to use it: run the API, or regenerate the exports from scratch.
 
 ### 1. The API (this is what the app and the judges use)
 
+**macOS / Linux**
+
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r api/requirements.txt
-cp .env.example .env          # optional: defaults work, no key needed
+sh tools/setup_env.sh         # creates .env from .env.example (gitignored; defaults work)
+# Groq later, one command (hidden input, writes .env only):
+#   python3 tools/set_groq_key.py
 
 cd api
 uvicorn app.main:app --reload --port 8000
@@ -88,6 +92,25 @@ uvicorn app.main:app --reload --port 8000
 #  http://localhost:8000/health liveness
 #  demo logins: POST /api/auth/demo-login/admin  (or /faculty, /club, /department_coordinator)
 ```
+
+**Windows (PowerShell 5.1)** - no `&&`, no `source`, and the venv lives in `.venv\Scripts`:
+
+```powershell
+python -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass   # only if activation is blocked
+.\.venv\Scripts\Activate.ps1
+pip install -r api\requirements.txt
+Copy-Item .env.example .env                                   # or: powershell -ExecutionPolicy Bypass -File tools\setup_env.ps1
+notepad .env                                                  # defaults work
+# or one command that asks for the key without echoing it:
+#   python tools\set_groq_key.py
+
+cd api
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+`python3` does not exist on Windows - use `python`. If `pip install` is slow, OR-Tools is the
+big one; the rest install in seconds.
 
 The app boots from the committed `exports/schedule.json`, so it is usable immediately;
 regenerating the timetable is an explicit admin action, not a page-load cost.
@@ -197,6 +220,22 @@ in-memory-only state"). The organisers' dataset stays read-only in `vendor/`, th
 schedules are the two files in `exports/`, and everything else — users, proposals, audit rows,
 timetable versions — lives in `tessera.db`. Full detail, including why a restart cannot lose
 the timetable: [`docs/DATABASE.md`](docs/DATABASE.md).
+
+## Turning the model on (optional, 30 seconds)
+
+```bash
+python3 tools/set_groq_key.py     # Windows: python tools\set_groq_key.py
+```
+Type the key (input hidden), then restart the server. `GET /health` flips from
+`"llm":"none"` to `"llm":"groq"`, and `POST /api/ai/selftest` makes one real call.
+The key is written to `.env` only - it is gitignored and never pushed.
+
+## Secrets
+
+`.env` is gitignored and per-machine; `.env.example` is the tracked template and must stay
+empty. `python3 tools/check_secrets.py` (also a CI job and an optional pre-commit hook) fails
+the build if a key-shaped string is ever committed. What happens if one leaks, and how to
+rotate it: [`docs/SECRETS.md`](docs/SECRETS.md).
 
 ## Known limitations
 

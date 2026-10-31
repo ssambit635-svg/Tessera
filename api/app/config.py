@@ -7,10 +7,61 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
+# `.env` is the only place a key may live. It is loaded here, before any setting is read,
+# and a real environment variable always wins over the file (that is how hosting works).
+# Without this the app would silently ignore .env - the classic "I added my key and nothing
+# happened" bug.
+_ENV_FILES = (ROOT / ".env", ROOT / "api" / ".env")
+
+
+def _load_env_files() -> list[str]:
+    loaded: list[str] = []
+    try:
+        from dotenv import load_dotenv
+    except ImportError:                                   # dotenv not installed: parse by hand
+        for path in _ENV_FILES:
+            if not path.exists():
+                continue
+            for line in path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+            loaded.append(str(path))
+        return loaded
+    for path in _ENV_FILES:
+        if path.exists():
+            load_dotenv(path, override=False)             # real env vars win
+            loaded.append(str(path))
+    return loaded
+
+
+ENV_FILES_LOADED = _load_env_files()
+
 
 def _env(name: str, default: str) -> str:
     value = os.environ.get(name)
     return default if value is None or value == "" else value
+
+
+def _abs_path(value: str) -> Path:
+    """Relative paths resolve against the repo root, not the shell's cwd.
+
+    The README says `cd api && uvicorn ...`; without this, `DATASET_PATH=./vendor/...` from
+    .env would look for `api/vendor/...` and the app would die on its first request.
+    """
+    path = Path(value)
+    return path if path.is_absolute() else (ROOT / path).resolve()
+
+
+def _sqlite_url(value: str) -> str:
+    prefix = "sqlite:///"
+    if value.startswith(prefix):
+        rest = value[len(prefix):]
+        if rest and rest != ":memory:" and not Path(rest).is_absolute():
+            return prefix + str((ROOT / rest).resolve())
+    return value
 
 
 def _env_int(name: str, default: int) -> int:
@@ -27,10 +78,10 @@ def _env_bool(name: str, default: bool = False) -> bool:
 @dataclass
 class Settings:
     team: str = field(default_factory=lambda: _env("TEAM_NAME", "Voltryx"))
-    dataset_path: Path = field(default_factory=lambda: Path(_env("DATASET_PATH", str(ROOT / "vendor" / "cit_public.json"))))
-    data_dir: Path = field(default_factory=lambda: Path(_env("DATA_DIR", str(ROOT / "data"))))
-    exports_dir: Path = field(default_factory=lambda: Path(_env("EXPORTS_DIR", str(ROOT / "exports"))))
-    database_url: str = field(default_factory=lambda: _env("DATABASE_URL", f"sqlite:///{ROOT / 'tessera.db'}"))
+    dataset_path: Path = field(default_factory=lambda: _abs_path(_env("DATASET_PATH", str(ROOT / "vendor" / "cit_public.json"))))
+    data_dir: Path = field(default_factory=lambda: _abs_path(_env("DATA_DIR", str(ROOT / "data"))))
+    exports_dir: Path = field(default_factory=lambda: _abs_path(_env("EXPORTS_DIR", str(ROOT / "exports"))))
+    database_url: str = field(default_factory=lambda: _sqlite_url(_env("DATABASE_URL", f"sqlite:///{ROOT / 'tessera.db'}")))
     jwt_secret: str = field(default_factory=lambda: _env("JWT_SECRET", "tessera-dev-secret-please-change-in-production-32b"))
     jwt_ttl_hours: int = field(default_factory=lambda: _env_int("JWT_TTL_HOURS", 12))
 
