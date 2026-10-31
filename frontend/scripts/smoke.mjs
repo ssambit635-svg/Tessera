@@ -23,6 +23,15 @@ mkdirSync(outDir, { recursive: true });
 const LIVE = process.argv.includes("--live");
 const LIVE_BASE = process.env.SMOKE_BASE ?? "http://127.0.0.1:5173";
 
+/** Vite inlines `import.meta.env` at build time; esbuild does not, so mirror it here — otherwise
+ *  any module reading a VITE_* value throws before the app mounts. */
+const buildEnv = {
+  MODE: LIVE ? "development" : "test",
+  DEV: true,
+  PROD: false,
+  ...(process.env.VITE_API_BASE ? { VITE_API_BASE: process.env.VITE_API_BASE } : {}),
+};
+
 await build({
   absWorkingDir: root,
   entryPoints: ["src/main.tsx"],
@@ -31,7 +40,10 @@ await build({
   target: "es2020",
   outfile: path.join(outDir, "app.js"),
   jsx: "automatic",
-  define: { "process.env.NODE_ENV": '"development"' },
+  define: {
+    "process.env.NODE_ENV": '"development"',
+    "import.meta.env": JSON.stringify(buildEnv),
+  },
   loader: { ".css": "empty", ".woff": "empty", ".woff2": "empty", ".jpg": "empty", ".svg": "empty" },
   logLevel: "error",
 });
