@@ -1,37 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ApiError, demoLogin, loginWithPassword, type LoginResult } from "../lib/api";
 import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { TileMark, TileSpinner } from "../components/TileMark";
 import { initials, tintFor } from "../lib/persona";
-import { instituteName } from "../lib/format";
 
 const DEMO_PASSWORD = "Tessera@2027";
 
-function seatGlyph(role: string, label: string): string {
-  if (/second|approver/i.test(label)) return "check";
-  if (role === "admin") return "shield";
-  if (role === "department_coordinator") return "clipboard";
-  if (role === "faculty") return "book";
-  if (role === "club") return "ticket";
-  return "user";
-}
-
-/** Short seat names — five of them have to sit on one line. */
-function shortSeat(label: string, role: string): string {
-  if (/second|approver/i.test(label)) return "Dean";
-  if (role === "admin") return "Admin";
-  if (role === "department_coordinator") return "Coord.";
-  if (role === "faculty") return "Faculty";
-  if (role === "club") return "Club";
-  return role.replace(/_/g, " ");
-}
-
-const CAMPUS_PHOTO = "/media/campus-road.jpg";
+const CAMPUS_PHOTO = "/media/campus-tower.jpg";
 
 export default function Login() {
-  const { data, source, user, personas, signIn, signInLocal, status } = useWorkspace();
+  const { user, personas, signIn, signInLocal, status } = useWorkspace();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get("next") ?? "/mosaic";
@@ -41,8 +21,6 @@ export default function Login() {
   const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState<"password" | string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const online = source.reachable ?? source.mode === "live";
 
   const enter = async (login: LoginResult) => {
     await signIn(login);
@@ -102,7 +80,7 @@ export default function Login() {
       <div className="sf-side">
         <header className="sf-brand">
           <span className="sf-mark">
-            <TileMark size={24} />
+            <TileMark size={25} accent={false} />
           </span>
           <span className="sf-wordmark">
             <b>TESSERA</b>
@@ -113,9 +91,7 @@ export default function Login() {
         <main className="sf-stage">
           <div className="sf-card">
             <h1>Sign in</h1>
-            <p className="sf-sub">
-              Campus scheduling &amp; resource intelligence for {instituteName(data.institute)}.
-            </p>
+            <p className="sf-sub">Please enter your details</p>
 
             {user && status === "ready" ? (
               <div className="sf-session">
@@ -195,60 +171,19 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="sf-divider">
-              <span>or step in as</span>
-            </div>
-
-            <ul className="sf-identities">
-              {personas.map((persona) => {
-                const working = busy === persona.email;
-                return (
-                  <li key={persona.email}>
-                    <button
-                      className="sf-identity"
-                      onClick={() => void demo(persona.role, persona.email, persona.label)}
-                      disabled={busy !== null}
-                      aria-busy={working}
-                      aria-label={`Sign in as ${persona.label} (${persona.email})`}
-                      title={`${persona.label} · ${persona.email}`}
-                    >
-                      <span className="sf-identity-mark">
-                        {working ? (
-                          <TileSpinner size={14} label="Signing in" />
-                        ) : (
-                          <Icon name={seatGlyph(persona.role, persona.label)} size={16} strokeWidth={1.7} />
-                        )}
-                      </span>
-                      <span className="sf-identity-label">{shortSeat(persona.label, persona.role)}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
           </div>
 
           <p className="sf-new">
-            No account?{" "}
+            Are you new?{" "}
             <button
               type="button"
               onClick={() => void demo(personas[0]?.role ?? "admin", personas[0]?.email ?? "admin@cit.edu", personas[0]?.label ?? "Admin")}
             >
-              Enter the demo workspace
+              Open the demo workspace
             </button>
           </p>
         </main>
 
-        <footer className="sf-foot">
-          <span>
-            <i className={online ? "live" : "idle"} />
-            {instituteName(data.institute)}
-          </span>
-          <span className="mono sf-foot-meta">Spectra ’27 · Week 7</span>
-          <span className="sf-foot-spacer" />
-          <Link className="sf-foot-link" to="/mosaic">
-            Open the board <Icon name="arrowUpRight" size={11} />
-          </Link>
-        </footer>
       </div>
 
       {/* ---------------------------------------------------------------- photo */}
@@ -256,7 +191,7 @@ export default function Login() {
         <span className="sf-photo-veil" aria-hidden="true" />
         <img
           src={CAMPUS_PHOTO}
-          alt="The approach road to the academic block at golden hour, lined with rain trees and a bicycle stand."
+          alt="The academic block at golden hour: sandstone louvre fins and recessed glass balconies against a pale sky."
         />
       </figure>
     </div>

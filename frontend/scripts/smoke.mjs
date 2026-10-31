@@ -95,6 +95,17 @@ const click = (element) => {
   return true;
 };
 
+/** Waits specifically for the shell: the sign-in page is still mounted while the token
+ *  request is in flight, so "still on login" is not yet an answer right after a click. */
+async function waitForApp(maxMs) {
+  const started = Date.now();
+  while (Date.now() - started < maxMs) {
+    await wait(150);
+    if (window.document.querySelector(".app-frame")) return true;
+  }
+  return Boolean(window.document.querySelector(".app-frame"));
+}
+
 async function waitForMount(maxMs) {
   const started = Date.now();
   while (Date.now() - started < maxMs) {
@@ -119,10 +130,10 @@ if (process.argv.includes("--dump") && mounted === "login") {
 if (mounted !== "login") errors.push("a first visit did not open the sign-in page");
 if (mounted === "login") {
   if (!/campus scheduling/i.test(text())) errors.push("the sign-in page is missing its title");
-  if (!window.document.querySelector(".sf-identities .sf-identity")) errors.push("no demo identities on the sign-in page");
-  click(window.document.querySelector(".sf-identities .sf-identity"));
-  const entered = await waitForMount(LIVE ? 12000 : 5000);
-  if (entered !== "app") errors.push("signing in from a first visit did not open the workspace");
+  if (!window.document.querySelector(".sf-new button")) errors.push("no demo entry point on the sign-in page");
+  click(window.document.querySelector(".sf-new button"));
+  const entered = await waitForApp(LIVE ? 12000 : 5000);
+  if (!entered) errors.push("signing in from a first visit did not open the workspace");
 }
 
 const routes = [
@@ -153,13 +164,19 @@ for (const route of routes) {
   }
   const body = text();
   report.push({ route, chars: body.length, nodes: window.document.querySelectorAll("*").length });
-  if (body.length < 250) errors.push(`${route} rendered almost nothing (${body.length} chars)`);
+  // /login is deliberately one form and one line of copy — the reference design is that
+  // sparse. Every other route has panels to fill.
+  const floor = route === "/login" ? 120 : 250;
+  if (body.length < floor) errors.push(`${route} rendered almost nothing (${body.length} chars)`);
   if (route === "/" && !/Mosaic|board/i.test(body)) {
     errors.push("/ did not land on the calendar board");
     if (process.argv.includes("--dump")) console.log("ROOT TEXT:", body.slice(0, 700), "| path:", window.location.pathname);
   }
   if (route === "/login") {
     if (!/sign in/i.test(body)) errors.push("/login is missing the sign-in card");
+    if (!window.document.querySelector("#email") || !window.document.querySelector("#password")) {
+      errors.push("/login is missing its two fields");
+    }
     if (window.document.querySelector(".app-frame")) errors.push("/login rendered the app shell");
   }
   if (/Cannot read propert|is not a function|Minified React error/i.test(body)) {
@@ -190,8 +207,8 @@ const go = async (route) => {
 async function ensureSignedIn() {
   if (window.document.querySelector(".app-frame")) return;
   await go("/login");
-  click(window.document.querySelector(".sf-identities .sf-identity"));
-  await wait(800);
+  click(window.document.querySelector(".sf-new button"));
+  await waitForApp(6000);
 }
 
 console.log("\ninteractions");
@@ -274,10 +291,10 @@ await interaction("sign-in page signs a demo identity into the board", async () 
   await ensureSignedIn();
   await go("/login");
   if (process.argv.includes("--dump")) console.log("--- login text ---\n" + text() + "\n---");
-  const identity = window.document.querySelector(".sf-identities .sf-identity");
-  if (!identity) return "no demo identities listed";
+  const identity = window.document.querySelector(".sf-new button");
+  if (!identity) return "no demo entry point on the sign-in page";
   click(identity);
-  await wait(700);
+  await waitForApp(LIVE ? 9000 : 4000);
   const shell = window.document.querySelector(".app-frame");
   if (!shell) return "did not enter the workspace";
   return window.location.pathname === "/" || window.location.pathname === "/mosaic" ? "" : `landed on ${window.location.pathname}`;

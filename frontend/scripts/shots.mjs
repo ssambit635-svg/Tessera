@@ -66,9 +66,9 @@ await new Promise((resolve) => setTimeout(resolve, 1200));
 await page.screenshot({ path: `${outDir}login-${width}.png` });
 console.log(`login-${width}.png`);
 
-// Step in as the first demo identity so the shell is reachable.
-const identities = await page.$$(".sf-identities .sf-identity");
-if (identities[0]) await identities[0].click();
+// Step into the demo workspace so the shell is reachable.
+const demoEntry = await page.$(".sf-new button");
+if (demoEntry) await demoEntry.click();
 await new Promise((resolve) => setTimeout(resolve, 2200));
 
 for (const [route, name] of ROUTES) {

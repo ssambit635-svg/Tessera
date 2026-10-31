@@ -1,98 +1,74 @@
 /* ============================================================================
-   Sign in — a real building, a quiet card.
+   Sign in — one sided, exactly like the reference.
 
-   Reference: light page, one white card, a photograph of the campus running full height
-   beside it. Nothing decorative that the data cannot justify.
+   A pale column on the left holding a single white card; the campus fills the right
+   half of the screen, full height, bleeding to the edges. Nothing else on the page.
    ========================================================================== */
 
 .signin {
+  --sf-page: #eceeef;
   --sf-card: #ffffff;
-  --sf-ink: #161614;
-  --sf-ink-soft: #56534b;
-  --sf-muted: #8b877d;
-  --sf-line: #e0ddd4;
-  --sf-line-soft: #eae7df;
-  --sf-accent: #161614;
-  --sf-on-photo: #ffffff;
-  --sf-on-photo-soft: rgba(255, 255, 255, 0.78);
+  --sf-ink: #1a1d24;
+  --sf-ink-soft: #5b5f68;
+  --sf-muted: #9195a0;
+  --sf-line: #dcdde1;
+  --sf-accent: #3a4351;
 
-  position: relative;
-  isolation: isolate;
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: #2a2723;
+  height: 100vh;
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 48%) minmax(0, 1fr);
+  background: var(--sf-page);
   color: var(--sf-ink);
   overflow: hidden;
-}
-
-/* The photograph is the page: the campus runs edge to edge behind everything. */
-.sf-photo {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  margin: 0;
-  overflow: hidden;
-  background: #2a2723;
 }
 
 /* ------------------------------------------------------------------ form side */
 .sf-side {
   position: relative;
   z-index: 2;
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 30px 44px 24px 52px;
+  padding: 26px 40px 20px 46px;
 }
 
 .sf-brand {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   animation: fade-up 520ms var(--ease-out) both;
 }
 
 .sf-mark {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: #121211;
-  color: #fbfaf6;
-  border-radius: 9px;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-    0 10px 24px -14px rgba(0, 0, 0, 0.8);
+  color: #15171c;
 }
 
 .sf-wordmark {
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
+  gap: 8px;
   line-height: 1;
 }
 
 .sf-wordmark b {
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.26em;
-  color: var(--sf-on-photo);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+  letter-spacing: 0.3em;
+  color: #15171c;
 }
 
 .sf-wordmark i {
-  margin-top: 5px;
   font-style: normal;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 7.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.66);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+  color: #8e929c;
 }
 
 /* stage ----------------------------------------------------------------- */
@@ -103,52 +79,48 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 26px 0 22px;
+  gap: 22px;
+  padding: 20px 0;
   overflow-y: auto;
 }
 
 .sf-card {
-  width: min(420px, 100%);
-  padding: 38px 36px 30px;
-  border-radius: 14px;
+  width: min(400px, 100%);
+  padding: 32px 38px 30px;
+  border-radius: 12px;
   background: var(--sf-card);
-  border: 1px solid rgba(22, 22, 20, 0.06);
   box-shadow:
-    0 1px 1px rgba(12, 12, 10, 0.08),
-    0 2px 6px rgba(12, 12, 10, 0.08),
-    0 30px 60px -30px rgba(8, 8, 7, 0.55),
-    0 80px 140px -80px rgba(8, 8, 7, 0.7);
+    0 1px 2px rgba(20, 22, 26, 0.06),
+    0 18px 40px -28px rgba(20, 22, 26, 0.5);
   animation: fade-up 620ms var(--ease-out) 60ms both;
 }
 
 .sf-card h1 {
   text-align: center;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 38px;
-  line-height: 1.02;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
   letter-spacing: -0.015em;
   color: var(--sf-ink);
 }
 
 .sf-sub {
-  margin: 10px auto 0;
+  margin-top: 6px;
   text-align: center;
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--sf-ink-soft);
-  max-width: 34ch;
 }
 
 /* an existing session --------------------------------------------------- */
 .sf-session {
-  margin-top: 20px;
+  margin-top: 18px;
   display: flex;
   align-items: center;
   gap: 9px;
   padding: 8px 9px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid #e3ecc4;
   background: #f8fbe9;
 }
@@ -179,8 +151,8 @@
   gap: 5px;
   height: 28px;
   padding: 0 10px;
-  border-radius: 7px;
-  background: var(--sf-ink);
+  border-radius: 6px;
+  background: var(--sf-accent);
   color: #fff;
   font-family: var(--font-display);
   font-size: 11.5px;
@@ -189,22 +161,21 @@
 
 /* form ----------------------------------------------------------------- */
 .sf-card form {
-  margin-top: 24px;
+  margin-top: 22px;
   display: flex;
   flex-direction: column;
-  gap: 17px;
+  gap: 15px;
 }
 
 .sf-field {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
 }
 
 .sf-field > span:first-child {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: -0.003em;
+  font-size: 12.5px;
+  font-weight: 400;
   color: var(--sf-ink-soft);
 }
 
@@ -215,89 +186,78 @@
 
 .sf-field input {
   width: 100%;
-  height: 46px;
-  padding: 0 14px;
-  border-radius: 9px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
   border: 1px solid var(--sf-line);
-  background: #fdfdfc;
-  font-size: 13.5px;
+  background: #fff;
+  font-size: 13px;
   color: var(--sf-ink);
-  letter-spacing: -0.004em;
-  transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease), background 140ms var(--ease);
+  transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
 }
 
 .sf-field input::placeholder {
-  color: #b6b2a8;
+  color: #9ea3ae;
 }
 
 .sf-field input:hover {
-  border-color: #d5d1c7;
+  border-color: #c9cbd1;
 }
 
 .sf-field input:focus {
   outline: none;
-  border-color: var(--sf-ink);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(25, 25, 23, 0.08);
+  border-color: #9aa0ac;
+  box-shadow: 0 0 0 3px rgba(62, 67, 78, 0.07);
 }
 
 .sf-input-wrap input {
-  padding-right: 42px;
+  padding-right: 40px;
 }
 
 .sf-reveal {
   position: absolute;
   top: 50%;
-  right: 6px;
+  right: 5px;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
-  border-radius: 7px;
-  color: #a6a298;
+  border-radius: 5px;
+  color: #a6aab3;
   transition: color 140ms var(--ease), background 140ms var(--ease);
 }
 
 .sf-reveal:hover {
   color: var(--sf-ink);
-  background: #f3f2ee;
+  background: #f4f4f6;
 }
 
 .sf-field-row {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
   margin-top: -4px;
 }
 
-.sf-hint {
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #b0aca2;
-}
-
 .sf-link {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--sf-ink-soft);
-  border-bottom: 1px solid #d8d4ca;
-  padding-bottom: 1px;
-  transition: color 140ms var(--ease), border-color 140ms var(--ease);
+  transition: color 140ms var(--ease);
 }
 
 .sf-link:hover {
   color: var(--sf-ink);
-  border-color: var(--sf-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .sf-error {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 10px 12px;
-  border-radius: 9px;
+  padding: 9px 11px;
+  border-radius: 7px;
   border: 1px solid #f0cfc7;
   background: #fdf3f0;
   color: #8f2f1b;
@@ -311,212 +271,102 @@
 }
 
 .sf-submit {
-  margin-top: 3px;
+  margin-top: 2px;
   height: 46px;
-  border-radius: 9px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   background: var(--sf-accent);
-  color: #fbfaf7;
+  color: #fbfbfc;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
-  letter-spacing: 0.005em;
-  box-shadow: 0 1px 2px rgba(25, 25, 23, 0.2), 0 14px 30px -22px rgba(25, 25, 23, 0.9);
-  transition: background 140ms var(--ease), transform 140ms var(--ease), box-shadow 200ms var(--ease);
+  transition: background 140ms var(--ease), transform 140ms var(--ease);
 }
 
 .sf-submit:hover:not(:disabled) {
-  background: #000;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(25, 25, 23, 0.22), 0 18px 34px -22px rgba(25, 25, 23, 0.95);
+  background: #333842;
 }
 
 .sf-submit:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(1px);
 }
 
 .sf-submit:disabled {
-  opacity: 0.8;
+  opacity: 0.85;
   cursor: progress;
 }
 
 .sf-submit .tile-spinner {
-  color: #fbfaf7;
+  color: #fbfbfc;
 }
 
 .sf-submit .tile-spinner .tile-spinner-ring {
   border-color: rgba(255, 255, 255, 0.22);
-  border-top-color: #fbfaf7;
-}
-
-/* identities ----------------------------------------------------------- */
-.sf-divider {
-  position: relative;
-  margin: 22px 0 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sf-divider::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 1px;
-  background: var(--sf-line-soft);
-}
-
-.sf-divider span {
-  position: relative;
-  padding: 0 10px;
-  background: var(--sf-card);
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #a9a59b;
-}
-
-.sf-identities {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 4px;
-}
-
-.sf-identity {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 4px 9px;
-  border-radius: 10px;
-  border: 1px solid var(--sf-line-soft);
-  background: #fdfdfc;
-  transition: background 140ms var(--ease), border-color 140ms var(--ease), transform 140ms var(--ease), box-shadow 140ms var(--ease);
-}
-
-.sf-identity:hover:not(:disabled),
-.sf-identity:focus-visible {
-  background: #fff;
-  border-color: #c9c5ba;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px -10px rgba(22, 22, 20, 0.5);
-}
-
-.sf-identity:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
-.sf-identity-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  background: #f3f2ee;
-  color: #4d4a43;
-  box-shadow: inset 0 0 0 1px rgba(22, 22, 20, 0.05);
-  transition: background 140ms var(--ease), color 140ms var(--ease);
-}
-
-.sf-identity:hover .sf-identity-mark {
-  background: var(--sf-ink);
-  color: #fbfaf6;
-}
-
-.sf-identity .tile-spinner {
-  color: var(--sf-ink);
-}
-
-.sf-identity .tile-spinner .tile-spinner-ring {
-  border-color: rgba(22, 22, 20, 0.16);
-  border-top-color: var(--sf-ink);
-}
-
-.sf-identity-label {
-  font-family: var(--font-display);
-  font-size: 10.5px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.005em;
-  color: #6a665e;
-  text-align: center;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sf-identity:hover .sf-identity-label {
-  color: var(--sf-ink-soft);
+  border-top-color: #fbfbfc;
 }
 
 /* under the card -------------------------------------------------------- */
 .sf-new {
-  font-size: 12px;
-  color: var(--sf-on-photo-soft);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  font-size: 13px;
+  color: var(--sf-ink-soft);
   animation: fade-in 620ms var(--ease-out) 200ms both;
 }
 
 .sf-new button {
-  font-size: 12px;
-  font-weight: 500;
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.75);
-  padding-bottom: 1px;
-  transition: opacity 140ms var(--ease), border-color 140ms var(--ease);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sf-ink);
+  transition: opacity 140ms var(--ease);
 }
 
 .sf-new button:hover {
-  opacity: 0.62;
+  opacity: 0.65;
 }
 
-/* footer ---------------------------------------------------------------- */
+/* footer: switching identity stays available, but as one quiet line ---- */
 .sf-foot {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+  flex-wrap: wrap;
   padding-top: 14px;
-  font-size: 11px;
-  letter-spacing: 0.01em;
-  color: var(--sf-on-photo-soft);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
 }
 
-.sf-foot span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.sf-foot i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #7fa40f;
-  box-shadow: 0 0 0 3px rgba(127, 164, 15, 0.22);
-  display: inline-block;
-}
-
-.sf-foot i.idle {
-  background: #bcb8ae;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
-}
-
-.sf-foot-meta {
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
+.sf-foot-label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: #9ea2ab;
+}
+
+.sf-identities {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.sf-identity {
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  color: var(--sf-ink-soft);
+  transition: color 140ms var(--ease), background 140ms var(--ease);
+}
+
+.sf-identity:hover:not(:disabled) {
+  color: var(--sf-ink);
+  background: rgba(20, 22, 26, 0.06);
+}
+
+.sf-identity:disabled {
+  opacity: 0.55;
+  cursor: progress;
 }
 
 .sf-foot-spacer {
@@ -526,25 +376,32 @@
 .sf-foot-link {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.82);
+  color: #7d818c;
   transition: color 140ms var(--ease);
 }
 
 .sf-foot-link:hover {
-  color: #fff;
+  color: var(--sf-ink);
 }
 
 /* ------------------------------------------------------------------- photo */
+.sf-photo {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: #cdd5dc;
+}
+
 .sf-photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 46%;
+  object-position: 62% 50%;
   animation: photo-settle 1.2s var(--ease-out) both;
 }
 
@@ -553,106 +410,104 @@
   to { opacity: 1; }
 }
 
-/* Two scrims: one from the top-left so the wordmark stays legible on a bright sky, one from
-   the bottom for the footer. The middle stays untouched — it is the campus. */
+/* A soft inner shade on the seam so the photograph reads as continuing rather than
+   pasted next to a panel. Nothing covers the building itself. */
 .sf-photo-veil {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(118deg, rgba(10, 12, 12, 0.55) 0%, rgba(10, 12, 12, 0.2) 26%, rgba(10, 12, 12, 0) 46%),
-    linear-gradient(0deg, rgba(9, 10, 11, 0.55) 0%, rgba(9, 10, 11, 0.24) 12%, rgba(9, 10, 11, 0) 26%),
-    radial-gradient(80% 60% at 50% 48%, rgba(9, 10, 11, 0.16), rgba(9, 10, 11, 0) 70%);
+    linear-gradient(90deg, rgba(236, 238, 239, 0.6) 0%, rgba(236, 238, 239, 0.14) 4%, rgba(236, 238, 239, 0) 10%),
+    linear-gradient(0deg, rgba(14, 16, 20, 0.28) 0%, rgba(14, 16, 20, 0) 18%);
 }
 
 /* ---------------------------------------------------------------- responsive */
-@media (max-width: 1120px) {
+@media (max-width: 1080px) {
+  .signin {
+    grid-template-columns: minmax(0, 52%) minmax(0, 1fr);
+  }
+
   .sf-side {
-    padding: 26px 30px 20px 34px;
+    padding: 24px 30px 18px 34px;
   }
 }
 
-@media (max-width: 940px) {
+@media (max-width: 880px) {
   .signin {
-    overflow: auto;
+    height: auto;
+    min-height: 100vh;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+    background: #eceeef;
   }
 
+  /* the photograph becomes the top banner, the card sits on the page below it */
   .sf-photo {
-    position: fixed;
+    order: -1;
+    height: 30vh;
+    min-height: 190px;
   }
 
   .sf-photo img {
-    object-position: 58% 54%;
+    object-position: 66% 46%;
   }
 
-  /* a single column needs a heavier veil: the card is the only thing in front now */
   .sf-photo-veil {
-    background:
-      linear-gradient(180deg, rgba(9, 10, 11, 0.5) 0%, rgba(9, 10, 11, 0.28) 40%, rgba(9, 10, 11, 0.45) 100%),
-      linear-gradient(118deg, rgba(10, 12, 12, 0.4) 0%, rgba(10, 12, 12, 0) 60%);
+    background: linear-gradient(0deg, rgba(236, 238, 239, 0.92) 0%, rgba(236, 238, 239, 0) 26%);
   }
 
   .sf-side {
-    padding: 22px 20px 18px;
+    padding: 0 20px 22px;
+    margin-top: -26px;
+  }
+
+  .sf-brand {
+    padding: 14px 4px 18px;
   }
 
   .sf-stage {
-    padding: 22px 0 16px;
+    padding: 0 0 16px;
+    gap: 18px;
   }
 
   .sf-card {
-    padding: 28px 22px 22px;
+    width: min(430px, 100%);
+    padding: 26px 22px 24px;
   }
 
-  .sf-card h1 {
-    font-size: 31px;
+  .sf-foot {
+    justify-content: center;
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 460px) {
   .sf-card {
     width: 100%;
   }
 
-  .sf-foot {
-    flex-wrap: wrap;
-    gap: 8px 12px;
+  .sf-identities {
+    justify-content: center;
   }
 
   .sf-foot-spacer {
     display: none;
   }
-
-  .sf-identities {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
-@media (max-height: 780px) and (min-width: 941px) {
+@media (max-height: 780px) and (min-width: 881px) {
   .sf-stage {
-    padding: 12px 0 10px;
+    gap: 16px;
+    padding: 10px 0;
   }
 
   .sf-card {
-    padding: 26px 30px 20px;
-  }
-
-  .sf-card h1 {
-    font-size: 29px;
+    padding: 24px 28px 22px;
   }
 
   .sf-card form {
     margin-top: 18px;
     gap: 13px;
-  }
-
-  .sf-divider {
-    margin: 16px 0 10px;
-  }
-
-  .sf-identity {
-    padding: 8px 4px 7px;
   }
 }
 
@@ -660,8 +515,7 @@
   .sf-brand,
   .sf-card,
   .sf-new,
-  .sf-photo img,
-  .sf-photo figcaption {
+  .sf-photo img {
     animation: none !important;
   }
 }
