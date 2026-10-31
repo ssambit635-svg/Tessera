@@ -58,11 +58,11 @@ def solve(
     tight: bool = True,
     max_hours_per_day: int = 6,
     hint: dict[str, tuple] | None = None,
-    drop: set[str] | None = None,
+    room_day_cap: int | None = None,
+    room_week_cap: int | None = None,
 ) -> dict:
     reserved_rooms = reserved_rooms or set()
     blocked_groups = blocked_groups or set()
-    drop = drop or set()
 
     m = cp_model.CpModel()
     occ_room = defaultdict(list)
@@ -98,12 +98,11 @@ def solve(
                 m.Add(l_var == 0).OnlyEnforceIf(is_off)
                 m.Add(l_var >= 1).OnlyEnforceIf(is_off.Not())
                 m.Add(s_var == 0).OnlyEnforceIf(is_off)
-            if 'hours' not in drop:
-                m.Add(sum(blk_l[(g, day)] for day in ds.days) == hours.get(g, 0))
+            m.Add(sum(blk_l[(g, day)] for day in ds.days) == hours.get(g, 0))
 
     def cover(var, groups, day, start, duration):
         """If `var` is chosen, each group's block that day must contain [start, start+d-1]."""
-        if not tight or 'cover' in drop:
+        if not tight:
             return
         for g in groups:
             m.Add(blk_s[(g, day)] <= start).OnlyEnforceIf(var)
@@ -163,7 +162,7 @@ def solve(
             m.AddHint(v, 1 if want and (day, p, room) == tuple(want) else 0)
 
     # ------------------------------------------------------------------ elective baskets
-    for b in ([] if 'basket' in drop else baskets):
+    for b in baskets:
         members = [ds.sessions[sid] for sid in basket_members[b]]
         groups_b = sorted({g for s in members for g in s["groups"]})
         dur = max(s["duration"] for s in members)
@@ -198,17 +197,41 @@ def solve(
                 m.Add(sum(zs) == yv)
         m.Add(sum(starts) == 1)
 
+    # ------------------------------------------------------------------ resilience
+    if room_day_cap:
+        # No room may carry more than `room_day_cap` sessions in a single day. When the
+        # judges close a room, only that day's hand-full of sessions can break - which is
+        # what "moves as few sessions as possible" is measured on.
+        per_room_day = defaultdict(list)
+        for (sid, day, p, room), v in x.items():
+            per_room_day[(room, day)].append(v)
+        for (sid, day, p, room), v in z.items():
+            per_room_day[(room, day)].append(v)
+        for vs in per_room_day.values():
+            m.Add(sum(vs) <= room_day_cap)
+
+    if room_week_cap:
+        # ... and no teaching room carries a whole week's worth of sessions, so a full-week
+        # closure is capped too (minimax: no single room is the weak point).
+        per_room = defaultdict(list)
+        for (sid, day, p, room), v in x.items():
+            if "lecture" in ds.rooms[room].get("allowed_uses", []):
+                per_room[room].append(v)
+        for (sid, day, p, room), v in z.items():
+            if "lecture" in ds.rooms[room].get("allowed_uses", []):
+                per_room[room].append(v)
+        for vs in per_room.values():
+            m.Add(sum(vs) <= room_week_cap)
+
     # ------------------------------------------------------------------ hard resource caps
-    if 'caps' not in drop:
-        for vs in occ_room.values():
-            m.Add(sum(vs) <= 1)
-        for vs in occ_fac.values():
-            m.Add(sum(vs) <= 1)
-        for vs in occ_grp.values():
-            m.Add(sum(vs) <= 1)
-    if 'faccap' not in drop:
-        for (f, day), terms in fac_day_terms.items():
-            m.Add(sum(terms) <= ds.faculty[f].get("max_hours_per_day", 4))
+    for vs in occ_room.values():
+        m.Add(sum(vs) <= 1)
+    for vs in occ_fac.values():
+        m.Add(sum(vs) <= 1)
+    for vs in occ_grp.values():
+        m.Add(sum(vs) <= 1)
+    for (f, day), terms in fac_day_terms.items():
+        m.Add(sum(terms) <= ds.faculty[f].get("max_hours_per_day", 4))
 
     # ------------------------------------------------------------------ S4: repeat lectures
     sessions_by_gc = defaultdict(list)
@@ -232,7 +255,7 @@ def solve(
         for g in s["groups"]:
             lect[(g, s["course_id"], day)].append(v)
     for key, terms in lect.items():
-        if 's4' not in drop and feasible_gc.get((key[0], key[1]), True):
+        if feasible_gc.get((key[0], key[1]), True):
             m.Add(sum(terms) <= 1)
         else:
             ex = m.NewIntVar(0, 10, "")
@@ -246,10 +269,9 @@ def solve(
             for (bb, day, p), yv in y.items():
                 if bb == b:
                     by_course_day[(course, day)].append(yv)
-    if 's4b' not in drop:
-        for key, terms in by_course_day.items():
-            if terms:
-                m.Add(sum(terms) <= 1)
+    for key, terms in by_course_day.items():
+        if terms:
+            m.Add(sum(terms) <= 1)
 
     # ------------------------------------------------------------------ fallback soft S2
     if not tight:
