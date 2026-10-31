@@ -13,3 +13,8 @@ dist/
 pytest_cache/
 .ruff_cache/
 *.report.json
+
+# local secrets
+.env
+.env.local
+api/.env

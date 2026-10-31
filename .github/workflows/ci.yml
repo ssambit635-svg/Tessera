@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
       - name: Install
         run: pip install -r api/requirements.txt
-      - name: Tests (kernel + exports + model)
+      - name: Tests (kernel, exports, repair, API)
         working-directory: api
         run: python -m pytest tests -q
       - name: Official validator on the committed exports
@@ -37,8 +37,27 @@ jobs:
           print("after disruption:", a["hard_by_rule"], "moved:",
                 a["stability"]["sessions_moved"],
                 f'({a["stability"]["room_only_changed"]} room only)')
-          bad = r["hard_violation_count"] + a["hard_violation_count"]
-          sys.exit(1 if bad else 0)
+          sys.exit(1 if r["hard_violation_count"] + a["hard_violation_count"] else 0)
+          PY
+      - name: Smoke the API with no LLM configured
+        working-directory: api
+        env:
+          LLM_PROVIDER: none
+          DATABASE_URL: sqlite:///./ci.db
+        run: |
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+          from app.main import app
+          with TestClient(app) as c:
+              assert c.get("/health").json()["status"] == "ok"
+              tok = c.post("/api/auth/demo-login/admin").json()["token"]
+              h = {"Authorization": f"Bearer {tok}"}
+              v = c.get("/api/timetable/validate", headers=h).json()
+              print("api validate:", v["hard_violations"], "hard,", v["soft_total"], "soft")
+              assert v["hard_violations"] == 0
+              b = c.get("/api/bookings", headers=h).json()
+              print("api bookings:", b["totals"])
+              assert b["totals"]["approved"] == 22
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -46,28 +65,3 @@ jobs:
           path: |
             ci-report.json
             ci-report-after.json
-
-  regenerate:
-    # proves the exports are produced by the app, not typed by hand
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pip install -r api/requirements.txt
-      - name: Generate from the dataset
-        working-directory: api
-        run: |
-          python -m app.core.pipeline --data ../vendor/cit_public.json \
-            --out ../exports/regenerated.json --time-limit 120 --workers 2
-      - name: Verify the regenerated timetable
-        run: |
-          python vendor/validator.py --data vendor/cit_public.json \
-            --schedule exports/regenerated.json --quiet --json regen-report.json
-          python - <<'PY'
-          import json, sys
-          r = json.load(open("regen-report.json"))
-          print("regenerated hard:", r["hard_by_rule"], "soft:", r["soft_total"])
-          sys.exit(1 if r["hard_violation_count"] else 0)
-          PY

@@ -7,10 +7,10 @@ generates the semester timetable, schedules midsem exams, decides Spectra-week v
 requests by the institute's priority rules, and repairs the timetable when something
 changes — moving as few sessions as possible and explaining every decision.
 
-> **Status (in progress):** the scheduling core **and the disruption/repair engine** are
-> complete and verified against the organisers' own validator. API, UI and the AI layer are
-> next. Numbers below are produced by the pipeline in this repo and re-verified in CI on
-> every push.
+> **Status (in progress):** the scheduling core, the disruption/repair engine **and the full
+> backend API** (roles, approvals, exports, reset, plain-language parsing) are complete and
+> verified. The Next.js UI is next. Numbers below are produced by this repo and re-verified
+> in CI on every push.
 
 ## Verified numbers
 
@@ -73,6 +73,28 @@ Design choices that matter:
 
 ## Quickstart
 
+Two ways to use it: run the API, or regenerate the exports from scratch.
+
+### 1. The API (this is what the app and the judges use)
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r api/requirements.txt
+cp .env.example .env          # optional: defaults work, no key needed
+
+cd api
+uvicorn app.main:app --reload --port 8000
+#  http://localhost:8000/docs   interactive API
+#  http://localhost:8000/health liveness
+#  demo logins: POST /api/auth/demo-login/admin  (or /faculty, /club, /department_coordinator)
+```
+
+The app boots from the committed `exports/schedule.json`, so it is usable immediately;
+regenerating the timetable is an explicit admin action, not a page-load cost.
+Thirty-plus endpoints are documented in [`docs/API.md`](docs/API.md).
+
+### 2. Regenerate both exports from the dataset
+
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r api/requirements.txt
@@ -115,23 +137,53 @@ tools/             feasibility probe, self-check helpers
 - [x] CI: tests + official validator on every push, plus a regeneration job
 - [x] minimal-move repair engine, change-file support, infeasibility explanation,
       `exports/schedule_after.json`
-- [ ] FastAPI endpoints, 4 roles, demo seed/reset
-- [ ] plain-English / Hinglish request parsing with a deterministic fallback
+- [x] backend API: 4 roles + second admin, 30+ endpoints, demo seed/reset, audit trail
+- [x] plain-English / Hinglish request parsing with a deterministic parser (works with no model)
+- [ ] optional LLM reader behind `LLM_PROVIDER=groq` (the app must behave identically without it)
 - [ ] Next.js UI: timetable by group/faculty/room, approvals, dashboard, mobile
+- [ ] deploy + video
 
 ## Demo accounts
 
-Seeded on first boot (see `.env.example`, password `Tessera@2027`):
+Seeded on first boot (see `.env.example`; password `Tessera@2027`):
 
-| Role | Email |
-| --- | --- |
-| Admin (Dean's office) | `admin@cit.edu` |
-| Department coordinator | `dept.cse@cit.edu` |
-| Faculty | `faculty@cit.edu` |
-| Club representative | `club@cit.edu` |
+| Role | Email | Can |
+| --- | --- | --- |
+| Admin (Dean's office) | `admin@cit.edu` | everything: generate, validate, export, reset, approve |
+| **Admin #2 (approver)** | `dean@cit.edu` | approves the first admin's change proposals |
+| Department coordinator | `dept.cse@cit.edu` | preview changes, book department rooms |
+| Faculty | `faculty@cit.edu` | own timetable, AI requests |
+| Club representative | `club@cit.edu` | submit and track venue requests |
 
-The login page has one-click buttons for all four. **The live application is not deployed
-yet** — this README will carry the link as soon as the API and UI land.
+Two admins exist **on purpose**: the rules say nobody may approve their own request, so the
+admin who previews a change cannot be the one who applies it. That rule is enforced in the
+API (a self-approval attempt returns `403`).
+
+One-click login: `POST /api/auth/demo-login/{role}` (add `?email=dean@cit.edu` for the second
+admin). **The live application is not deployed yet** — this README will carry the link as soon
+as the UI lands.
+
+## Backend architecture
+
+```
+api/app/
+  main.py            app factory, CORS, lifespan (seed users + load exports)
+  config.py          every setting from the environment (.env is gitignored)
+  db.py              SQLite: users, schedule state, proposals, audit log
+  auth.py            JWT, role capabilities, demo seed, "no self-approval"
+  core/              dataset, constraints kernel, solver, bookings, exams, repair, export, pipeline
+  routers/           auth, dataset, timetable, bookings, exams, disruption, ai, admin
+  ai/                normalizer + parser (deterministic), providers (Groq adapter, off by default)
+```
+
+Design rules enforced in code:
+
+* **Validity is never a model decision.** `/api/ai/parse` returns a *draft* with confidence,
+  assumptions and rule-based feasibility; the kernel decides what is legal.
+* **Nothing is applied without an explicit approval** — `preview` stores a proposal,
+  `apply` requires a different admin, and the audit log records both.
+* **The product works with no LLM at all** (`LLM_PROVIDER=none` is the default), which is the
+  state the tests and CI run in.
 
 ## Known limitations
 
@@ -141,7 +193,11 @@ yet** — this README will carry the link as soon as the API and UI land.
 * The repair optimises the number of moved sessions, which is what the validator scores. It
   does not attempt to minimise how *disruptive* a move is to a student beyond preferring a
   room swap over a time change.
-* The before/after approval flow exists in the engine (`preview` returns the diff, `apply`
-  is a separate call) but its screens, like the rest of the UI, are still to come.
+* The before/after approval flow exists end to end in the API (`preview` -> `apply`), but its
+  screens, like the rest of the UI, are still to come.
+* The LLM reader is implemented (`api/app/ai/providers.py`) but disabled by default and not
+  yet exercised against a live key; every test runs the deterministic path.
+* Generation takes ~40 s on 2 cores. The API serves the committed exports instantly and only
+  re-solves when an admin asks it to.
 * Only the dataset in `vendor/` is supported so far; nothing is hard-coded to its ids, but
   alternative datasets have not been tested.
