@@ -150,12 +150,16 @@ def test_removed_sessions_disappear_from_the_export(ds, schedule, baseline):
     assert result["dropped_sessions"] == ["CE303-L1"]
 
 
-def test_repair_is_deterministic(ds, schedule, baseline):
+def test_repair_is_stable_across_runs(ds, schedule, baseline):
+    """The move count must not depend on solver luck; the exact slot may differ between
+    equally-optimal solutions (CP-SAT is time-bounded, not bit-reproducible)."""
     ds_after, _ = apply_changes(ds, load_disruption(DISRUPTION))
-    a = repair_or_refuse(ds_after, baseline, schedule, time_limit=30, workers=2)
-    b = repair_or_refuse(ds_after, baseline, schedule, time_limit=30, workers=2)
-    assert a["moves"] == b["moves"]
-    assert a["assignment"] == b["assignment"]
+    runs = [repair_or_refuse(ds_after, baseline, schedule, time_limit=30, workers=2)
+            for _ in range(2)]
+    assert runs[0]["moves"] == runs[1]["moves"]
+    for run in runs:
+        after = _as_schedule(ds_after, run, schedule)
+        assert validate(ds_after, after, baseline=schedule)["hard_violation_count"] == 0
 
 
 def test_bookings_stay_reserved(ds, schedule, baseline):
