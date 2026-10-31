@@ -243,6 +243,11 @@ Type the key (input hidden), then restart the server. `GET /health` flips from
 `"llm":"none"` to `"llm":"groq"`, and `POST /api/ai/selftest` makes one real call.
 The key is written to `.env` only - it is gitignored and never pushed.
 
+## Demo script
+
+[`docs/DEMO.md`](docs/DEMO.md) is the 6-minute walkthrough (shot list, what to say, which
+numbers to point at) — written for the submission video and for anyone rehearsing the pitch.
+
 ## Secrets
 
 `.env` is gitignored and per-machine; `.env.example` is the tracked template and must stay

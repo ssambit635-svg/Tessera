@@ -178,3 +178,34 @@ tr.clickable:hover td { background: rgba(109, 140, 255, 0.08); }
 .pill { background: #0e1730; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
 .bar { height: 7px; background: #0e1730; border-radius: 999px; overflow: hidden; }
 .bar > span { display: block; height: 100%; background: linear-gradient(90deg, #5b7cfa, #a78bfa); }
+
+/* ---------------------------------------------------------------- polish */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll-x table { min-width: 720px; }
+.tour { display: grid; gap: 8px; }
+.tour-item { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.tour-item .n {
+  flex: none; width: 22px; height: 22px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--line);
+  display: grid; place-items: center; font-size: 12px; color: var(--accent); font-weight: 700;
+}
+.toast { line-height: 1.45; }
+.link-row { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+
+@media (max-width: 720px) {
+  body { font-size: 14px; }
+  main { padding: 14px; }
+  .topbar { padding: 10px 14px; gap: 10px; flex-wrap: wrap; }
+  .topbar .chip { font-size: 11px; }
+  .brand { font-size: 15px; }
+  .tabs { padding: 8px 12px; top: auto; position: sticky; }
+  .tab { padding: 7px 11px; font-size: 13px; }
+  h1 { font-size: 19px; }
+  .stat .value { font-size: 24px; }
+  .card { padding: 13px 14px; }
+  .tt .slot { font-size: 11px; }
+  .tt th, .tt td { padding: 3px; }
+  th, td { padding: 7px 6px; font-size: 13px; }
+  .grid.cols-2, .grid.cols-4 { grid-template-columns: 1fr; }
+}

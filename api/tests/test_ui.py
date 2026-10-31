@@ -77,3 +77,35 @@ def client():
 
     with TestClient(app) as c:
         yield c
+
+
+def test_favicon_and_cache_headers(client):
+    icon = client.get("/favicon.ico")
+    assert icon.status_code == 200
+    assert icon.headers["content-type"].startswith("image/svg")
+    assert client.get("/").headers["cache-control"] == "no-store"
+    assert client.get("/api/info").headers["cache-control"] == "no-store"
+    assert "max-age" in client.get("/ui/app.css").headers["cache-control"]
+
+
+def test_large_payloads_are_compressed(client):
+    headers, _ = login(client, "admin")
+    r = client.get("/api/timetable/week", headers={**headers, "Accept-Encoding": "gzip"})
+    assert r.status_code == 200
+    assert r.headers.get("content-encoding") == "gzip"
+    assert r.json()["count"] == 189
+
+
+def test_cors_never_combines_wildcard_with_credentials(client):
+    """`*` + credentials is rejected by browsers; the app must pick one."""
+    import importlib
+
+    from app import main as main_module
+
+    cors = [m for m in main_module.app.user_middleware if "CORS" in str(m)]
+    assert cors, "CORSMiddleware must be installed"
+    kwargs = cors[0].kwargs
+    if "*" in kwargs.get("allow_origins", []):
+        assert kwargs.get("allow_credentials") is False, kwargs
+    r = client.get("/health", headers={"Origin": "http://example.com"})
+    assert r.status_code == 200
