@@ -14,14 +14,18 @@ Login page: `http://<host>/` → pick a role (password `Tessera@2027` if you use
 > is where every clash lands. Tessera generates the semester timetable, decides all 25 Spectra
 > requests with reasons, and repairs disruptions by moving as few classes as possible."
 
-Dashboard is on screen: **189/189 scheduled · 0 hard violations · soft 3 · booking 67/70**.
-Say the numbers out loud; they come from the organisers' validator, not from us.
+**Overview** is on screen: the four KPI cards read **189/189 scheduled · 0 hard violations ·
+soft 3 · booking 67/70**, a miniature of the real week sits under them, and the *Campus venues*
+strip shows the illustrated plates for AUD, LH-1, SH-1 and OAT. Say the numbers out loud; they
+come from the organisers' validator, not from us. Drag the *Calendars* checkboxes in the left
+rail once — classes, midsems, Spectra bookings and manual events are real layers.
 
 ## 0:20 — The timetable (60 s)
 
-1. **Timetable** tab → view by **Student group** → `Y1-A`.
+1. **Timetable** → **Group** → `Y1-A`.
 2. Point at the grid: no double-bookings, labs only at P2–P4 or P6–P8, lunch never crossed.
-3. Switch **View by → Faculty → F01**, then **Room → LH-1** — same timetable, three lenses.
+3. Switch **Faculty → F01**, then **Room → AUD / SH-1** — same timetable, three lenses, and the
+   room lens opens with the hall plate, seats, features and utilisation.
 4. **Click any class.** The explain panel says why it sits there: room type/capacity/accessibility,
    faculty hours against the daily cap, the groups that are free, the soft trade-offs accepted,
    and five slots that would also work.
@@ -40,7 +44,7 @@ Totals: **67.0 / 70**, zero priority inversions.
 
 ## 2:10 — Plain language, and the model is optional (70 s)
 
-**AI request** tab → *Try a sample* twice, then type the Hinglish one by hand:
+**Ask Tessera** → click two of the sample chips, then type the Hinglish one by hand:
 
 ```
 seminar hall kal shaam 6 baje, 2 ghante, 100 log, mic chahiye
@@ -63,7 +67,7 @@ Now the killer line: **"the model reads, the code decides"** — `/api/ai/status
 
 ## 3:20 — A disruption, approved by a *different* admin (90 s)
 
-**Changes** tab → **Load organisers' sample** → **Preview repair** (~30 s).
+**Changes** → **Load sample** → **Preview repair** (~30 s).
 
 * "12 sessions move, 0 hard violations" — show the before → after list (time changes vs room-only).
 * Point out the count is the *minimum* the solver could prove, and that the sample's faculty

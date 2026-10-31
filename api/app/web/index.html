@@ -3,228 +3,420 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="Tessera - campus scheduling and venue management for CIT. Clash-free timetable, exams, Spectra bookings and disruption handling." />
-<meta name="theme-color" content="#0b1020" />
 <title>Tessera — CIT campus scheduling</title>
-<link rel="stylesheet" href="/ui/app.css" />
+<meta name="description" content="Tessera — campus scheduling and venue management for CIT. Clash-free timetable, midsem exams, Spectra bookings and disruption repair." />
+<meta name="theme-color" content="#15161c" />
 <link rel="icon" href="/ui/favicon.svg" />
-<link rel="alternate icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🗓️</text></svg>" />
+<link rel="stylesheet" href="/ui/app.css" />
 </head>
 <body>
 
-<!-- ------------------------------------------------------------ login -->
-<div id="login" class="login-wrap">
-  <div class="card login-card">
-    <div class="row" style="margin-bottom:14px">
-      <div class="brand"><span class="dot">T</span> Tessera <small>by Voltryx</small></div>
+<!-- ================================================================== login -->
+<div id="login" class="login">
+  <div class="login-art">
+    <div class="brand">
+      <span class="brand-mark">T</span>
+      <span><span class="brand-name">Tessera</span><br /><span class="brand-sub">by Voltryx</span></span>
     </div>
-    <h1>Campus scheduling, without clashes</h1>
-    <p class="muted">189 sessions · 41 midsems · 25 Spectra requests · one week that always breaks.
-       Pick a demo role — every one is a real account with real permissions.</p>
-    <div id="roleButtons" class="list" style="margin-top:14px"></div>
-    <p class="muted" style="margin-top:12px;font-size:13px">
-      Passwords are <code>Tessera@2027</code>. Two admins exist on purpose: nobody approves
-      their own request.
-    </p>
+    <div>
+      <h1>The week that always breaks, fixed.</h1>
+      <p>189 sessions, 41 midsems, 25 Spectra requests and one auditorium.
+         Tessera schedules the semester, decides every booking with a reason,
+         and repairs disruptions by moving as few classes as possible.</p>
+    </div>
+    <div class="stack" style="gap:8px">
+      <div class="rail-chip"><span class="dot"></span> <span><b>0</b> hard violations · <b>soft 3</b></span></div>
+      <div class="rail-chip"><span class="dot"></span> <span><b>67 / 70</b> booking score</span></div>
+    </div>
+  </div>
+
+  <div class="login-form">
+    <div class="login-card">
+      <div>
+        <h1 style="font-size:22px">Sign in</h1>
+        <p class="muted" style="margin-top:4px">Pick a demo role — each is a real account with real permissions.
+           Password <span class="mono">Tessera@2027</span>.</p>
+      </div>
+      <div id="roleButtons" class="stack" style="gap:8px;margin-top:6px"></div>
+      <p class="muted" style="font-size:12px">
+        Two admins exist on purpose: nobody can approve their own request.
+      </p>
+    </div>
   </div>
 </div>
 
-<!-- ------------------------------------------------------------ app -->
-<div id="app" class="hidden">
-  <div class="topbar">
-    <div class="brand"><span class="dot">T</span> Tessera <small>by Voltryx</small></div>
-    <span class="chip" id="healthChip">…</span>
-    <div class="spacer"></div>
-    <span class="chip"><b id="userEmail">—</b> · <span id="userRole">—</span></span>
-    <button class="btn small" id="logoutBtn">Sign out</button>
-  </div>
+<!-- ================================================================== app -->
+<div id="app" class="shell with-rail hidden">
 
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-view="dashboard">Dashboard</button>
-    <button class="tab" data-view="timetable">Timetable</button>
-    <button class="tab" data-view="bookings">Bookings</button>
-    <button class="tab" data-view="changes">Changes</button>
-    <button class="tab" data-view="ai">AI request</button>
-    <button class="tab" data-view="admin">Admin</button>
-  </div>
+  <!-- ---------------------------------------------------------- rail -->
+  <aside class="rail" id="rail">
+    <div class="brand">
+      <span class="brand-mark">T</span>
+      <span><span class="brand-name">Tessera</span><br /><span class="brand-sub">CIT · Voltryx</span></span>
+    </div>
 
-  <main>
-    <!-- ---------------------------------------------------- dashboard -->
-    <section class="view active" id="view-dashboard">
-      <div class="row between" style="margin-bottom:14px">
-        <div><h1>Week 7 — Spectra</h1><p class="muted" id="dashSub">loading…</p></div>
-        <button class="btn" onclick="loadDashboard()">Refresh</button>
-      </div>
-      <div class="grid cols-4" id="dashStats"></div>
-      <div class="grid cols-2" style="margin-top:14px">
-        <div class="card"><h3>Soft penalty breakdown</h3><div id="dashSoft"></div></div>
-        <div class="card"><h3>Risks the rules see</h3><div id="dashRisks"></div></div>
-      </div>
-      <div class="grid cols-2" style="margin-top:14px">
-        <div class="card"><h3>Room utilisation</h3><div id="dashRooms"></div></div>
-        <div class="card"><h3>Audit trail</h3><div id="dashAudit"></div></div>
-      </div>
-    </section>
+    <div class="user-card">
+      <span class="avatar" id="userAvatar">A</span>
+      <span class="who"><b id="userEmail">—</b><span id="userRole">—</span></span>
+    </div>
 
-    <!-- ---------------------------------------------------- timetable -->
-    <section class="view" id="view-timetable">
-      <div class="row between" style="margin-bottom:14px">
-        <div><h1>Timetable</h1><p class="muted">Click any class to see why it sits there.</p></div>
-        <div class="row">
-          <div class="field" style="min-width:130px">
-            <label for="ttView">View by</label>
-            <select id="ttView" onchange="ttEntities()">
-              <option value="group">Student group</option>
-              <option value="faculty">Faculty</option>
-              <option value="room">Room</option>
-            </select>
+    <nav class="nav" aria-label="Main">
+      <button class="nav-item active" data-view="overview">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
+        Overview
+      </button>
+      <button class="nav-item" data-view="timetable">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        Timetable
+      </button>
+      <button class="nav-item" data-view="bookings">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4Z"/><path d="M10 5v14" stroke-dasharray="2 3"/></svg>
+        Bookings
+      </button>
+      <button class="nav-item" data-view="changes">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12a9 9 0 0 1 15.5-6.2M21 12a9 9 0 0 1-15.5 6.2"/><path d="M19 3v5h-5M5 21v-5h5"/></svg>
+        Changes
+        <span class="tag hidden" id="pendingTag">0</span>
+      </button>
+      <button class="nav-item" data-view="ai">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9Z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9Z"/></svg>
+        Ask Tessera
+      </button>
+      <div class="nav-label">Operations</div>
+      <button class="nav-item" data-view="admin">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.4-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 11a2 2 0 1 1 0 4Z"/></svg>
+        Admin
+      </button>
+    </nav>
+
+    <div class="mini" id="miniCal"></div>
+
+    <div class="stack" style="gap:8px">
+      <div class="nav-label" style="padding:0 10px">Calendars</div>
+      <div class="layers">
+        <label class="layer"><input type="checkbox" data-layer="classes" checked /> Classes <span class="swatch" style="background:#6366f1"></span></label>
+        <label class="layer"><input type="checkbox" data-layer="exams" /> Midsem exams <span class="swatch" style="background:#f43f5e"></span></label>
+        <label class="layer"><input type="checkbox" data-layer="spectra" /> Spectra bookings <span class="swatch" style="background:#10b981"></span></label>
+        <label class="layer"><input type="checkbox" data-layer="events" /> Manual events <span class="swatch" style="background:#f59e0b"></span></label>
+      </div>
+    </div>
+
+    <div class="rail-foot">
+      <div class="rail-chip"><span class="dot" id="healthDot"></span><span id="healthText">connecting…</span></div>
+      <button class="nav-item" id="logoutBtn" style="height:34px">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 17l5-5-5-5M20 12H9M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6"/></svg>
+        Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ---------------------------------------------------------- main -->
+  <div class="main">
+    <header class="topbar">
+      <button class="btn icon ghost rail-toggle" id="railToggle" aria-label="Open navigation">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div>
+        <h1 id="pageTitle">Overview</h1>
+        <div class="sub" id="pageSub">Week 7 · Spectra</div>
+      </div>
+      <div class="grow"></div>
+      <label class="search" aria-label="Search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg>
+        <input type="search" id="globalSearch" placeholder="Search room, course, group…" />
+      </label>
+      <span class="chip" id="datasetChip">—</span>
+    </header>
+
+    <main class="content">
+
+      <!-- ------------------------------------------------------ overview -->
+      <section class="view" id="view-overview">
+        <div class="row between">
+          <div>
+            <h2 style="font-size:20px" id="greeting">Good morning</h2>
+            <p class="muted" id="overviewSub">Loading the week…</p>
           </div>
-          <div class="field" style="min-width:210px">
-            <label for="ttEntity">Entity</label>
-            <select id="ttEntity" onchange="loadTimetable()"></select>
-          </div>
-        </div>
-      </div>
-      <div class="legend" style="margin-bottom:8px">
-        <span>▦ click a class to see why it is there</span>
-        <span>P1 08:00 · P5 12:00 · lunch 13:00 · P6 14:00 · P9 17:00</span>
-      </div>
-      <div class="card" id="ttCard"><div class="muted spin">loading…</div></div>
-      <div class="card hidden" id="explainCard" style="margin-top:14px"></div>
-    </section>
-
-    <!-- ---------------------------------------------------- bookings -->
-    <section class="view" id="view-bookings">
-      <div class="row between" style="margin-bottom:14px">
-        <div><h1>Spectra bookings</h1><p class="muted" id="bookSub">25 requests, one decision each, with a reason.</p></div>
-        <div class="row">
-          <select id="bookFilter" onchange="loadBookings()" style="min-width:170px">
-            <option value="">All decisions</option>
-            <option value="approved">Approved</option>
-            <option value="alternative_offered">Alternative offered</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
-      </div>
-      <div class="grid cols-4" id="bookStats" style="margin-bottom:14px"></div>
-      <div class="card"><div id="bookTable"></div></div>
-      <div class="card hidden" id="bookDetail" style="margin-top:14px"></div>
-    </section>
-
-    <!-- ---------------------------------------------------- changes -->
-    <section class="view" id="view-changes">
-      <div class="row between" style="margin-bottom:14px">
-        <div><h1>Disruption</h1><p class="muted">Preview never applies anything. A <b>second</b> admin approves.</p></div>
-      </div>
-      <div class="grid cols-2">
-        <div class="card">
-          <h3>1 · Load a change file</h3>
-          <div class="row" style="margin-bottom:10px">
-            <button class="btn" onclick="loadSample()">Load organisers' sample</button>
-            <label class="btn" style="cursor:pointer">
-              Upload file
-              <input type="file" id="changeFile" accept=".json" class="hidden" onchange="uploadChange(this)" />
-            </label>
-          </div>
-          <div class="field">
-            <label for="changeJson">changes[] (editable)</label>
-            <textarea id="changeJson" rows="10" spellcheck="false"></textarea>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <button class="btn primary" onclick="previewChanges()">Preview repair</button>
-            <span class="muted" id="previewState"></span>
-          </div>
-        </div>
-        <div class="card">
-          <h3>2 · What would change</h3>
-          <div id="previewResult"><span class="muted">Nothing previewed yet.</span></div>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px">
-        <h3>Proposals</h3>
-        <div id="proposalList"><span class="muted">loading…</span></div>
-      </div>
-    </section>
-
-    <!-- ---------------------------------------------------- ai -->
-    <section class="view" id="view-ai">
-      <div class="row between" style="margin-bottom:14px">
-        <div><h1>Ask in plain language</h1><p class="muted" id="aiMode"></p></div>
-        <button class="btn" onclick="aiSamples()">Try a sample</button>
-      </div>
-      <div class="card">
-        <textarea id="aiText" rows="3" placeholder="seminar hall kal shaam 6 baje, 2 ghante, 100 log, mic chahiye"></textarea>
-        <div class="row" style="margin-top:10px">
-          <button class="btn primary" onclick="aiParse()">Read this request</button>
-          <span class="muted">English or Hinglish. The rules decide, not the model.</span>
-        </div>
-      </div>
-      <div class="grid cols-2" style="margin-top:14px">
-        <div class="card"><h3>Parsed draft (editable)</h3><div id="aiDraft"><span class="muted">—</span></div></div>
-        <div class="card"><h3>What the rules say</h3><div id="aiChecks"><span class="muted">—</span></div></div>
-      </div>
-      <div class="card" style="margin-top:14px">
-        <h3>Faculty change request</h3>
-        <p class="muted" id="facWho">Ask for a different slot; it becomes a proposal a second admin approves.</p>
-        <div class="field hidden" id="facPickerWrap" style="margin-bottom:8px">
-          <label for="facPicker">whose request is this?</label>
-          <select id="facPicker"></select>
-        </div>
-        <textarea id="facText" rows="2" placeholder="I can't come on Friday P7 to P9"></textarea>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" onclick="facultyChange()">Check this change</button>
-          <span class="muted" id="facState"></span>
-        </div>
-        <div id="facResult" style="margin-top:10px"></div>
-      </div>
-    </section>
-
-    <!-- ---------------------------------------------------- admin -->
-    <section class="view" id="view-admin">
-      <div class="row between" style="margin-bottom:14px">
-        <div><h1>Operations</h1><p class="muted">Everything here is a real action with an audit entry.</p></div>
-      </div>
-      <div class="grid cols-2">
-        <div class="card">
-          <h3>Solver</h3>
-          <p class="muted">Regenerate the whole semester. Takes ~40 s on two cores.</p>
           <div class="row">
-            <button class="btn" id="genBtn" onclick="generateNow()">Generate timetable</button>
-            <button class="btn" onclick="exportNow()">Write exports</button>
+            <button class="btn" onclick="exportNow()">Export JSON</button>
+            <button class="btn primary" onclick="generateNow()">Generate timetable</button>
           </div>
-          <div id="genResult" style="margin-top:10px"></div>
+        </div>
+
+        <div class="grid g4" id="kpis"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Campus venues</h2>
+            <span class="muted" style="font-size:12px">click a hall to open its week</span>
+          </div>
+          <div class="card-body" style="padding:14px"><div class="venue-strip" id="venueStrip"></div></div>
+        </div>
+
+        <div class="grid split-16">
+          <div class="card">
+            <div class="card-head">
+              <h2>Week at a glance</h2>
+              <div class="row" style="gap:6px">
+                <span class="chip info" id="weekChip">—</span>
+                <button class="btn sm ghost" onclick="go('timetable')">Open timetable →</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding:12px 14px">
+              <div id="miniWeek"></div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="card-head"><h2>Needs attention</h2></div>
+              <div class="card-body" id="attention"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2>Spectra decisions</h2><span class="chip good" id="bookingScore">—</span></div>
+              <div class="card-body" id="bookingSummary"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><h2>Room utilisation</h2><span class="muted" style="font-size:12px">hours ÷ available slots</span></div>
+            <div class="card-body" id="roomsCard"><span class="muted">loading…</span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Audit trail</h2><span class="muted" style="font-size:12px">who did what</span></div>
+            <div class="card-body" id="auditCard"><span class="muted">loading…</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------------ timetable -->
+      <section class="view hidden" id="view-timetable">
+        <div class="row between">
+          <div>
+            <h2 style="font-size:20px">Timetable</h2>
+            <p class="muted">Click any block for the details and the rule-check behind it.</p>
+          </div>
+          <div class="row">
+            <div class="seg" role="group" aria-label="View by">
+              <button data-ttview="group" aria-pressed="true">Group</button>
+              <button data-ttview="faculty" aria-pressed="false">Faculty</button>
+              <button data-ttview="room" aria-pressed="false">Room</button>
+            </div>
+            <select id="ttEntity" style="width:auto;min-width:190px" aria-label="Entity"></select>
+            <button class="btn" onclick="loadTimetable()">Refresh</button>
+          </div>
+        </div>
+        <div id="roomHero" class="hidden"></div>
+        <div class="card" style="overflow:hidden">
+          <div class="card-head">
+            <h2 id="ttTitle">—</h2>
+            <div class="row" style="gap:8px">
+              <span class="chip" id="ttCount">—</span>
+              <span class="chip">P1 08:00 · lunch 13:00 · P9 17:00</span>
+            </div>
+          </div>
+          <div class="scroll-x" id="ttBody"></div>
+        </div>
+        <div class="card hidden" id="explainCard"></div>
+      </section>
+
+      <!-- ------------------------------------------------------ bookings -->
+      <section class="view hidden" id="view-bookings">
+        <div class="row between">
+          <div>
+            <h2 style="font-size:20px">Spectra bookings</h2>
+            <p class="muted">One decision per request, each with a reason a club can act on.</p>
+          </div>
+          <div class="seg" role="group" aria-label="Filter">
+            <button data-filter="" aria-pressed="true" style="background:#fff">All</button>
+            <button data-filter="approved" aria-pressed="false">Approved</button>
+            <button data-filter="alternative_offered" aria-pressed="false">Alternative</button>
+            <button data-filter="rejected" aria-pressed="false">Rejected</button>
+          </div>
+        </div>
+        <div class="grid g4" id="bookKpis"></div>
+        <div class="card" style="overflow:hidden"><div id="bookTable"></div></div>
+      </section>
+
+      <!-- ------------------------------------------------------ changes -->
+      <section class="view hidden" id="view-changes">
+        <div class="row between">
+          <div>
+            <h2 style="font-size:20px">Disruption</h2>
+            <p class="muted">A preview never touches the timetable. A second admin applies it.</p>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head">
+              <h2>1 · Change file</h2>
+              <div class="row" style="gap:6px">
+                <button class="btn sm" onclick="loadSample()">Load sample</button>
+                <label class="btn sm" style="cursor:pointer">Upload
+                  <input type="file" id="changeFile" accept="application/json" class="hidden" onchange="uploadChange(this)" />
+                </label>
+              </div>
+            </div>
+            <div class="card-body stack">
+              <textarea id="changeJson" class="mono" rows="11" spellcheck="false" aria-label="Changes JSON"></textarea>
+              <div class="row">
+                <button class="btn primary" onclick="previewChanges()">Preview repair</button>
+                <span class="muted" style="font-size:12px" id="previewState"></span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>2 · What would change</h2><span class="chip hidden" id="diffChip"></span></div>
+            <div class="card-body" id="previewResult"><div class="empty">Nothing previewed yet.<br />Load the organisers' sample to see 12 sessions move.</div></div>
+          </div>
+        </div>
+        <div class="card" style="overflow:hidden">
+          <div class="card-head"><h2>Proposals</h2><span class="muted" style="font-size:12px">requester can never approve</span></div>
+          <div id="proposalList"></div>
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------------ ai -->
+      <section class="view hidden" id="view-ai">
+        <div class="row between">
+          <div>
+            <h2 style="font-size:20px">Ask Tessera</h2>
+            <p class="muted" id="aiMode">Plain English or Hinglish in. A checked, editable booking out.</p>
+          </div>
+          <span class="chip" id="aiProviderChip">—</span>
+        </div>
+        <div class="grid split-14">
+          <div class="card" style="display:flex;flex-direction:column;min-height:520px">
+            <div class="card-head"><h2>Conversation</h2><button class="btn sm ghost" onclick="resetChat()">Clear</button></div>
+            <div class="card-body" style="flex:1;overflow:auto"><div class="chat" id="chatLog"></div></div>
+            <div class="card-body" style="border-top:1px solid var(--line);display:grid;gap:8px">
+              <div class="chips" id="sampleChips"></div>
+              <div class="chat-input">
+                <textarea id="aiText" rows="1" placeholder="seminar hall kal shaam 6 baje, 2 ghante, 100 log, mic chahiye" aria-label="Your request"></textarea>
+                <button class="btn primary" onclick="aiParse()">Read</button>
+              </div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="card-head"><h2>Draft — editable</h2><button class="btn sm" onclick="aiCheck()">Check rules</button></div>
+              <div class="card-body" id="aiDraft"><div class="empty">Send a request to see the structured booking here.</div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2>What the rules say</h2></div>
+              <div class="card-body" id="aiChecks"><span class="muted">No model is needed for any of this.</span></div>
+            </div>
+          </div>
         </div>
         <div class="card">
-          <h3>Demo reset</h3>
-          <p class="muted">What a judge presses: reseed users, reload the committed exports, clear proposals.</p>
-          <button class="btn bad" onclick="resetDemo()">Reset demo data</button>
-          <div class="row" style="margin-top:10px">
-            <a class="btn small" href="/api/admin/exports/schedule.json" id="dl1">schedule.json</a>
-            <a class="btn small" href="/api/admin/exports/schedule_after.json" id="dl2">schedule_after.json</a>
+          <div class="card-head"><h2>Faculty change request</h2><span class="chip" id="facWho">—</span></div>
+          <div class="card-body stack">
+            <div class="row">
+              <select id="facPicker" style="max-width:280px" aria-label="Faculty"></select>
+              <input type="text" id="facText" placeholder="I can't come on Friday P7 to P9" style="flex:1;min-width:240px" />
+              <button class="btn" onclick="facultyChange()">Check change</button>
+            </div>
+            <div id="facResult"></div>
           </div>
         </div>
-      </div>
-      <div class="card" style="margin-top:14px"><h3>Database</h3><div id="dbInfo"><span class="muted">loading…</span></div></div>
-      <div class="card" style="margin-top:14px"><h3>Manual event (works with no model)</h3>
-        <div class="grid cols-4" style="margin-bottom:10px">
-          <div class="field"><label>title</label><input id="meTitle" type="text" value="Robotics demo" /></div>
-          <div class="field"><label>attendance</label><input id="meAtt" type="number" value="120" /></div>
-          <div class="field"><label>day</label><select id="meDay"></select></div>
-          <div class="field"><label>from period</label><input id="meFrom" type="number" value="1" /></div>
-          <div class="field"><label>to period</label><input id="meTo" type="number" value="9" /></div>
-          <div class="field"><label>periods</label><input id="meDur" type="number" value="2" /></div>
+      </section>
+
+      <!-- ------------------------------------------------------ admin -->
+      <section class="view hidden" id="view-admin">
+        <div class="row between">
+          <div>
+            <h2 style="font-size:20px">Operations</h2>
+            <p class="muted">Every action here writes an audit entry and, where relevant, the export.</p>
+          </div>
         </div>
-        <div class="row">
-          <button class="btn" onclick="manualCheck()">Check</button>
-          <button class="btn good" onclick="manualBook()">Book it</button>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><h2>Solver</h2><span class="chip" id="seedChip">—</span></div>
+            <div class="card-body stack">
+              <p class="muted" style="font-size:13px">Regenerates the whole semester from the dataset. ~40 s on two cores; the committed exports load instantly at boot.</p>
+              <div class="row">
+                <button class="btn primary" id="genBtn" onclick="generateNow()">Generate timetable</button>
+                <button class="btn" onclick="exportNow()">Write exports</button>
+              </div>
+              <div id="genResult"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Demo data</h2><span class="chip warn">judges press this</span></div>
+            <div class="card-body stack">
+              <p class="muted" style="font-size:13px">Reseeds the five demo accounts, reloads the committed exports and clears proposals.</p>
+              <div class="row">
+                <button class="btn bad" onclick="resetDemo()">Reset demo data</button>
+                <a class="btn sm" href="/api/admin/exports/schedule.json">schedule.json</a>
+                <a class="btn sm" href="/api/admin/exports/schedule_after.json">schedule_after.json</a>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="meResult" style="margin-top:10px"></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><h2>AI provider</h2><button class="btn sm" onclick="aiSelftest()">Test the key</button></div>
+            <div class="card-body" id="selftestResult"><p class="muted" style="font-size:13px">The product runs with no model at all. With a Groq key configured, this makes one real call and shows the round-trip.</p></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Database</h2><span class="chip" id="dbEngine">—</span></div>
+            <div class="card-body" id="dbInfo"><span class="muted">loading…</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Manual event</h2><span class="muted" style="font-size:12px">hard constraints still apply</span></div>
+          <div class="card-body stack">
+            <div class="grid g4">
+              <div class="field"><label for="meTitle">Title</label><input id="meTitle" type="text" value="Robotics demo" /></div>
+              <div class="field"><label for="meAtt">Attendance</label><input id="meAtt" type="number" value="120" /></div>
+              <div class="field"><label for="meDay">Day</label><select id="meDay"></select></div>
+              <div class="field"><label for="meFrom">From period</label><input id="meFrom" type="number" value="1" /></div>
+              <div class="field"><label for="meTo">To period</label><input id="meTo" type="number" value="9" /></div>
+              <div class="field"><label for="meDur">Duration</label><input id="meDur" type="number" value="2" /></div>
+            </div>
+            <div class="row">
+              <button class="btn" onclick="manualCheck()">Check</button>
+              <button class="btn good" onclick="manualBook()">Book it</button>
+            </div>
+            <div id="meResult"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ---------------------------------------------------------- right rail -->
+  <aside class="side" aria-label="Assistant">
+    <div class="side-head">
+      <div>
+        <div style="font-size:13px;font-weight:620">Ask Tessera</div>
+        <div class="muted" style="font-size:11.5px" id="sideStatus">ready</div>
       </div>
-    </section>
-  </main>
+      <span class="chip accent">AI</span>
+    </div>
+    <div class="side-body" style="flex:1">
+      <div class="chat" id="sideChat">
+        <div class="bubble bot">Hi. Ask me for a venue (<em>“lab with computers, Thursday afternoon, 60 people”</em>) or about a decision (<em>“why was BR-09 rejected?”</em>).</div>
+      </div>
+      <div class="chips">
+        <button onclick="sideAsk('seminar hall kal shaam 6 baje, 2 ghante, 100 log, mic chahiye')">Hinglish booking</button>
+        <button onclick="sideAsk('why was BR-09 rejected?')">Why rejected?</button>
+        <button onclick="sideAsk('which rooms are free on Wednesday after lunch?')">Free rooms</button>
+      </div>
+    </div>
+    <div style="padding:12px 18px 18px;border-top:1px solid var(--line)">
+      <div class="chat-input">
+        <input type="text" id="sideInput" placeholder="Ask anything…" aria-label="Ask Tessera" />
+        <button class="btn primary icon" onclick="sideSend()" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
 </div>
 
-<div id="toast"></div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 <script src="/ui/app.js"></script>
 </body>
 </html>
