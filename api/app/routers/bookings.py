@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+from sqlmodel import Session
 
 from ..auth import current_user
 from ..core.dataset import CAT_WEIGHT
-from ..services import state
+from ..db import User, audit, get_session
+from ..services import manual, state
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
 
@@ -65,6 +69,62 @@ def list_bookings(status: str | None = None, user: User = Depends(current_user))
     }
     return {"count": len(out), "totals": totals, "bookings": out}
 
+
+# ------------------------------------------------------------------ manual event booking
+class ManualEventIn(BaseModel):
+    """The form a judge fills in by hand - works with no model, no key, no network."""
+    title: str = ""
+    attendance: int = Field(gt=0)
+    duration_periods: int = Field(default=1, ge=1, le=4)
+    windows: list[dict] = Field(default_factory=list,
+                                description='[{"day":"MON","from_period":2,"to_period":5}]')
+    needs: list[str] = Field(default_factory=list)
+    room_types: list[str] | None = None
+    room_id: str | None = None
+    mandatory_for_groups: list[str] = Field(default_factory=list)
+    category: str | None = None
+    note: str = ""
+
+
+def _manual_context():
+    ds = state.dataset()
+    schedule = state.current_schedule()
+    return ds, schedule
+
+
+@router.get("/manual")
+def list_manual(user: User = Depends(current_user), session: Session = Depends(get_session)):
+    rows = manual.list_events(session)
+    return {"count": len(rows), "events": [manual.as_dict(r) for r in rows],
+            "note": "in-app events; the scored fest-week decisions live under /api/bookings"}
+
+
+@router.post("/manual/check")
+def check_manual(body: ManualEventIn, user: User = Depends(current_user),
+                 session: Session = Depends(get_session)):
+    """Dry run: which slot would this get, and what is in the way?"""
+    ds, schedule = _manual_context()
+    events = manual.list_events(session)
+    return manual.evaluate(ds, schedule, events, body.model_dump())
+
+
+@router.post("/manual")
+def create_manual(body: ManualEventIn, user: User = Depends(current_user),
+                  session: Session = Depends(get_session)):
+    ds, schedule = _manual_context()
+    result = manual.schedule_event(session, ds, schedule, body.model_dump(),
+                                   {"email": user.email, "role": user.role})
+    if not result["created"]:
+        return JSONResponse(status_code=409, content={"ok": False, "detail": result["check"]})
+    return {"ok": True, **result}
+
+
+@router.delete("/manual/{event_id}")
+def cancel_manual(event_id: str, user: User = Depends(current_user),
+                  session: Session = Depends(get_session)):
+    if not manual.cancel(session, event_id, user.email):
+        raise HTTPException(404, f"unknown or already cancelled event {event_id}")
+    return {"ok": True, "cancelled": event_id}
 
 @router.get("/{request_id}")
 def booking_detail(request_id: str, user: User = Depends(current_user)):

@@ -86,6 +86,32 @@ is worth, and the machine-generated reason. Example — a club claiming an insti
  "why": ["A club may claim at most 'club_event', so the request is scored as 'club_event'."]}
 ```
 
+### Manual events (the form that works with the LLM switched off)
+
+```
+GET    /api/bookings/manual                 every in-app event, confirmed or cancelled
+POST   /api/bookings/manual/check           dry run: which slot, what is in the way
+POST   /api/bookings/manual                 place it, or 409 with the exact conflicts
+DELETE /api/bookings/manual/{event_id}      cancel
+```
+
+```json
+POST /api/bookings/manual
+{"title": "Robotics demo", "attendance": 120, "duration_periods": 2,
+ "windows": [{"day": "WED", "from_period": 1, "to_period": 9}],
+ "needs": ["pa_system"], "room_types": ["seminar_hall"], "mandatory_for_groups": ["Y2-A"]}
+```
+
+The check is the same arithmetic the kernel uses: room type, capacity, features, maintenance
+windows, classes, approved Spectra bookings and other events. It refuses with reasons a human
+can read (`"no room seats 900; the largest holds 800"`, `"SAT is not a teaching day"`,
+`"CE-2 already have a class on MON P3"`) and the room actually reports the new event in
+`/api/dataset/rooms/{id}/availability`.
+
+These events are deliberately **not** written into `exports/schedule.json`: they are not among
+the organisers' 25 requests, and inventing a request id would be a validation violation. The
+response says so (`"scored_export": false`).
+
 ## 5. Exams
 
 ```
@@ -125,6 +151,16 @@ and for an impossible change:
 
 Self-approval returns `403` with a message telling the judge which account to use instead.
 
+### Loading the organisers' change file
+
+```
+GET  /api/disruption/sample            the change file shipped next to the dataset
+POST /api/disruption/preview-file      upload it verbatim ({"changes": [...]})
+```
+
+`preview-file` is `preview` with a friendlier body, so a judge can paste the file they were
+given instead of editing it into our shape.
+
 ## 7. AI layer (plain-language requests)
 
 ```
@@ -158,12 +194,21 @@ Guarantees, all covered by tests:
 ## 8. Admin / operations
 
 ```
-GET  /api/admin/dashboard      counts, conflicts, soft breakdown, utilisation, risks, audit
-POST /api/admin/exports        write exports/schedule.json (+ schedule_after.json)
-POST /api/admin/reset          reseed users, reload committed exports, clear proposals
-GET  /api/admin/audit          who did what
-GET  /api/admin/users          seeded accounts
+GET    /api/admin/dashboard          counts, conflicts, soft breakdown, utilisation, risks, audit
+GET    /api/admin/db                 what is stored, where, and the active version
+GET    /api/admin/history            last 12 timetable versions (seed, status, hard/soft)
+POST   /api/admin/exports            write exports/schedule.json (+ schedule_after.json)
+GET    /api/admin/exports/{name}      download that exact file
+POST   /api/admin/dataset            upload a dataset (validated, stored in data/, gitignored)
+DELETE /api/admin/dataset            back to vendor/cit_public.json
+POST   /api/admin/reset              reseed users, reload committed exports, clear proposals
+GET    /api/admin/audit              who did what
+GET    /api/admin/users              seeded accounts
 ```
+
+Storage is documented in [`DATABASE.md`](DATABASE.md): one SQLite file, eight tables, and the
+derived mirror that a test proves can never drift from the exported schedule.
+
 
 `reset` is the button judges press: it returns the app to the state the README describes in
 one call.

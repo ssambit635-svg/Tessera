@@ -53,7 +53,8 @@ def rooms(q: str = Query("", description="free-text search over id, name, type, 
 
 
 @router.get("/rooms/{room_id}/availability")
-def room_availability(room_id: str, user: User = Depends(current_user)):
+def room_availability(room_id: str, user: User = Depends(current_user),
+                      session: Session = Depends(get_session)):
     ds = state.dataset()
     room = ds.rooms.get(room_id)
     if room is None:
@@ -76,6 +77,13 @@ def room_availability(room_id: str, user: User = Depends(current_user)):
         busy.append({"session_id": d["request_id"], "day": d.get("day"),
                      "start_period": d.get("start_period"), "end_period": d.get("end_period"),
                      "source": "booking"})
+    from ..services import manual as manual_service
+
+    for ev in manual_service.list_events(session, include_cancelled=False):
+        if ev.room_id != room_id:
+            continue
+        busy.append({"session_id": ev.id, "day": ev.day, "start_period": ev.start_period,
+                     "end_period": ev.end_period, "source": "event", "title": ev.title})
     free = []
     for day in ds.days:
         for p in ds.periods:

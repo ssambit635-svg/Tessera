@@ -4,7 +4,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -19,6 +19,31 @@ class PreviewIn(BaseModel):
     changes: list[dict]
     title: str = "Timetable change"
     time_limit: int | None = None
+
+
+@router.get("/sample")
+def sample(user: User = Depends(current_user)):
+    """The change file shipped with the dataset, so the UI can load it in one click."""
+    from ..config import get_settings
+
+    for candidate in (get_settings().dataset_path.parent / "sample_disruption.json",
+                      get_settings().dataset_path.parent / "examples" / "sample_disruption.json"):
+        if candidate.exists():
+            with open(candidate, encoding="utf-8") as fh:
+                return {"file": candidate.name, "changes": json.load(fh).get("changes", [])}
+    raise HTTPException(404, "no sample change file next to the dataset")
+
+
+@router.post("/preview-file")
+def preview_file(payload: dict = Body(...),
+                 user: User = Depends(require_roles("admin", "department_coordinator")),
+                 session: Session = Depends(get_session)):
+    """Same as /preview but accepts a change file verbatim ({"changes": [...]})."""
+    changes = payload.get("changes") if isinstance(payload, dict) else None
+    if not isinstance(changes, list) or not changes:
+        raise HTTPException(422, "the file must contain a non-empty 'changes' list")
+    body = PreviewIn(changes=changes, title=payload.get("title") or "Uploaded change file")
+    return preview(body, user, session)
 
 
 @router.post("/preview")
@@ -82,7 +107,12 @@ def apply(proposal_id: str, user: User = Depends(require_roles("admin")),
     schedule = result.get("proposed_schedule")
     if not schedule:
         raise HTTPException(409, "this proposal has no valid schedule to apply")
-    written = state.apply_preview(session, schedule, user.email)
+    written = state.apply_preview(
+        session, schedule, user.email,
+        meta={"source": "disruption repair",
+              "hard_violations": (result.get("report") or {}).get("hard_violation_count", 0),
+              "soft_total": (result.get("report") or {}).get("soft_total", 0),
+              "stability": (result.get("report") or {}).get("stability")})
     proposal.status = "applied"
     proposal.decided_by = user.id or 0
     proposal.decided_by_email = user.email

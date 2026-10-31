@@ -170,6 +170,8 @@ api/app/
   main.py            app factory, CORS, lifespan (seed users + load exports)
   config.py          every setting from the environment (.env is gitignored)
   db.py              SQLite: users, schedule state, proposals, audit log
+  services/persistence.py  normalised mirror of the timetable (versions, placements,
+                           exams, booking decisions) - queryable, never authoritative
   auth.py            JWT, role capabilities, demo seed, "no self-approval"
   core/              dataset, constraints kernel, solver, bookings, exams, repair, export, pipeline
   routers/           auth, dataset, timetable, bookings, exams, disruption, ai, admin
@@ -184,6 +186,15 @@ Design rules enforced in code:
   `apply` requires a different admin, and the audit log records both.
 * **The product works with no LLM at all** (`LLM_PROVIDER=none` is the default), which is the
   state the tests and CI run in.
+
+## Where the data lives
+
+No Supabase, no Firebase: one SQLite file in the container, exactly as
+`docs/RULES_MASTER.md` asks ("small, always-on container; SQLite file persistence; no
+in-memory-only state"). The organisers' dataset stays read-only in `vendor/`, the scored
+schedules are the two files in `exports/`, and everything else — users, proposals, audit rows,
+timetable versions — lives in `tessera.db`. Full detail, including why a restart cannot lose
+the timetable: [`docs/DATABASE.md`](docs/DATABASE.md).
 
 ## Known limitations
 

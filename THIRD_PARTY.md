@@ -11,6 +11,8 @@ Every library, solver and asset the project uses, what it is used for, and its l
 | Uvicorn | 0.34.0 | ASGI server | BSD-3-Clause |
 | Pydantic | 2.10.4 | request/response schemas | MIT |
 | SQLModel | 0.0.22 | persistence layer (SQLite) | MIT |
+| SQLAlchemy | 2.x (via SQLModel) | database engine; file-backed SQLite, WAL mode | MIT |
+| SQLite | Python stdlib | the database itself (one file, no server) | public domain |
 | PyJWT | 2.10.1 | session tokens for the four roles | MIT |
 | httpx | 0.28.1 | LLM provider calls | BSD-3-Clause |
 | pytest | 8.3.4 | test suite | MIT |

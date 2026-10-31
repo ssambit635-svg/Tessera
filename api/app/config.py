@@ -28,6 +28,7 @@ def _env_bool(name: str, default: bool = False) -> bool:
 class Settings:
     team: str = field(default_factory=lambda: _env("TEAM_NAME", "Voltryx"))
     dataset_path: Path = field(default_factory=lambda: Path(_env("DATASET_PATH", str(ROOT / "vendor" / "cit_public.json"))))
+    data_dir: Path = field(default_factory=lambda: Path(_env("DATA_DIR", str(ROOT / "data"))))
     exports_dir: Path = field(default_factory=lambda: Path(_env("EXPORTS_DIR", str(ROOT / "exports"))))
     database_url: str = field(default_factory=lambda: _env("DATABASE_URL", f"sqlite:///{ROOT / 'tessera.db'}"))
     jwt_secret: str = field(default_factory=lambda: _env("JWT_SECRET", "tessera-dev-secret-please-change-in-production-32b"))
