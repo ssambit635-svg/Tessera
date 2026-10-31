@@ -1,19 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
-import { DAY_LONG, plural } from "../lib/format";
-import { toneForDepartment } from "../lib/derive";
+import { plural } from "../lib/format";
 
 /* ============================================================================
    /landing — the public front door.
 
    The dress is the reference's (raycast.com), measured off the live page: a
-   black stage, one field of film-grain diagonal ribbons, a 76px sentence, a
-   floating pill nav, then the product as a real window on the same black. The
-   content is entirely Tessera's — every number is read from the workspace, and
-   the board inside the hero window is the actual solved week.
+   black stage, one field of film-grain diagonal ribbons, a huge sentence, a
+   floating pill nav, then plain black sections. The hero is a statement, not a
+   screenshot — the product object lives further down, floating over its own
+   ribbon art, the way the reference shows a feature.
 
    Deliberately absent: glows, blooms, gradient text, floating blobs, count-up
    stats. The only colour is the hero art and the app's own department tones.
@@ -26,71 +25,18 @@ const NAV_LINKS = [
   { href: "#assistant", label: "Assistant" },
 ];
 
-interface MiniTile {
-  key: string;
-  code: string;
-  title: string;
-  room: string;
-  time: string;
-  tone: string;
-  span: number;
-  faculty: string;
-}
-
-/**
- * The hero board is the real timetable, not a drawing: every cell is a session that exists in
- * the loaded dataset, keyed by day + starting period, so the board looks as full as the week is.
- */
-function useMiniBoard() {
-  const { data } = useWorkspace();
-  return useMemo(() => {
-    const periods = data.calendar.periods.slice(0, 9);
-    const days = data.calendar.days.slice(0, 5);
-    const byCell = new Map<string, MiniTile>();
-    data.sessions.forEach((session) => {
-      const key = `${session.day}-${session.startPeriod}`;
-      const existing = byCell.get(key);
-      // two sessions can share a slot; keep the one that spans more periods, it reads better
-      const span = session.endPeriod - session.startPeriod + 1;
-      if (existing && span <= existing.span) return;
-      byCell.set(key, {
-        key: `${session.id}-${key}`,
-        code: session.courseId,
-        title: session.courseTitle,
-        room: session.roomId,
-        time: data.calendar.periods.find((p) => p.id === session.startPeriod)?.start ?? "",
-        tone: toneForDepartment(session.department),
-        span,
-        faculty: session.facultyName,
-      });
-    });
-    const perDay = days.map((day) => data.sessions.filter((s) => s.day === day).length);
-    return { periods, days, byCell, perDay };
-  }, [data]);
-}
-
 export default function Landing() {
   const { data, source } = useWorkspace();
   const navigate = useNavigate();
-  const board = useMiniBoard();
-  const windowRef = useRef<HTMLDivElement>(null);
   const [navSolid, setNavSolid] = useState(false);
 
-  /* The window lies back as you scroll, and the nav darkens once you leave the fold. One
-     rAF-throttled scroll handler writes a single CSS variable — no layout thrash, and none of
-     it runs when the visitor asked for reduced motion. */
+  /* One rAF-throttled scroll handler: the nav only gains weight once the visitor leaves the
+     fold. Nothing else listens to scroll. */
   useEffect(() => {
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const node = windowRef.current;
     let frame = 0;
     const update = () => {
       frame = 0;
       setNavSolid(window.scrollY > 24);
-      if (reduced || !node) return;
-      const rect = node.getBoundingClientRect();
-      const viewport = window.innerHeight || 800;
-      const progress = Math.min(1, Math.max(0, (viewport - rect.top) / (viewport * 0.92)));
-      node.style.setProperty("--pose", (1 - progress).toFixed(3));
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -163,14 +109,10 @@ export default function Landing() {
           <p className="rk-eyebrow">Tech Zephyr 4.0 · Team Voltryx</p>
 
           <h1 className="rk-title">
-            <span>Your campus week,</span> <span>already solved.</span>
+            <span>Your week,</span> <span>solved.</span>
           </h1>
 
-          <p className="rk-sub">
-            {numbers.sessions} teaching sessions, {numbers.exams} midsem papers and{" "}
-            {data.bookings.count} venue requests — placed by a constraint solver, with the reason
-            for every decision attached.
-          </p>
+          <p className="rk-sub">{numbers.sessions} sessions. {numbers.exams} exams. Zero clashes.</p>
 
           <div className="rk-cta">
             <Link className="rk-btn white lg" to="/login">
@@ -185,72 +127,12 @@ export default function Landing() {
           </div>
 
           <p className="rk-cta-note">
-            Five demo seats, one password · {source.mode === "live" ? "live scheduling API" : "committed dataset"}
+            Five demo seats, one password ·{" "}
+            {source.mode === "live" ? "live scheduling API" : "committed dataset"}
           </p>
-
-          {/* the product, as a window */}
-          <div className="rk-window-wrap">
-            <div className="rk-window" ref={windowRef}>
-              <div className="rk-window-bar">
-                <span className="rk-dots" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span className="rk-window-title">Mosaic board · Week 7 · Spectra ’27</span>
-                <span className="rk-window-meta">
-                  {numbers.hard} hard conflicts · {percentFree(data)} free room-time
-                </span>
-              </div>
-
-              <div className="rk-board">
-                <div className="rk-board-head">
-                  <span />
-                  {board.days.map((day, index) => (
-                    <span key={day} className="rk-board-day">
-                      <b>{DAY_LONG[day].slice(0, 3)}</b>
-                      <i>{board.perDay[index]}</i>
-                    </span>
-                  ))}
-                </div>
-                <div className="rk-board-body">
-                  {board.periods.map((period) => (
-                    <div className="rk-board-row" key={period.id}>
-                      <span className="rk-board-hour">{period.start}</span>
-                      {board.days.map((day) => {
-                        const tile = board.byCell.get(`${day}-${period.id}`);
-                        return (
-                          <span key={`${day}-${period.id}`} className={`rk-board-cell ${tile ? "filled" : ""}`}>
-                            {tile ? (
-                              <span className={`rk-mini tone-${tile.tone}`}>
-                                <b>{tile.code}</b>
-                                <span>{tile.title}</span>
-                              </span>
-                            ) : null}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rk-window-foot">
-                <span>
-                  <Icon name="check" size={11} /> validated · 0 hard violations
-                </span>
-                <span>
-                  <Icon name="shield" size={11} /> second-admin approval required
-                </span>
-                <span>
-                  <Icon name="sparkles" size={11} /> reasons, not guesses
-                </span>
-              </div>
-            </div>
-          </div>
         </section>
 
-        <div className="rk-fold" aria-hidden="true" />
+        <div className="rk-hero-bottom" aria-hidden="true" />
       </div>
 
       {/* --------------------------------------------------------- product */}
@@ -324,32 +206,68 @@ export default function Landing() {
       {/* ----------------------------------------------------------- proof */}
       <section className="rk-proof" id="proof">
         <div className="rk-inner">
-          <div className="rk-head">
-            <span className="rk-kicker">02 — The proof</span>
-            <h2 className="rk-h2">Numbers we did not type by hand.</h2>
-            <p className="rk-lede">
-              These are read from the running workspace, and CI re-checks the same bundle with the
-              organisers’ own <span className="mono">validator.py</span> on every push.
-            </p>
-          </div>
+          <div className="rk-proof-split">
+            <div>
+              <span className="rk-kicker">02 — The proof</span>
 
-          <div className="rk-proof-grid">
-            {[
-              [String(numbers.hard), "hard violations", "timetable + bookings + exams"],
-              [String(numbers.exams), "midsem papers seated", "every cohort fits its hall"],
-              [
-                `${numbers.bookings.score}/${numbers.bookings.max}`,
-                "booking score",
-                "22 approved · 1 alternative · 2 rejected",
-              ],
-              ["0", "priority inversions", "the institute's order wins every tie"],
-            ].map(([value, label, note]) => (
-              <div key={label} className="rk-proof-cell">
-                <b>{value}</b>
-                <span>{label}</span>
-                <i>{note}</i>
+              <h2 className="rk-statement">
+                <b>Nothing here was typed by hand.</b>{" "}
+                <span>
+                  The week is solved, the exams seated and every request answered before the page
+                  loads — you are reading the workspace, not a promise about it.
+                </span>
+              </h2>
+
+              <div className="rk-product">
+                <span className="rk-product-name">
+                  <TileMark size={16} accent={false} /> Tessera Ledger
+                </span>
+                <p className="rk-product-note">
+                  One signed-off week, as the institute sees it:{" "}
+                  <a href="#screens">open the screens</a> and check every number yourself.
+                </p>
               </div>
-            ))}
+            </div>
+
+            <div className="rk-stage-card">
+              <div className="rk-beams" aria-hidden="true">
+                <span className="rk-beam-a" />
+                <span className="rk-beam-b" />
+                <span className="rk-beam-c" />
+                <span className="rk-beam-mask" />
+                <span className="rk-grain" />
+              </div>
+
+              <div className="rk-ledger">
+                <div className="rk-ledger-head">
+                  <b>Week 7 · signed off</b>
+                  <span className="rk-ledger-tag">
+                    <Icon name="check" size={10} /> validated
+                  </span>
+                </div>
+                {[
+                  [String(numbers.hard), "hard violations", "timetable + bookings + exams"],
+                  [String(numbers.exams), "midsem papers seated", "every cohort fits its hall"],
+                  [
+                    `${numbers.bookings.score}/${numbers.bookings.max}`,
+                    "booking score",
+                    "22 approved · 1 alternative · 2 rejected",
+                  ],
+                  ["0", "priority inversions", "the institute's order wins every tie"],
+                ].map(([value, label, note]) => (
+                  <div key={label} className="rk-ledger-row">
+                    <span>
+                      {label}
+                      <em>{note}</em>
+                    </span>
+                    <b>{value}</b>
+                  </div>
+                ))}
+                <div className="rk-ledger-foot">
+                  <Icon name="shield" size={11} /> second-admin approval on every repair
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -479,11 +397,4 @@ export default function Landing() {
       </section>
     </div>
   );
-}
-
-function percentFree(data: ReturnType<typeof useWorkspace>["data"]) {
-  const teaching = data.calendar.periods.filter((p) => p.teaching).length * data.calendar.days.length;
-  const busy = data.sessions.reduce((sum, s) => sum + (s.endPeriod - s.startPeriod + 1), 0);
-  const capacity = teaching * Math.max(1, data.rooms.length);
-  return `${Math.round(((capacity - busy) / Math.max(1, capacity)) * 100)}%`;
 }
