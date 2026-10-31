@@ -112,7 +112,7 @@ async function waitForMount(maxMs) {
     await wait(150);
     if (window.document.querySelector(".app-frame")) return "app";
     if (window.document.querySelector(".signin")) return "login";
-    if (window.document.querySelector(".ld-hero")) return "landing";
+    if (window.document.querySelector(".rk-hero")) return "landing";
   }
   return null;
 }
@@ -130,9 +130,11 @@ if (process.argv.includes("--dump") && mounted === "landing") {
 // A first visit opens the public landing page, which offers the way in.
 if (mounted !== "landing") errors.push("a first visit did not open the landing page");
 if (mounted === "landing") {
-  if (!/explains itself/i.test(text())) errors.push("the landing page is missing its headline");
+  if (!/already solved/i.test(text())) errors.push("the landing page is missing its headline");
+  if (window.document.querySelectorAll(".rk-board-cell.filled").length < 20)
+    errors.push("the hero board is not showing the solved week");
   if (!/189/.test(text())) errors.push("the landing page is not reading real dataset numbers");
-  const signIn = [...window.document.querySelectorAll(".ld-hero a")].find((a) =>
+  const signIn = [...window.document.querySelectorAll(".rk-hero .rk-cta a")].find((a) =>
     /sign in/i.test(a.textContent || ""),
   );
   if (!signIn) errors.push("the landing hero has no sign-in button");

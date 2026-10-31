@@ -5,7 +5,7 @@
     "node": ">=22.15"
   },
   "version": "1.0.0",
-  "description": "TESSERA \u2014 intelligent campus scheduling & resource management. Frontend only.",
+  "description": "TESSERA — intelligent campus scheduling & resource management. Frontend only.",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -17,6 +17,8 @@
     "shots": "node scripts/shots.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
     "@fontsource/geist": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
