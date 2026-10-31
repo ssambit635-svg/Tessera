@@ -85,8 +85,8 @@
 }
 
 .sf-card {
-  width: min(400px, 100%);
-  padding: 32px 38px 30px;
+  width: min(408px, 100%);
+  padding: 30px 34px 26px;
   border-radius: 12px;
   background: var(--sf-card);
   box-shadow:
@@ -161,10 +161,10 @@
 
 /* form ----------------------------------------------------------------- */
 .sf-card form {
-  margin-top: 22px;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
 }
 
 .sf-field {
@@ -306,6 +306,115 @@
 .sf-submit .tile-spinner .tile-spinner-ring {
   border-color: rgba(255, 255, 255, 0.22);
   border-top-color: #fbfbfc;
+}
+
+/* identities ------------------------------------------------------------ */
+.sf-divider {
+  position: relative;
+  margin: 20px 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #eceef1;
+}
+
+.sf-divider span {
+  position: relative;
+  padding: 0 10px;
+  background: var(--sf-card);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a3a7b0;
+}
+
+.sf-identities {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sf-identity {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 3px 9px;
+  border-radius: 8px;
+  border: 1px solid #eceef1;
+  background: #fdfdfd;
+  transition: background 140ms var(--ease), border-color 140ms var(--ease),
+    box-shadow 140ms var(--ease), transform 140ms var(--ease);
+}
+
+.sf-identity:hover:not(:disabled),
+.sf-identity:focus-visible {
+  background: #fff;
+  border-color: #d3d6db;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -10px rgba(20, 22, 26, 0.55);
+}
+
+.sf-identity:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.sf-identity-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: #f2f3f4;
+  color: #4f5661;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.sf-identity:hover:not(:disabled) .sf-identity-mark {
+  background: var(--sf-accent);
+  color: #fff;
+}
+
+.sf-identity .tile-spinner {
+  color: var(--sf-ink);
+}
+
+.sf-identity .tile-spinner .tile-spinner-ring {
+  border-color: rgba(26, 29, 36, 0.16);
+  border-top-color: var(--sf-ink);
+}
+
+.sf-identity-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b909a;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-identity:hover:not(:disabled) .sf-identity-label {
+  color: var(--sf-ink);
 }
 
 /* under the card -------------------------------------------------------- */

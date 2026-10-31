@@ -10,6 +10,26 @@ const DEMO_PASSWORD = "Tessera@2027";
 
 const CAMPUS_PHOTO = "/media/campus-tower.jpg";
 
+/** The glyph each seat gets — the role's job, not a generic avatar. */
+function seatGlyph(role: string, label: string): string {
+  if (/second|approver/i.test(label)) return "check";
+  if (role === "admin") return "shield";
+  if (role === "department_coordinator") return "clipboard";
+  if (role === "faculty") return "book";
+  if (role === "club") return "ticket";
+  return "user";
+}
+
+/** Five seats have to sit on one row, so the labels are short on purpose. */
+function shortSeat(label: string, role: string): string {
+  if (/second|approver/i.test(label)) return "Dean";
+  if (role === "admin") return "Admin";
+  if (role === "department_coordinator") return "Coord.";
+  if (role === "faculty") return "Faculty";
+  if (role === "club") return "Club";
+  return role.replace(/_/g, " ");
+}
+
 export default function Login() {
   const { user, personas, signIn, signInLocal, status } = useWorkspace();
   const navigate = useNavigate();
@@ -171,6 +191,36 @@ export default function Login() {
               </button>
             </form>
 
+            <div className="sf-divider">
+              <span>or step in as</span>
+            </div>
+
+            <ul className="sf-identities">
+              {personas.map((persona) => {
+                const working = busy === persona.email;
+                return (
+                  <li key={persona.email}>
+                    <button
+                      className="sf-identity"
+                      onClick={() => void demo(persona.role, persona.email, persona.label)}
+                      disabled={busy !== null}
+                      aria-busy={working}
+                      aria-label={`Sign in as ${persona.label} (${persona.email})`}
+                      title={`${persona.label} · ${persona.email}`}
+                    >
+                      <span className="sf-identity-mark">
+                        {working ? (
+                          <TileSpinner size={15} label="Signing in" />
+                        ) : (
+                          <Icon name={seatGlyph(persona.role, persona.label)} size={17} strokeWidth={1.6} />
+                        )}
+                      </span>
+                      <span className="sf-identity-label">{shortSeat(persona.label, persona.role)}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
 
           <p className="sf-new">
