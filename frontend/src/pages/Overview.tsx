@@ -173,11 +173,12 @@ export default function Overview() {
         </div>
 
         <figure className="hero-figure">
-          <img src="/media/campus-facade.jpg" alt="Campus building at golden hour" />
+          <img src="/media/campus-facade.jpg" alt="Reference photograph of an academic building at golden hour" />
           <div className="hero-figure-labels">
-            <span className="annotation">CIT · ACADEMIC CORE</span>
+            <span className="annotation">ACADEMIC CORE</span>
             <span className="annotation annotation-right">EST. 1996</span>
           </div>
+          <span className="photo-note">Reference imagery · not this campus</span>
           <figcaption>
             <div>
               <span className="eyebrow" style={{ color: "rgba(255,255,255,.6)" }}>

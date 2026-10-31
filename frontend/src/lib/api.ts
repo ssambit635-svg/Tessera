@@ -639,10 +639,6 @@ export interface BudgetSnapshot {
   note: string;
 }
 
-export function fetchAiBudget(token: string | null) {
-  return request<BudgetSnapshot>("/api/ai/budget", {}, token);
-}
-
 export function runAiSelfTest(token: string | null) {
   return request<{ ok: boolean; model?: string; latency_ms?: number; error?: string; reason?: string; budget?: BudgetSnapshot }>(
     "/api/ai/selftest",

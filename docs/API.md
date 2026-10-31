@@ -201,7 +201,17 @@ POST /api/ai/parse     {text, role?, allow_llm?}   -> draft + confidence + assum
 GET  /api/ai/status                                -> provider, mode, prompt file, live stats
 POST /api/ai/selftest                              -> one real call: does the key work?
 GET  /api/ai/samples                               -> the organisers' practice requests
+GET  /api/ai/budget                                -> free-tier spend: used today, left, per model
+POST /api/ai/budget/reset                          -> admin: start a fresh day (never touches the key)
+POST /api/ai/change-request  {text, faculty_id?, create_proposal?}
+                                                   -> parsed intent + engine-checked proposal
 ```
+
+Every provider attempt is counted *before* it is sent (`app/ai/budget.py`): 1,000/day on the
+70B model, 14,400/day on the 8B fallback, 30/minute. The counter is persisted, so a restart
+cannot refill it, and it is mirrored in memory if the database is unavailable — the snapshot
+reports `storage: "database" | "memory"` so the difference is visible. When the allowance is
+gone the endpoints keep working on the deterministic parser. No endpoint ever returns the key.
 
 The response is a **draft**, never a decision:
 

@@ -3000,3 +3000,13 @@ table.data tr.detail-row > td { background: var(--paper-2); padding: 0; }
   letter-spacing: 0.03em;
   pointer-events: none;
 }
+
+@media (max-width: 640px) {
+  /* five cells in a two-column grid leave a grey hole; let the last one span instead */
+  .exam-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .exam-strip .es-cell:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .approval-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .approval-strip .as-note { grid-column: 1 / -1; }
+  .audit-list li { grid-template-columns: 1fr; gap: 3px; }
+  .reject-sheet { right: 12px; left: 12px; bottom: 12px; width: auto; }
+}
