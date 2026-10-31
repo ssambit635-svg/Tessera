@@ -1223,8 +1223,16 @@
   .board-title h2 { font-size: 20px; }
   .day-strip { grid-template-columns: 34px repeat(var(--day-count, 7), minmax(0, 1fr)); gap: 5px; }
   .day-pill { height: 50px; border-radius: 11px; }
-  .day-pill .dow { font-size: 9px; }
+  .day-pill .dow {
+    font-size: 9px;
+    max-width: 100%;
+    padding: 0 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .day-pill .dom { font-size: 14px; }
+  .day-pill .day-count { top: auto; bottom: 4px; right: 5px; font-size: 7.5px; }
   .board-search { min-width: 0; width: 100%; }
   .event-popover { width: min(324px, calc(100vw - 24px)); }
   .impact-grid { grid-template-columns: 1fr 1fr; }

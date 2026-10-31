@@ -64,6 +64,24 @@ interface DragState {
   preview: MoveValidation | null;
 }
 
+/** Phone widths need wider columns: a "+N more" ribbon takes 35px out of every lane, and an
+ *  86px tile cannot hold "Communicative English" without breaking the word apart. */
+function useNarrowViewport(query = "(max-width: 720px)"): boolean {
+  const supported = typeof window !== "undefined" && typeof window.matchMedia === "function";
+  const [narrow, setNarrow] = useState(() => (supported ? window.matchMedia(query).matches : false));
+
+  useEffect(() => {
+    if (!supported) return;
+    const mql = window.matchMedia(query);
+    const onChange = () => setNarrow(mql.matches);
+    onChange();
+    mql.addEventListener?.("change", onChange);
+    return () => mql.removeEventListener?.("change", onChange);
+  }, [query, supported]);
+
+  return narrow;
+}
+
 function Tile({
   item,
   lane,
@@ -203,6 +221,7 @@ export default function Mosaic() {
   /** A day column with more concurrent sessions than can be read is filed into one stack. */
   const [stack, setStack] = useState<{ title: string; items: BoardItem[]; x: number; y: number } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const narrow = useNarrowViewport();
   const active = dateFromISO(activeDate);
   const activeDay = dayCodeOf(active);
   const weekStart = startOfWeek(active);
@@ -390,7 +409,7 @@ export default function Mosaic() {
   const totalHeight = periods.length * ROW_H;
   const gridStyle = {
     "--cols": columns.length,
-    "--col-min": perspective === "days" || view === "day" ? "128px" : "176px",
+    "--col-min": narrow ? "184px" : perspective === "days" || view === "day" ? "128px" : "176px",
     "--row-h": `${ROW_H}px`,
   } as CSSProperties;
 
