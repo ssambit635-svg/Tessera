@@ -17,6 +17,7 @@ import "./styles/shell.css";
 import "./styles/ui.css";
 import "./styles/board.css";
 import "./styles/pages.css";
+import "./styles/login.css";
 
 import App from "./App";
 

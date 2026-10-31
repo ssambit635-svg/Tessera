@@ -27,6 +27,19 @@ Build and preview a production bundle:
 npm run build && npm run preview   # http://localhost:4173
 ```
 
+## Sign in
+
+`/login` is the editorial sign-in spread. It takes the campus credentials from the README
+(`admin@cit.edu` … password `Tessera@2027`) through the scheduler's own `POST /api/auth/login`,
+or a single click on a demo identity, which calls `POST /api/auth/demo-login/{role}`.
+
+- A first visit opens the spread; the chosen persona is remembered in `localStorage`, so
+  returning visits go straight to the board.
+- Signing out (profile menu → *Sign out*, or the identity card in the rail) clears the persona
+  and returns to the spread. Shell routes then redirect to `/login?next=…`.
+- With the API offline, demo identities still work: they enter the labelled snapshot and the
+  panel says so.
+
 ## Two data modes — always visible in the UI
 
 | Mode | When | What the badge says |

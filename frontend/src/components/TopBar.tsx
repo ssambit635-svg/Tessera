@@ -67,7 +67,7 @@ function useNotices(): Notice[] {
 }
 
 export function TopBar() {
-  const { data, source, user, personas, switchPersona, reload } = useWorkspace();
+  const { data, source, user, personas, switchPersona, reload, signOut } = useWorkspace();
   const { setPaletteOpen, setMobileNavOpen } = useUi();
   const location = useLocation();
   const navigate = useNavigate();
@@ -277,6 +277,25 @@ export function TopBar() {
                 }}
               >
                 <Icon name="settings" size={13} /> Preferences
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/login");
+                  setProfileOpen(false);
+                }}
+              >
+                <Icon name="shield" size={13} /> Switch identity
+              </button>
+              <div className="menu-sep" />
+              <button
+                className="menu-signout"
+                onClick={() => {
+                  signOut();
+                  setProfileOpen(false);
+                  navigate("/login", { replace: true });
+                }}
+              >
+                <Icon name="arrowLeft" size={13} /> Sign out
               </button>
             </div>
           ) : null}

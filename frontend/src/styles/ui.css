@@ -190,6 +190,15 @@
 .chip.coral { background: rgba(241, 107, 85, 0.16); color: #8c2c19; }
 .chip.sand { background: rgba(239, 224, 196, 0.62); color: #47381a; }
 
+.menu-signout {
+  color: #8a2a18;
+}
+
+.menu-signout:hover {
+  background: rgba(241, 107, 85, 0.1) !important;
+  color: #8a2a18 !important;
+}
+
 .tone-lime { --tone: var(--lime); --tone-ink: var(--lime-ink); --tone-tint: var(--tint-lime); }
 .tone-violet { --tone: var(--violet); --tone-ink: var(--violet-ink); --tone-tint: var(--tint-violet); }
 .tone-sky { --tone: var(--sky); --tone-ink: var(--sky-ink); --tone-tint: var(--tint-sky); }

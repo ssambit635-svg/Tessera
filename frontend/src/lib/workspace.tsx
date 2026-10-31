@@ -14,6 +14,7 @@ import {
   demoLogin,
   loadWorkspace,
   requestMove,
+  type LoginResult,
   type RemoteMove,
 } from "./api";
 import { validateMove, type MoveTarget, type MoveValidation } from "./derive";
@@ -46,8 +47,16 @@ export interface Layers {
   birthdays: boolean;
 }
 
+export type AuthState = "signed-in" | "signed-out";
+
 interface WorkspaceContextValue {
   status: "loading" | "ready";
+  authState: AuthState;
+  /** Adopt a token issued by the sign-in screen (or a demo identity). */
+  signIn: (login: LoginResult) => Promise<void>;
+  /** Enter the workspace without a token — snapshot mode, clearly labelled. */
+  signInLocal: (user: SessionUser) => void;
+  signOut: () => void;
   data: Workspace;
   source: DataSource;
   user: SessionUser | null;
@@ -137,8 +146,41 @@ function uid(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+const PERSONA_KEY = "tessera.persona";
+
+interface StoredPersona {
+  role: string;
+  email: string;
+  name: string;
+}
+
+function readPersona(): StoredPersona | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PERSONA_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredPersona;
+    return parsed?.email && parsed?.role ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function storePersona(user: SessionUser | null) {
+  if (typeof window === "undefined") return;
+  if (!user) {
+    window.localStorage.removeItem(PERSONA_KEY);
+    return;
+  }
+  const persona: StoredPersona = { role: user.role, email: user.email, name: user.name };
+  window.localStorage.setItem(PERSONA_KEY, JSON.stringify(persona));
+}
+
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<"loading" | "ready">("loading");
+  const [authState, setAuthState] = useState<AuthState>(() => (readPersona() ? "signed-in" : "signed-out"));
+  /** The token we read with. Kept in a ref so a reload never silently re-authenticates. */
+  const sessionRef = useRef<LoginResult | null>(null);
   const [data, setData] = useState<Workspace>(EMPTY_WORKSPACE);
   const [source, setSource] = useState<DataSource>({ mode: "snapshot", detail: "", token: null, apiBase: "" });
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -177,16 +219,82 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     [dismissToast],
   );
 
-  const bootstrap = useCallback(async () => {
-    const result = await loadWorkspace();
+  const bootstrap = useCallback(async ({ quiet = false }: { quiet?: boolean } = {}) => {
+    if (!quiet) setStatus("loading");
+
+    // Already have a token in memory (sign-in or persona switch): just refresh.
+    if (sessionRef.current) {
+      const result = await loadWorkspace({ session: sessionRef.current });
+      setData(result.data);
+      setSource(result.source);
+      setUser(result.user);
+      setStatus("ready");
+      return;
+    }
+
+    // Returning visitor: restore the persona they last used, if the API will still vouch for it.
+    const stored = readPersona();
+    if (stored) {
+      try {
+        const login = await demoLogin(stored.role, stored.email);
+        sessionRef.current = login;
+        const result = await loadWorkspace({ session: login });
+        setData(result.data);
+        setSource(result.source);
+        setUser(login.user);
+        setAuthState("signed-in");
+        setStatus("ready");
+        return;
+      } catch {
+        // Offline or snapshot-only: keep the persona as a local identity over the snapshot.
+        const result = await loadWorkspace({ anonymous: true });
+        setData(result.data);
+        setSource(result.source);
+        setUser({ email: stored.email, name: stored.name, role: stored.role });
+        setAuthState("signed-in");
+        setStatus("ready");
+        return;
+      }
+    }
+
+    // First visit: show the sign-in spread over the labelled snapshot.
+    const result = await loadWorkspace({ anonymous: true });
     setData(result.data);
     setSource(result.source);
-    setUser(result.user);
+    setUser(null);
+    setAuthState("signed-out");
     setStatus("ready");
   }, []);
 
   useEffect(() => {
     void bootstrap();
+  }, [bootstrap]);
+
+  const signIn = useCallback(
+    async (login: LoginResult) => {
+      sessionRef.current = login;
+      storePersona(login.user);
+      setAuthState("signed-in");
+      setUser(login.user);
+      await bootstrap({ quiet: true });
+    },
+    [bootstrap],
+  );
+
+  const signInLocal = useCallback((localUser: SessionUser) => {
+    sessionRef.current = null;
+    storePersona(localUser);
+    setAuthState("signed-in");
+    setUser(localUser);
+  }, []);
+
+  const signOut = useCallback(() => {
+    sessionRef.current = null;
+    storePersona(null);
+    setAuthState("signed-out");
+    setUser(null);
+    setPending(null);
+    void bootstrap({ quiet: true });
   }, [bootstrap]);
 
   useEffect(() => {
@@ -196,7 +304,6 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reload = useCallback(async () => {
-    setStatus("loading");
     await bootstrap();
   }, [bootstrap]);
 
@@ -217,11 +324,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     async (role: string, email?: string) => {
       if (source.mode !== "live") {
         const account = data.demoAccounts.find((a) => a.role === role && (!email || a.email === email));
-        setUser({
+        const localUser = {
           email: account?.email ?? `${role}@cit.edu`,
           name: account?.label ?? role,
           role,
-        });
+        };
+        signInLocal(localUser);
+        setUser(localUser);
         notify({
           tone: "info",
           title: `Viewing as ${account?.label ?? role}`,
@@ -231,6 +340,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
       try {
         const login = await demoLogin(role, email);
+        sessionRef.current = login;
+        storePersona(login.user);
+        setAuthState("signed-in");
         setSource((current) => ({ ...current, token: login.token }));
         setUser(login.user);
         notify({
@@ -246,7 +358,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         });
       }
     },
-    [data.demoAccounts, notify, source.mode],
+    [data.demoAccounts, notify, signInLocal, source.mode],
   );
 
   const proposeChange = useCallback(
@@ -359,6 +471,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const value: WorkspaceContextValue = {
     status,
+    authState,
+    signIn,
+    signInLocal,
+    signOut,
     data,
     source,
     user,

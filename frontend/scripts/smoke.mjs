@@ -89,21 +89,41 @@ try {
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const text = () => window.document.body.textContent.replace(/\s+/g, " ");
+const click = (element) => {
+  if (!element) return false;
+  element.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+  return true;
+};
 
 async function waitForMount(maxMs) {
   const started = Date.now();
   while (Date.now() - started < maxMs) {
     await wait(150);
-    if (window.document.querySelector(".app-frame")) return true;
+    if (window.document.querySelector(".app-frame")) return "app";
+    if (window.document.querySelector(".login")) return "login";
   }
-  return false;
+  return null;
 }
 
-const mounted = await waitForMount(LIVE ? 12000 : 4000);
+const mounted = await waitForMount(LIVE ? 12000 : 6000);
 if (process.argv.includes("--dump")) {
   console.log("--- first paint text ---\n" + text().slice(0, 1600) + "\n---");
 }
-if (!mounted) errors.push("the app shell never mounted (still on the boot screen)");
+if (!mounted) errors.push("neither the sign-in spread nor the shell mounted");
+
+if (process.argv.includes("--dump") && mounted === "login") {
+  console.log("--- first visit ---\n" + text() + "\n---");
+}
+
+// A first visit must land on the sign-in spread, not straight in the workspace.
+if (mounted !== "login") errors.push("a first visit did not open the sign-in page");
+if (mounted === "login") {
+  if (!/accounted for/i.test(text())) errors.push("the sign-in spread is missing its statement");
+  if (!window.document.querySelector(".identity-list .identity")) errors.push("no demo identities on the sign-in page");
+  click(window.document.querySelector(".identity-list .identity"));
+  const entered = await waitForMount(LIVE ? 12000 : 5000);
+  if (entered !== "app") errors.push("signing in from a first visit did not open the workspace");
+}
 
 const routes = [
   "/",
@@ -121,6 +141,7 @@ const routes = [
   "/locations",
   "/settings",
   "/definitely-not-a-route",
+  "/login",
 ];
 
 const report = [];
@@ -133,7 +154,14 @@ for (const route of routes) {
   const body = text();
   report.push({ route, chars: body.length, nodes: window.document.querySelectorAll("*").length });
   if (body.length < 250) errors.push(`${route} rendered almost nothing (${body.length} chars)`);
-  if (route === "/" && !/Mosaic|board/i.test(body)) errors.push("/ did not land on the calendar board");
+  if (route === "/" && !/Mosaic|board/i.test(body)) {
+    errors.push("/ did not land on the calendar board");
+    if (process.argv.includes("--dump")) console.log("ROOT TEXT:", body.slice(0, 700), "| path:", window.location.pathname);
+  }
+  if (route === "/login") {
+    if (!/accounted for/i.test(body)) errors.push("/login is missing the editorial statement");
+    if (window.document.querySelector(".app-frame")) errors.push("/login rendered the app shell");
+  }
   if (/Cannot read propert|is not a function|Minified React error/i.test(body)) {
     errors.push(`${route} rendered an error string`);
   }
@@ -152,19 +180,23 @@ async function interaction(label, run) {
   }
 }
 
-const click = (element) => {
-  if (!element) return false;
-  element.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
-  return true;
-};
 const go = async (route) => {
   window.history.pushState({}, "", route);
   window.dispatchEvent(new window.PopStateEvent("popstate"));
   await wait(320);
 };
 
+/** Some checks sign out; every shell-dependent check makes sure a session exists first. */
+async function ensureSignedIn() {
+  if (window.document.querySelector(".app-frame")) return;
+  await go("/login");
+  click(window.document.querySelector(".identity-list .identity"));
+  await wait(800);
+}
+
 console.log("\ninteractions");
 await interaction("sidebar collapses", async () => {
+  await ensureSignedIn();
   await go("/");
   const toggle = window.document.querySelector(".rail-collapse");
   if (!click(toggle)) return "no collapse control";
@@ -173,6 +205,7 @@ await interaction("sidebar collapses", async () => {
 });
 
 await interaction("mosaic tile opens the session card", async () => {
+  await ensureSignedIn();
   await go("/mosaic");
   const tile = window.document.querySelector(".board-grid .tile");
   if (!tile) return "no session tiles rendered";
@@ -182,6 +215,7 @@ await interaction("mosaic tile opens the session card", async () => {
 });
 
 await interaction("mosaic switches perspective", async () => {
+  await ensureSignedIn();
   await go("/mosaic");
   const select = [...window.document.querySelectorAll("select")].find((el) =>
     [...el.options].some((option) => option.value === "rooms"),
@@ -195,6 +229,7 @@ await interaction("mosaic switches perspective", async () => {
 });
 
 await interaction("natural-language booking opens", async () => {
+  await ensureSignedIn();
   await go("/bookings");
   const trigger = [...window.document.querySelectorAll("button")].find((el) => /natural-language/i.test(el.textContent));
   if (!click(trigger)) return "no natural-language button";
@@ -203,6 +238,7 @@ await interaction("natural-language booking opens", async () => {
 });
 
 await interaction("drag-and-reflow proposes a validated move", async () => {
+  await ensureSignedIn();
   await go("/mosaic");
   const tiles = [...window.document.querySelectorAll(".board-grid .tile")].filter((el) => !el.classList.contains("add-slot"));
   const tile = tiles[2];
@@ -234,7 +270,77 @@ await interaction("drag-and-reflow proposes a validated move", async () => {
   return /valid|warning|conflict|blocked/i.test(panel.textContent) ? "" : "panel missing a verdict";
 });
 
+await interaction("sign-in page signs a demo identity into the board", async () => {
+  await ensureSignedIn();
+  await go("/login");
+  if (process.argv.includes("--dump")) console.log("--- login text ---\n" + text() + "\n---");
+  const identity = window.document.querySelector(".identity-list .identity");
+  if (!identity) return "no demo identities listed";
+  click(identity);
+  await wait(700);
+  const shell = window.document.querySelector(".app-frame");
+  if (!shell) return "did not enter the workspace";
+  return window.location.pathname === "/" || window.location.pathname === "/mosaic" ? "" : `landed on ${window.location.pathname}`;
+});
+
+await interaction("sign out returns to the spread", async () => {
+  await go("/mosaic");
+  const profile = window.document.querySelector(".profile-chip");
+  if (!click(profile)) return "no profile control";
+  await wait(120);
+  const signOut = [...window.document.querySelectorAll(".popover.menu button")].find((el) => /sign out/i.test(el.textContent));
+  if (!click(signOut)) return "no sign-out action";
+  await wait(700);
+  if (window.document.querySelector(".app-frame")) return "the shell is still mounted";
+  return /accounted for/i.test(text()) ? "" : "did not land on the sign-in page";
+});
+
+await interaction("password sign-in rejects bad credentials", async () => {
+  await go("/login");
+  const set = (element, value) => {
+    const proto = element instanceof window.HTMLTextAreaElement ? window.HTMLTextAreaElement : window.HTMLInputElement;
+    Object.getOwnPropertyDescriptor(proto.prototype, "value").set.call(element, value);
+    element.dispatchEvent(new window.Event("input", { bubbles: true }));
+  };
+  const email = window.document.querySelector("#email");
+  const password = window.document.querySelector("#password");
+  if (!email || !password) return "form fields missing";
+  set(email, "nobody@cit.edu");
+  set(password, "wrong-password");
+  window.document.querySelector(".panel-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+  await wait(500);
+  const error = window.document.querySelector(".panel-error");
+  if (!error) return "no error was shown";
+  return /not match|not reachable|failed/i.test(error.textContent) ? "" : `unexpected error copy: ${error.textContent}`;
+});
+
+if (LIVE) {
+  await interaction("password sign-in reaches the live API", async () => {
+    // sign out first so we are on the spread with no session
+    await go("/mosaic");
+    click(window.document.querySelector(".profile-chip"));
+    await wait(120);
+    click([...window.document.querySelectorAll(".popover.menu button")].find((el) => /sign out/i.test(el.textContent)));
+    await wait(600);
+    await go("/login");
+    const set = (element, value) => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(element, value);
+      element.dispatchEvent(new window.Event("input", { bubbles: true }));
+    };
+    set(window.document.querySelector("#email"), "admin@cit.edu");
+    set(window.document.querySelector("#password"), "Tessera@2027");
+    window.document.querySelector(".panel-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await wait(4000);
+    if (!window.document.querySelector(".app-frame")) {
+      const err = window.document.querySelector(".panel-error")?.textContent ?? "no error shown";
+      return `still on the sign-in page (${err})`;
+    }
+    return /LIVE API/i.test(text()) ? "" : "signed in but the workspace is not reading live data";
+  });
+}
+
 await interaction("intelligence answers a question", async () => {
+  await ensureSignedIn();
   await go("/intelligence");
   const input = window.document.querySelector("input[aria-label='Ask TESSERA']");
   if (!input) return "no question input";

@@ -264,6 +264,8 @@ export interface DataSource {
   /** Present in live mode only; the UI calls authenticated endpoints with it. */
   token: string | null;
   apiBase: string;
+  /** Whether the scheduling API answered at all — independent of which data we show. */
+  reachable?: boolean;
 }
 
 export interface SessionUser {

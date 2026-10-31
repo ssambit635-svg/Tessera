@@ -226,11 +226,21 @@ export function Sidebar() {
 
         <div className="rail-body rail-scroll">
           <div className="rail-user">
-            <span className={`avatar round tone-${tintFor(displayUser.email)}`}>{initials(displayUser.name)}</span>
-            <span className="who">
-              <b>{displayUser.name}</b>
-              <span>{displayUser.role.replace(/_/g, " ")}</span>
-            </span>
+            <button
+              className="rail-user-open"
+              onClick={() => {
+                navigate("/login");
+                closeOnMobile();
+              }}
+              aria-label={`Signed in as ${displayUser.name}. Open the sign-in page to switch identity.`}
+              title="Switch identity"
+            >
+              <span className={`avatar round tone-${tintFor(displayUser.email)}`}>{initials(displayUser.name)}</span>
+              <span className="who">
+                <b>{displayUser.name}</b>
+                <span>{displayUser.role.replace(/_/g, " ")}</span>
+              </span>
+            </button>
             {railCollapsed ? null : (
               <button className="rail-bell" aria-label={`${attention} items need attention`} onClick={() => navigate("/reports")}>
                 <Icon name="bell" size={14} />

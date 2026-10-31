@@ -94,6 +94,14 @@ export interface LoginResult {
   capabilities: string[];
 }
 
+/** Real sign-in against the scheduler's own auth: email + password in, JWT out. */
+export async function loginWithPassword(email: string, password: string): Promise<LoginResult> {
+  return request<LoginResult>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+  });
+}
+
 export async function demoLogin(role: string, email?: string): Promise<LoginResult> {
   const query = email ? `?email=${encodeURIComponent(email)}` : "";
   return request<LoginResult>(`/api/auth/demo-login/${role}${query}`, { method: "POST" });
@@ -313,11 +321,71 @@ export async function loadLiveWorkspace(token: string, datasetId: string): Promi
   };
 }
 
-export async function loadWorkspace(): Promise<{
+export interface LoadOptions {
+  /** Signed out: read the labelled snapshot and hold no token at all. */
+  anonymous?: boolean;
+  /** A token from the sign-in screen — skip the silent demo login. */
+  session?: LoginResult | null;
+}
+
+function signedOutSource(reachable: boolean): DataSource {
+  return {
+    mode: "snapshot",
+    detail: reachable
+      ? "Signed out · API is up, showing the bundled snapshot until you sign in"
+      : "Signed out · API unreachable, showing the bundled snapshot",
+    token: null,
+    apiBase: API_BASE || "same origin",
+    reachable,
+  };
+}
+
+export async function loadWorkspace(options: LoadOptions = {}): Promise<{
   data: Workspace;
   source: DataSource;
   user: SessionUser | null;
 }> {
+  if (options.anonymous) {
+    const reachable = (await probeApi(1200)).ok;
+    return { data: snapshotWorkspace, source: signedOutSource(reachable), user: null };
+  }
+
+  if (options.session) {
+    const { token, user } = options.session;
+    try {
+      const data = await Promise.race([
+        loadLiveWorkspace(token, snapshotWorkspace.datasetId),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new ApiError(0, "The scheduling API took too long to answer.")), 14000),
+        ),
+      ]);
+      return {
+        data,
+        source: {
+          mode: "live",
+          detail: `Live · ${data.datasetId} · ${data.sessions.length} sessions · ${user.email}`,
+          token,
+          apiBase: API_BASE || "same origin",
+          reachable: true,
+        },
+        user,
+      };
+    } catch (error) {
+      console.warn("[tessera] signed in, but live reads failed — using the snapshot.", error);
+      return {
+        data: snapshotWorkspace,
+        source: {
+          mode: "snapshot",
+          detail: "Signed in · live reads failed, showing the bundled snapshot",
+          token,
+          apiBase: API_BASE || "same origin",
+          reachable: false,
+        },
+        user,
+      };
+    }
+  }
+
   const probe = await probeApi();
   if (!probe.ok) {
     return {
@@ -327,6 +395,7 @@ export async function loadWorkspace(): Promise<{
         detail: "Snapshot of cit-public-v1 · the scheduling API is not running",
         token: null,
         apiBase: API_BASE || "same origin",
+        reachable: false,
       },
       user: null,
     };
@@ -347,6 +416,7 @@ export async function loadWorkspace(): Promise<{
         detail: `Live · ${data.datasetId} · ${data.sessions.length} sessions`,
         token: login.token,
         apiBase: API_BASE || "same origin",
+        reachable: true,
       },
       user: login.user,
     };
@@ -363,6 +433,7 @@ export async function loadWorkspace(): Promise<{
             : "Snapshot · the scheduling API is not running",
         token: null,
         apiBase: API_BASE || "same origin",
+        reachable: false,
       },
       user: null,
     };

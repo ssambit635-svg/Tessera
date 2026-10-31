@@ -1,7 +1,8 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { WorkspaceProvider, useWorkspace } from "./lib/workspace";
 import { UiProvider } from "./lib/ui";
 import { AppShell } from "./components/AppShell";
+import Login from "./pages/Login";
 import { TileMark, TileSpinner } from "./components/TileMark";
 import Overview from "./pages/Overview";
 import Mosaic from "./pages/Mosaic";
@@ -47,12 +48,24 @@ function Boot() {
   );
 }
 
+/** The shell is only reachable with a session; signed-out visitors land on the spread. */
+function RequireAuth() {
+  const { authState } = useWorkspace();
+  const location = useLocation();
+  if (authState === "signed-out") {
+    const next = `${location.pathname}${location.search}`;
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+  }
+  return <AppShell />;
+}
+
 function Gate() {
   const { status } = useWorkspace();
   if (status === "loading") return <Boot />;
   return (
     <Routes>
-      <Route element={<AppShell />}>
+      <Route path="login" element={<Login />} />
+      <Route element={<RequireAuth />}>
         {/* The calendar board is the front door: it is the screen the reference describes. */}
         <Route index element={<Navigate to="/mosaic" replace />} />
         <Route path="overview" element={<Overview />} />
