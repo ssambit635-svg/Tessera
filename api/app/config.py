@@ -96,6 +96,11 @@ class Settings:
     solver_workers: int = field(default_factory=lambda: _env_int("SOLVER_WORKERS", 2))
     solver_seed: int = field(default_factory=lambda: _env_int("SOLVER_SEED", 20270131))
     repair_time_limit: int = field(default_factory=lambda: _env_int("REPAIR_TIME_LIMIT", 60))
+    # When the React workspace is hosted on its own origin (Render static site), point this at
+    # it: `/` then redirects there instead of opening the legacy single-file prototype that
+    # still ships inside this API. Empty means "serve the bundled prototype", which is what
+    # the local demo and the single-service deployment expect.
+    web_app_url: str = field(default_factory=lambda: _env("WEB_APP_URL", "").rstrip("/"))
     load_committed_exports: bool = field(default_factory=lambda: _env_bool("LOAD_COMMITTED_EXPORTS", True))
     cors_origins: list[str] = field(default_factory=lambda: [
         o.strip() for o in _env("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",") if o.strip()

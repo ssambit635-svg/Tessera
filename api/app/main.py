@@ -11,7 +11,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session
 
@@ -95,7 +95,13 @@ app.mount("/ui", StaticFiles(directory=str(WEB_DIR)), name="ui")
 
 @app.get("/", include_in_schema=False)
 def index():
-    """The app itself. The machine-readable summary lives at /api/info."""
+    """The app itself, unless a separately hosted UI is configured.
+
+    The React workspace is the product; this API also ships a small legacy prototype for
+    offline demos. With WEB_APP_URL set, `/` sends the visitor to the real UI instead.
+    """
+    if settings.web_app_url:
+        return RedirectResponse(settings.web_app_url, status_code=307)
     return FileResponse(WEB_DIR / "index.html", media_type="text/html")
 
 

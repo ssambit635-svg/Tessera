@@ -43,6 +43,10 @@ services:
       # every time the static-site hostname changes.
       - key: CORS_ORIGINS
         value: "*"
+      # set to the static site's URL once it exists, so the API's `/` forwards to the
+      # real React workspace instead of the legacy prototype bundled inside the API
+      - key: WEB_APP_URL
+        sync: false
       - key: LLM_PROVIDER
         value: none          # flip to "groq" after adding the key below
       - key: GROQ_API_KEY
