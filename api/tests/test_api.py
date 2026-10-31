@@ -266,6 +266,145 @@ def test_exports_are_written_by_the_app(client, tmp_path):
     assert pathlib.Path(written["schedule.json"]).exists()
 
 
+# ------------------------------------------------------------------ manual events (no LLM)
+def test_manual_event_is_placed_only_when_the_rules_allow_it(client):
+    headers, _ = login(client, "club")
+    body = {"title": "Robotics demo", "attendance": 120, "duration_periods": 2,
+            "windows": [{"day": "WED", "from_period": 1, "to_period": 9}],
+            "needs": ["pa_system"], "room_types": ["seminar_hall"]}
+
+    check = client.post("/api/bookings/manual/check", json=body, headers=headers).json()
+    assert check["ok"] is True and check["candidates"], check
+
+    created = client.post("/api/bookings/manual", json=body, headers=headers)
+    assert created.status_code == 200, created.text
+    event = created.json()["created"]
+    assert event["status"] == "confirmed" and event["scored_export"] is False
+    assert event["category"] == "club_event"          # a club cannot claim more
+
+    # the room now reports the event, so availability and the form agree
+    busy = client.get(f"/api/dataset/rooms/{event['room_id']}/availability",
+                      headers=headers).json()["busy"]
+    assert any(b["source"] == "event" and b["session_id"] == event["id"] for b in busy)
+
+    # the same slot is no longer free for a second event
+    again = client.post("/api/bookings/manual/check", json={
+        **body, "windows": [{"day": event["day"],
+                             "from_period": event["start_period"],
+                             "to_period": event["start_period"]}]}, headers=headers).json()
+    assert again["ok"] is False
+
+    cancelled = client.delete(f"/api/bookings/manual/{event['id']}", headers=headers)
+    assert cancelled.status_code == 200
+
+
+def test_manual_event_refuses_impossible_requests(client):
+    headers, _ = login(client, "club")
+    too_big = client.post("/api/bookings/manual", headers=headers, json={
+        "attendance": 900, "duration_periods": 2,
+        "windows": [{"day": "MON", "from_period": 1, "to_period": 4}],
+        "room_types": ["auditorium"]})
+    assert too_big.status_code == 409
+    detail = too_big.json()["detail"]
+    assert "no room seats 900" in detail["conflicts"][0]
+
+    unknown_room_type = client.post("/api/bookings/manual/check", headers=headers, json={
+        "attendance": 50, "duration_periods": 1,
+        "windows": [{"day": "MON", "from_period": 1, "to_period": 2}],
+        "room_types": ["spaceship"]}).json()
+    assert unknown_room_type["ok"] is False
+    assert "not room types" in unknown_room_type["reason"]
+
+    not_a_day = client.post("/api/bookings/manual/check", headers=headers, json={
+        "attendance": 50, "duration_periods": 1,
+        "windows": [{"day": "SAT", "from_period": 1, "to_period": 2}]}).json()
+    assert not_a_day["ok"] is False and "not a teaching day" in not_a_day["reason"]
+
+
+def test_manual_event_respects_a_mandatory_group(client):
+    headers, _ = login(client, "admin")
+    week = client.get("/api/timetable/week", headers=headers).json()["entries"]
+    row = next(e for e in week if e["groups"])
+    group = row["groups"][0]
+    result = client.post("/api/bookings/manual/check", headers=headers, json={
+        "attendance": 60, "duration_periods": 1,
+        "windows": [{"day": row["day"], "from_period": row["start_period"],
+                     "to_period": row["start_period"]}],
+        "room_types": ["seminar_hall", "lecture_hall"],
+        "mandatory_for_groups": [group]}).json()
+    assert result["ok"] is False
+    assert any("already have a class" in c for c in result["conflicts"]), result
+
+
+# ------------------------------------------------------------------ persistence surface
+def test_database_surface_reports_the_mirror(client):
+    headers, _ = login(client, "admin")
+    db = client.get("/api/admin/db", headers=headers).json()
+    assert db["engine"] == "sqlite"
+    assert db["active_version"]["source"]
+    assert db["tables"]["timetable_version"] >= 1
+
+    history = client.get("/api/admin/history", headers=headers).json()["versions"]
+    assert history and history[0]["id"] == db["active_version"]["id"]
+    assert len([v for v in history if v["source"] == "committed exports"]) >= 1
+    # the mirror can never drift from the snapshots it was written from
+    assert db["tables"]["placement"] == sum(v["sessions"] for v in history), (db["tables"], history)
+    assert db["tables"]["exam_placement"] == sum(v["exams"] for v in history)
+    assert db["tables"]["booking_record"] == sum(v["bookings"] for v in history)
+
+
+def test_export_download_is_the_file_the_validator_reads(client):
+    headers, _ = login(client, "admin")
+    r = client.get("/api/admin/exports/schedule.json", headers=headers)
+    assert r.status_code == 200
+    payload = r.json()
+    summary = client.get("/api/dataset/summary", headers=headers).json()["summary"]
+    assert payload["dataset_id"] == summary["dataset_id"]
+    assert len(payload["sessions"]) == 189
+    assert client.get("/api/admin/exports/../../etc/passwd", headers=headers).status_code in (404, 400)
+
+
+# ------------------------------------------------------------------ change file + dataset upload
+def test_sample_change_file_can_be_loaded_and_previewed(client):
+    headers, _ = login(client, "admin")
+    sample = client.get("/api/disruption/sample", headers=headers).json()
+    assert sample["changes"], sample
+
+    preview = client.post("/api/disruption/preview-file", json=sample, headers=headers)
+    assert preview.status_code == 200, preview.text
+    body = preview.json()
+    assert body["valid"] is True and body["moves"] >= 0
+
+    # a proposal for a refused change is stored as refused, never as pending
+    refused = client.post("/api/disruption/preview-file", headers=headers, json={"changes": [
+        {"type": "room_unavailable", "room_id": "LH-1", "days": ["MON", "TUE", "WED", "THU", "FRI"],
+         "periods": list(range(1, 10))}]})
+    assert refused.status_code == 200
+    assert refused.json()["valid"] is False
+    assert refused.json()["status"] in ("refused", "pending")
+
+
+def test_uploaded_dataset_is_validated_used_and_reversible(client):
+    """A judge's own dataset: rejected if broken, used if fine, and the demo reset restores ours."""
+    headers, _ = login(client, "admin")
+    dataset = json.load(open(os.path.join(ROOT, "vendor", "cit_public.json"), encoding="utf-8"))
+
+    broken = {k: v for k, v in dataset.items() if k != "sessions"}
+    assert client.post("/api/admin/dataset", json=broken, headers=headers).status_code == 422
+
+    copy = dict(dataset)
+    copy["dataset_id"] = "judge-upload-v1"
+    accepted = client.post("/api/admin/dataset", json=copy, headers=headers)
+    assert accepted.status_code == 200, accepted.text
+    assert accepted.json()["dataset_id"] == "judge-upload-v1"
+    assert client.get("/api/dataset/summary", headers=headers).json()["summary"]["dataset_id"] == "judge-upload-v1"
+
+    restored = client.delete("/api/admin/dataset", headers=headers).json()
+    assert restored["dataset_id"] == "cit-public-v1"
+    validate = client.get("/api/timetable/validate", headers=headers).json()
+    assert validate["scheduled"] == 189 and validate["hard_violations"] == 0
+
+
 def test_reset_restores_the_demo(client):
     headers, _ = login(client, "admin")
     r = client.post("/api/admin/reset", headers=headers).json()

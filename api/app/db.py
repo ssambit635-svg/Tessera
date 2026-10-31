@@ -85,13 +85,29 @@ def get_engine():
     global _engine, _settings
     s = get_settings()
     if _engine is None or _settings is not s:
-        connect_args = {"check_same_thread": False} if s.database_url.startswith("sqlite") else {}
+        is_sqlite = s.database_url.startswith("sqlite")
+        connect_args = {"check_same_thread": False} if is_sqlite else {}
         _engine = create_engine(s.database_url, connect_args=connect_args)
+        if is_sqlite:
+            # WAL keeps reads working while an admin generation writes; busy_timeout stops
+            # "database is locked" during a 40 second solve.
+            from sqlalchemy import event
+
+            @event.listens_for(_engine, "connect")
+            def _sqlite_pragmas(dbapi_conn, _record):  # pragma: no cover - driver level
+                cur = dbapi_conn.cursor()
+                cur.execute("PRAGMA journal_mode=WAL")
+                cur.execute("PRAGMA synchronous=NORMAL")
+                cur.execute("PRAGMA busy_timeout=15000")
+                cur.close()
         _settings = s
     return _engine
 
 
 def init_db() -> None:
+    # import for the side effect of registering the derived timetable tables
+    from .services import manual, persistence  # noqa: F401
+
     SQLModel.metadata.create_all(get_engine())
 
 
