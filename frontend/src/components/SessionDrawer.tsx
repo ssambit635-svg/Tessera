@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspace } from "../lib/workspace";
 import { useUi } from "../lib/ui";
@@ -13,21 +13,44 @@ import {
 import { DAY_LONG, MONTHS_SHORT, plural } from "../lib/format";
 import { dateFromISO } from "../lib/ui";
 import { initials, tintFor, ROOM_TYPE_LABELS } from "../lib/persona";
+import { fetchExplain } from "../lib/api";
+import { useDialogFocus } from "../lib/focus";
+
+interface Explained {
+  summary: string;
+  reasons: string[];
+  tradeoffs: string[];
+  alternatives: { day: string; start_period: number }[];
+  checked_by: string;
+}
 
 export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClose: () => void }) {
-  const { data, proposeChange, notify } = useWorkspace();
+  const { data, proposeChange, notify, source } = useWorkspace();
+  const [explained, setExplained] = useState<Explained | null>(null);
+  const [explainError, setExplainError] = useState<string | null>(null);
+  const [askExplain, setAskExplain] = useState(false);
   const { activeDate, openSession } = useUi();
   const navigate = useNavigate();
   const session = data.sessions.find((s) => s.id === sessionId);
   const suggestions = useMemo(() => (session ? suggestSlots(data, session.id, 3) : []), [data, session]);
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+    if (!askExplain || !source.token || explained) return;
+    let live = true;
+    fetchExplain(source.token, sessionId)
+      .then((result) => {
+        if (live) setExplained(result);
+      })
+      .catch((exc) => {
+        if (live) setExplainError(exc instanceof Error ? exc.message : "Could not read the explanation");
+      });
+    return () => {
+      live = false;
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [askExplain, explained, sessionId, source.token]);
+
+  const panelRef = useRef<HTMLElement | null>(null);
+  useDialogFocus(panelRef, onClose);
 
   if (!session) return null;
 
@@ -52,18 +75,25 @@ export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClo
   return (
     <>
       <div className="scrim" onClick={onClose} />
-      <aside className="drawer" role="dialog" aria-label={`${session.courseTitle} details`}>
+      <aside
+        className="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="session-drawer-title"
+        tabIndex={-1}
+        ref={panelRef}
+      >
         <div className="drawer-head">
           <div style={{ minWidth: 0 }}>
             <div className="row gap-6" style={{ marginBottom: 6 }}>
               <span className="chip sky">{session.department}</span>
               <span className="chip outline">{session.kind}</span>
-              <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                 {session.id}
               </span>
             </div>
-            <h2>{session.courseTitle}</h2>
-            <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
+            <h2 id="session-drawer-title">{session.courseTitle}</h2>
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
               {session.courseId} · {DAY_LONG[session.day]} {date.getDate()} {MONTHS_SHORT[date.getMonth()]} ·{" "}
               {periodSpan(data, session.startPeriod, session.endPeriod)}
             </div>
@@ -126,7 +156,7 @@ export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClo
           <div>
             <div className="row-between" style={{ marginBottom: 8 }}>
               <span className="eyebrow">Connected today</span>
-              <span className="mono" style={{ fontSize: 9, color: "var(--muted)" }}>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                 ripple preview
               </span>
             </div>
@@ -142,7 +172,7 @@ export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClo
                   </span>
                   <span className="connect-items">
                     {row.items.length === 0 ? (
-                      <span className="mono" style={{ fontSize: 10, color: "var(--muted)" }}>
+                      <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                         nothing else
                       </span>
                     ) : (
@@ -157,11 +187,52 @@ export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClo
                         </button>
                       ))
                     )}
-                    {row.items.length > 3 ? <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>+{row.items.length - 3}</span> : null}
+                    {row.items.length > 3 ? <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>+{row.items.length - 3}</span> : null}
                   </span>
                 </div>
               ))}
             </div>
+          </div>
+
+          <div>
+            <div className="row-between" style={{ marginBottom: 8 }}>
+              <span className="eyebrow">Why is it here?</span>
+              {source.token ? (
+                <button className="chip outline" onClick={() => setAskExplain(true)} disabled={askExplain && !explained && !explainError}>
+                  <Icon name="shield" size={10} />
+                  {explained ? "checked by the API" : askExplain ? "asking the engine…" : "ask the engine"}
+                </button>
+              ) : (
+                <span className="chip outline">live sign-in for the API check</span>
+              )}
+            </div>
+            {explained ? (
+              <div className="explain-block">
+                <p className="explain-summary">{explained.summary}</p>
+                <ul>
+                  {explained.reasons.map((reason) => (
+                    <li key={reason}>
+                      <Icon name="check" size={11} strokeWidth={2.4} />
+                      <span>{reason}</span>
+                    </li>
+                  ))}
+                  {explained.tradeoffs.map((tradeoff) => (
+                    <li key={tradeoff} className="tradeoff">
+                      <Icon name="info" size={11} />
+                      <span>{tradeoff}</span>
+                    </li>
+                  ))}
+                </ul>
+                <span className="mono explain-source">{explained.checked_by}</span>
+              </div>
+            ) : explainError ? (
+              <p className="muted" style={{ fontSize: 11.5 }}>{explainError}</p>
+            ) : (
+              <p className="muted" style={{ fontSize: 11.5 }}>
+                The API can replay the exact constraints that placed this session — room type, capacity,
+                accessibility, faculty hours and group freedom — and name the soft costs it paid.
+              </p>
+            )}
           </div>
 
           <div>
@@ -183,7 +254,7 @@ export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClo
                       <b>
                         {DAY_LONG[suggestion.target.day]} · P{suggestion.target.startPeriod}
                       </b>
-                      <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                      <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                         {roomById(data).get(suggestion.target.roomId ?? "")?.name} ·{" "}
                         {suggestion.state === "valid" ? "all checks pass" : "warnings only"}
                       </span>

@@ -19,8 +19,8 @@
   /* --- type -------------------------------------------------------------- */
   --text: #232322;
   --text-soft: #57534b;
-  --muted: #8b867b;
-  --muted-2: #a8a296;
+  --muted: #6b665d;  /* 4.9:1 on paper, 5.6:1 on card - WCAG AA */
+  --muted-2: #6f6a61; /* never lighter than AA; hierarchy comes from size */
   --text-inverse: #f4f1e8;
   --text-inverse-soft: #b9b5ab;
 
@@ -204,7 +204,7 @@ svg {
 
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 10.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);

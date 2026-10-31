@@ -3,7 +3,7 @@ import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { buildings, roomSummary, availabilityWindow } from "../lib/derive";
 import { percent, plural } from "../lib/format";
-import { ROOM_TYPE_LABELS, roomImage } from "../lib/persona";
+import { PHOTO_NOTE, ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
 
 export default function Locations() {
   const { data } = useWorkspace();
@@ -28,14 +28,15 @@ export default function Locations() {
           return (
             <article key={building.name} className="location-card">
               <div className="location-media">
-                <img src={roomImage(hero.id, hero.type)} alt={building.name} loading="lazy" />
+                <img src={roomImage(hero.id, hero.type)} alt={roomImageAlt(hero.name)} loading="lazy" />
+                <span className="photo-note">{PHOTO_NOTE}</span>
                 <span className="annotation">{String(index + 1).padStart(2, "0")} · {building.rooms.length} spaces</span>
               </div>
               <div className="location-body">
                 <div className="row-between" style={{ alignItems: "flex-start" }}>
                   <div>
                     <h3>{building.name}</h3>
-                    <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                    <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                       {building.capacity} seats · {building.sessions} sessions this week
                     </span>
                   </div>

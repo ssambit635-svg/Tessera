@@ -152,7 +152,7 @@ function NextUp() {
 }
 
 export function Sidebar() {
-  const { data, railCollapsed, setRailCollapsed, layers, toggleLayer, user, pending } = useWorkspace();
+  const { data, railCollapsed, setRailCollapsed, layers, toggleLayer, user } = useWorkspace();
   const { mobileNavOpen, setMobileNavOpen } = useUi();
   const location = useLocation();
   const navigate = useNavigate();
@@ -257,7 +257,9 @@ export function Sidebar() {
                   item.to === "/mosaic"
                     ? location.pathname === "/mosaic" || location.pathname === "/"
                     : location.pathname.startsWith(item.to);
-                const badge = item.to === "/bookings" ? pendingCount : 0;
+                // Only real, outstanding work carries a number: the proposals waiting for a
+                // second admin. Decided bookings are not "pending", so they never badge.
+                const badge = item.to === "/approvals" ? pendingCount : 0;
                 return (
                   <NavLink
                     key={item.to}
@@ -288,15 +290,14 @@ export function Sidebar() {
           <div className="rail-layers">
             <div className="rail-section-head">
               <b>My layers</b>
-              <span>{Object.values(layers).filter(Boolean).length}/5</span>
+              <span>{Object.values(layers).filter(Boolean).length}/{Object.keys(layers).length}</span>
             </div>
             {(
               [
                 ["classes", "Classes", counts.classes, "var(--sky)"],
+                ["exams", "Examinations", data.exams.length, "var(--lavender)"],
                 ["events", "Bookings & events", counts.events, "var(--lime)"],
-                ["exams", "Examinations", counts.exams, "var(--lavender)"],
-                ["library", "Rooms & labs", counts.rooms, "var(--sage)"],
-                ["birthdays", "AI holds", pending ? 1 : 0, "var(--violet)"],
+                ["maintenance", "Maintenance cells", data.maintenance.length, "var(--coral)"],
               ] as const
             ).map(([key, label, count, colour]) => (
               <button
@@ -335,7 +336,7 @@ export function Sidebar() {
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 4px 0", opacity: 0.5 }}>
             <Icon name={data?.calendar.days.length ? "database" : "wifi"} size={12} />
-            <span className="mono" style={{ fontSize: 9, letterSpacing: "0.08em" }}>
+            <span className="mono" style={{ fontSize: 10.5, letterSpacing: "0.08em" }}>
               {data?.calendar.festWeek?.toUpperCase() ?? "TEACHING WEEK"}
             </span>
           </div>

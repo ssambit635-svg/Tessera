@@ -9,6 +9,7 @@ import { ChangePanel } from "../components/ChangePanel";
 import {
   boardItems,
   departmentStats,
+  examPeriods,
   packItems,
   periodSpan,
   validateMove,
@@ -27,6 +28,15 @@ import {
 } from "../lib/format";
 import { initials, roomImage, tintFor } from "../lib/persona";
 import type { DayCode } from "../lib/types";
+import type { Layers } from "../lib/workspace";
+
+/** A layer hides exactly the items it names - no toggle is decorative. */
+function layerOn(layers: Layers, item: BoardItem): boolean {
+  if (item.kind === "session") return layers.classes;
+  if (item.kind === "booking") return layers.events;
+  if (item.kind === "exam") return layers.exams;
+  return true;
+}
 
 type View = "week" | "month" | "day";
 type Perspective = "days" | "rooms" | "faculty" | "groups" | "departments";
@@ -136,7 +146,7 @@ function Tile({
   return (
     <button
       type="button"
-      className={`tile tone-${item.tone} ${compact ? "is-compact" : ""} ${item.kind === "booking" ? "kind-booking" : ""} ${dragging ? "is-dragging" : ""} ${dimmed ? "is-muted" : ""}`}
+      className={`tile tone-${item.tone} ${compact ? "is-compact" : ""} ${item.kind === "booking" ? "kind-booking" : ""} ${item.kind === "exam" ? "kind-exam" : ""} ${item.department ? `dept-${item.department}` : ""} ${dragging ? "is-dragging" : ""} ${dimmed ? "is-muted" : ""}`}
       style={{
         top,
         height,
@@ -208,7 +218,7 @@ function groupOverflow(
 }
 
 export default function Mosaic() {
-  const { data, layers, pending, proposeChange, notify } = useWorkspace();
+  const { data, layers, toggleLayer, pending, proposeChange, notify } = useWorkspace();
   const { activeDate, setActiveDate, selectedSession, openSession } = useUi();
   const navigate = useNavigate();
   const [view, setView] = useState<View>("week");
@@ -341,8 +351,7 @@ export default function Mosaic() {
 
     if (view === "day") {
       boardItems(data, activeDay).forEach((item) => {
-        if (item.kind === "session" && !layers.classes) return;
-        if (item.kind === "booking" && !layers.events) return;
+        if (!layerOn(layers, item)) return;
         if (dept !== "all" && item.department !== dept) return;
         const q = query.trim().toLowerCase();
         if (q && !`${item.title} ${item.subtitle} ${item.roomName}`.toLowerCase().includes(q)) return;
@@ -354,8 +363,7 @@ export default function Mosaic() {
     if (perspective === "days") {
       dates.forEach((day) => {
         boardItems(data, day).forEach((item) => {
-          if (item.kind === "session" && !layers.classes) return;
-          if (item.kind === "booking" && !layers.events) return;
+          if (!layerOn(layers, item)) return;
           const session = item.sessionId ? data.sessions.find((s) => s.id === item.sessionId) : null;
           if (dept !== "all" && session && session.department !== dept) return;
           const q = query.trim().toLowerCase();
@@ -380,6 +388,34 @@ export default function Mosaic() {
       if (perspective === "groups") session.groupIds.forEach((g) => push(g, item));
       if (perspective === "departments") push(session.department, item);
     });
+
+    if (perspective === "rooms" && layers.exams) {
+      data.exams.forEach((exam) => {
+        if (!exam.rooms.length) return;
+        const span = examPeriods(data, exam.slot);
+        if (!span) return;
+        exam.rooms.forEach((roomId) => {
+          const list = map.get(roomId);
+          if (!list) return;
+          list.push({
+            key: `exam-${exam.id}-${roomId}`,
+            courseId: exam.courseIds[0],
+            kind: "exam",
+            title: exam.courseIds.join(" + "),
+            subtitle: "Midsem examination",
+            day: exam.day,
+            startPeriod: span.start,
+            endPeriod: span.end,
+            roomId,
+            roomName: data.rooms.find((r) => r.id === roomId)?.name ?? roomId,
+            groupIds: exam.groupIds,
+            groupNames: exam.groupNames,
+            tone: "violet",
+            size: exam.size,
+          });
+        });
+      });
+    }
 
     if (perspective === "rooms" && layers.events) {
       data.bookings.bookings.forEach((booking) => {
@@ -582,11 +618,29 @@ export default function Mosaic() {
               <Icon name="chevronDown" size={11} />
             </label>
 
-            <span className="chip outline" style={{ height: 26 }}>
-              <Icon name="layers" size={11} />
-              {layers.classes ? "Classes" : "Classes hidden"}
-              {layers.events ? " · Bookings" : ""}
-            </span>
+            {/* The same four layers the rail lists — real toggles, not a status readout. */}
+            <div className="board-layers" role="group" aria-label="Calendar layers">
+              {(
+                [
+                  ["classes", "Classes"],
+                  ["exams", "Exams"],
+                  ["events", "Bookings"],
+                  ["maintenance", "Closures"],
+                ] as [keyof Layers, string][]
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  className={`chip ${layers[key] ? "on" : "outline"}`}
+                  style={{ height: 26 }}
+                  aria-pressed={layers[key]}
+                  onClick={() => toggleLayer(key)}
+                  title={`${layers[key] ? "Hide" : "Show"} ${label.toLowerCase()}`}
+                >
+                  <Icon name={layers[key] ? "check" : "layers"} size={11} />
+                  {label}
+                </button>
+              ))}
+            </div>
 
             {!canDrag ? (
               <span className="chip sand" style={{ height: 26 }}>
@@ -684,6 +738,22 @@ export default function Mosaic() {
                         }
                       />
                     ))}
+
+                    {perspective === "rooms" && layers.maintenance
+                      ? data.maintenance
+                          .filter((cell) => cell.room_id === column.key)
+                          .map((cell) => (
+                            <div
+                              key={`maint-${cell.room_id}-${cell.day}-${cell.period}`}
+                              className="maint-marker"
+                              style={{ top: (cell.period - 1) * ROW_H + 4, height: ROW_H - 8 }}
+                              title={`${column.label} is closed ${cell.day} P${cell.period} (declared unavailable)`}
+                            >
+                              <Icon name="lock" size={10} />
+                              <span>closed</span>
+                            </div>
+                          ))
+                      : null}
 
                     {stacks.map((group) => (
                       <button
@@ -790,7 +860,7 @@ export default function Mosaic() {
           </div>
 
           <div className="row gap-10 wrap" style={{ padding: "0 2px" }}>
-            <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)", letterSpacing: "0.06em" }}>
+            <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)", letterSpacing: "0.06em" }}>
               {data.sessions.length} SESSIONS · {data.rooms.length} SPACES · {data.faculty.length} FACULTY ·{" "}
               {data.dashboard.conflicts.hard} HARD CONFLICTS
             </span>
@@ -800,7 +870,7 @@ export default function Mosaic() {
                 <Icon name="route" size={11} /> Proposal awaiting review
               </span>
             ) : (
-              <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                 {data.calendar.labStartPeriods.length} lab starts · lunch after P{data.calendar.lunchAfterPeriod}
               </span>
             )}
@@ -929,7 +999,7 @@ function MonthGrid({
         })}
       </div>
       <div className="row gap-10 wrap" style={{ marginTop: 12 }}>
-        <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
           MONTH VIEW · density only. Pick a day to open its lanes.
         </span>
         <span className="spacer" />

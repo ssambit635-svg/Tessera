@@ -82,7 +82,7 @@
 
 .rail-wordmark span {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-inverse-soft);
@@ -202,7 +202,7 @@
   color: var(--ink);
   font-style: normal;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
   display: grid;
   place-items: center;
@@ -218,7 +218,7 @@
 
 .nav-group-label {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(244, 241, 232, 0.38);
@@ -285,7 +285,7 @@
 
 .nav-count {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 10.5px;
   padding: 1px 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
@@ -426,7 +426,7 @@
 .cal-dow {
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.04em;
   color: rgba(244, 241, 232, 0.34);
   padding-bottom: 5px;
@@ -489,7 +489,7 @@
 
 .rail-section-head span {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.12em;
   color: rgba(244, 241, 232, 0.34);
 }
@@ -531,7 +531,7 @@
 .layer-count {
   margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   color: rgba(244, 241, 232, 0.5);
   min-width: 14px;
   text-align: right;
@@ -562,7 +562,7 @@
 
 .legend-row .legend-value {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   color: rgba(244, 241, 232, 0.45);
 }
 
@@ -678,7 +678,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--muted);
@@ -713,7 +713,7 @@
 .search-trigger kbd {
   margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   padding: 2px 5px;
   border-radius: 5px;
   border: 1px solid var(--line);
@@ -746,7 +746,7 @@
   background: var(--coral);
   color: #fff;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   display: grid;
   place-items: center;
   border: 2px solid var(--paper);
@@ -763,7 +763,7 @@
   border: 1px solid var(--line-2);
   background: var(--ivory);
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.04em;
   color: var(--text-soft);
   white-space: nowrap;
@@ -804,7 +804,7 @@
 }
 
 .profile-chip .pc-name b { font-size: 11.5px; font-weight: 500; font-family: var(--font-display); }
-.profile-chip .pc-name span { font-size: 9.5px; color: var(--muted); font-family: var(--font-mono); }
+.profile-chip .pc-name span { font-size: 10.5px; color: var(--muted); font-family: var(--font-mono); }
 
 .hamburger { display: none; }
 

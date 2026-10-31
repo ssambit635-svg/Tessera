@@ -30,6 +30,22 @@ function shortSeat(label: string, role: string): string {
   return role.replace(/_/g, " ");
 }
 
+/** Every failure gets a sentence a person can act on - never "Request failed (500)". */
+function describeFailure(failure: unknown): string {
+  if (failure instanceof ApiError) {
+    if (failure.status === 401) return "That email and password do not match an account on this campus.";
+    if (failure.status === 0) {
+      return "The scheduling API is not answering. Start it with `uvicorn app.main:app --port 8000`, or step in with a demo identity (offline preview).";
+    }
+    if (failure.status >= 500) {
+      return "Sign-in failed: the scheduling API answered with an error — it is probably still starting up. Wait a second and try again, or step in with a demo identity (offline preview).";
+    }
+    if (failure.status === 422) return "That does not look like a campus email address.";
+    return failure.message;
+  }
+  return "Sign-in failed. Check your connection, then try again or use a demo identity below.";
+}
+
 export default function Login() {
   const { user, personas, signIn, signInLocal, status } = useWorkspace();
   const navigate = useNavigate();
@@ -59,14 +75,7 @@ export default function Login() {
     try {
       await enter(await loginWithPassword(email, password));
     } catch (failure) {
-      const message =
-        failure instanceof ApiError
-          ? failure.status === 401
-            ? "That email and password do not match an account on this campus."
-            : failure.status === 0
-              ? "The scheduling service is not reachable from here. Step in with a demo identity below."
-              : failure.message
-          : "Sign-in failed. Try again, or use a demo identity below.";
+      const message = describeFailure(failure);
       setError(message);
     } finally {
       setBusy(null);

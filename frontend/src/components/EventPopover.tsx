@@ -79,7 +79,7 @@ export function EventPopover({ item, anchor, onClose, onDetails }: Props) {
           <Icon name="clock" size={14} />
           <span>
             <b>{span.split(" – ")[0]}</b> <span className="ep-sep">→</span> <b>{span.split(" – ")[1]}</b>
-            <span style={{ marginLeft: 8, fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--muted)" }}>
+            <span style={{ marginLeft: 8, fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--muted)" }}>
               {item.endPeriod - item.startPeriod + 1}h
             </span>
           </span>
@@ -165,7 +165,7 @@ export function EventPopover({ item, anchor, onClose, onDetails }: Props) {
           alt=""
           style={{ width: 42, height: 30, objectFit: "cover", borderRadius: 7 }}
         />
-        <span className="mono" style={{ fontSize: 9, color: "var(--muted)", letterSpacing: "0.04em" }}>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)", letterSpacing: "0.04em" }}>
           {item.roomId} · {data.rooms.find((r) => r.id === item.roomId)?.building}
         </span>
       </div>

@@ -14,8 +14,25 @@ router = APIRouter(prefix="/api/dataset", tags=["dataset"])
 @router.get("/summary")
 def summary(user: User = Depends(current_user)):
     ds = state.dataset()
+    # Maintenance / declared-unavailable windows, flattened so the calendar can draw them.
+    # This is real dataset data (room_unavailability), not a derived guess.
+    maintenance = [
+        {"room_id": room_id, "day": day, "period": period}
+        for room_id, slots in ds.room_unavailable.items()
+        for day, period in sorted(slots)
+    ]
     return {"summary": ds.summary(), "calendar": ds.raw["calendar"],
             "priority_order": ds.priority_order, "role_category_cap": ds.role_cap,
+            "maintenance": maintenance,
+            "maintenance_count": len(maintenance),
+            "soft_rule_labels": {
+                "S1": "capacity slack - a room much bigger than the class",
+                "S2": "room type preference",
+                "S3": "faculty preference (preferred periods)",
+                "S4": "a course repeats on the same day for a group",
+                "S5": "idle gaps in a student's day",
+                "S6": "use of the last period of the day",
+            },
             "category_weights": {"institute_event": 5, "guest_lecture": 4,
                                  "department_event": 3, "club_event": 2}}
 

@@ -85,6 +85,13 @@ export function roomImage(roomId: string, type: string): string {
   return ROOM_IMAGES[roomId] ?? TYPE_IMAGES[type] ?? "/media/innovation-hub.jpg";
 }
 
+/** Honest alt text: these photographs illustrate the room type, they are not the room. */
+export function roomImageAlt(roomName: string): string {
+  return `Reference photograph illustrating ${roomName}`;
+}
+
+export const PHOTO_NOTE = "Reference imagery · illustrative, not this exact room";
+
 /** Rooms we promote on the editorial pages, because they photograph well. */
 export const FEATURED_ROOMS = ["CS-LAB-1", "ELEC-LAB-1", "SH-1", "INNOV-HUB", "MECH-WS"];
 

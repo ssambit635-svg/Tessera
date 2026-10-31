@@ -17,16 +17,24 @@ Every library, solver and asset the project uses, what it is used for, and its l
 | httpx | 0.28.1 | LLM provider calls | BSD-3-Clause |
 | pytest | 8.3.4 | test suite | MIT |
 
-## Frontend
+## Frontend (`frontend/`)
 
-| Package | Used for | Licence |
-| --- | --- | --- |
-| Next.js 15 | app shell, routing | MIT |
-| React 19 | UI | MIT |
-| Tailwind CSS | styling | MIT |
-| shadcn/ui (components copied into the repo) | dialogs, tables, badges, toasts, skeletons | MIT |
-| TanStack Query | data fetching, loading/empty/error states | MIT |
-| lucide-react | icons | ISC |
+| Package | Version | Used for | Licence |
+| --- | --- | --- | --- |
+| React | 18.3 | UI (no UI framework, no component library) | MIT |
+| React DOM | 18.3 | renderer | MIT |
+| react-router-dom | 6.28 | client routing | MIT |
+| Vite | 6.0 | dev server and production build | MIT |
+| TypeScript | 5.7 | type checking (`npm run typecheck` in CI) | Apache-2.0 |
+| @vitejs/plugin-react | 4.3 | JSX transform | MIT |
+| Fontsource packages (Geist, Space Grotesk, Instrument Serif, IBM Plex Mono) | 5.3 | self-hosted typefaces — no CDN, no Google Fonts request at runtime | OFL-1.1 |
+
+Development-only tooling (not shipped): puppeteer-core + @sparticuz/chromium for the
+screenshot/accessibility harness, jsdom + esbuild for `scripts/smoke.mjs`.
+
+The interface itself is hand-written CSS (six stylesheets, design tokens in `src/styles/base.css`);
+there is no Tailwind, no shadcn/ui, no icon package — icons are inline SVG path data in
+`src/components/Icon.tsx`.
 
 ## Data / assets
 

@@ -158,11 +158,11 @@ export default function Reports() {
                     <i className="legend-dot" style={{ background: outcome.tone }} />
                     {outcome.label}
                   </span>
-                  <span className="mono" style={{ fontSize: 10, color: "var(--muted)" }}>{outcome.value}</span>
+                  <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>{outcome.value}</span>
                 </div>
               ))}
               <div className="divider" style={{ margin: "4px 0" }} />
-              <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                 {bookings.cancelled} cancelled before review
               </span>
             </div>
@@ -242,7 +242,7 @@ export default function Reports() {
                 </Fragment>
               ))}
             </div>
-            <p className="mono" style={{ fontSize: 9, color: "var(--muted)", marginTop: 10 }}>
+            <p className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 10 }}>
               COUNT OF PLACED SESSIONS · DARKER = HEAVIER
             </p>
           </div>
@@ -347,7 +347,7 @@ export default function Reports() {
             ) : (
               <span className="chip sand">Exports need the scheduling service</span>
             )}
-            <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+            <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
               {data.sessions.length} placements · {data.rooms.reduce((sum, r) => sum + roomSummary(data, r.id).classes.length, 0)} room assignments
             </span>
           </div>

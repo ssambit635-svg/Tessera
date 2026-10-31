@@ -42,6 +42,9 @@ def groq_env(monkeypatch):
     monkeypatch.setenv("GROQ_FALLBACK_MODEL", "llama-3.1-8b-instant")
     reset_settings_cache()
     yield
+    # The env must be un-patched *before* the cache is rebuilt, otherwise the settings object
+    # built here survives the monkeypatch undo and the next test sees a configured provider.
+    monkeypatch.undo()
     reset_settings_cache()
 
 

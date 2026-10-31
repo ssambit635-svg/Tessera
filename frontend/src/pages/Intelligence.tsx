@@ -15,6 +15,7 @@ import {
 } from "../lib/derive";
 import { DAY_LONG, MONTHS, addDays, dayCodeOf, percent, plural } from "../lib/format";
 import type { DayCode } from "../lib/types";
+import { facultyChangeRequest, fetchAiStatus } from "../lib/api";
 
 interface Action {
   label: string;
@@ -38,8 +39,21 @@ const QUICK_PROMPTS = [
   "Summarise tomorrow's activities",
 ];
 
+/** A faculty change request is the one thing the assistant is allowed to send to the engine. */
+const CHANGE_INTENT = /(move|shift|swap|reschedul|postpone|cancel|relocate|change|badal|shift kar|\bura?do\b)/i;
+
+interface AiStatus {
+  enabled: boolean;
+  mode: string;
+  model: string | null;
+  daily_limit: number;
+  note: string;
+  budget: { requests_today: number; remaining_primary: number; remaining_fallback: number };
+}
+
 export default function Intelligence() {
-  const { data } = useWorkspace();
+  const { data, source, user, notify, reload } = useWorkspace();
+  const [ai, setAi] = useState<AiStatus | null>(null);
   const { activeDate } = useUi();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
@@ -58,6 +72,21 @@ export default function Intelligence() {
   const [thinking, setThinking] = useState(false);
   const [drawer, setDrawer] = useState<string | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!source.token) return;
+    let live = true;
+    fetchAiStatus(source.token)
+      .then((status) => {
+        if (live) setAi(status as unknown as AiStatus);
+      })
+      .catch(() => {
+        /* the chip stays on "deterministic" rather than claiming a provider */
+      });
+    return () => {
+      live = false;
+    };
+  }, [source.token]);
   const active = dateFromISO(activeDate);
   const nextTeaching: DayCode = data.calendar.days[(data.calendar.days.indexOf(dayCodeOf(active)) + 1) % data.calendar.days.length];
 
@@ -277,12 +306,74 @@ export default function Intelligence() {
     };
   };
 
+  /** Ask the backend for a checked repair. Only for change-shaped questions, and only when live. */
+  const askEngine = async (question: string): Promise<Message | null> => {
+    if (!source.token || !CHANGE_INTENT.test(question)) return null;
+    try {
+      const result = (await facultyChangeRequest(source.token, question, user?.facultyId ?? null)) as {
+        status?: string;
+        summary?: string;
+        follow_up?: string;
+        valid?: boolean;
+        moves?: number;
+        proposal_id?: string | null;
+        conflicts?: unknown[];
+        explanation?: unknown;
+        source?: { provider?: string; llm?: string | null };
+        missing?: string[];
+      };
+      const provider = result.source?.llm ?? result.source?.provider ?? "deterministic";
+      const bullets: string[] = [];
+      if (result.summary) bullets.push(result.summary);
+      if (typeof result.moves === "number") bullets.push(`${result.moves} session(s) would move — minimum-move repair`);
+      if (result.follow_up) bullets.push(`I need one more detail: ${result.follow_up}`);
+      if (Array.isArray(result.conflicts) && result.conflicts.length) {
+        bullets.push(`${result.conflicts.length} hard conflict(s) would remain — this cannot be approved as-is`);
+      }
+      if (result.proposal_id) {
+        bullets.push(`Filed as proposal ${result.proposal_id} — it waits for a different admin`);
+      }
+      const reply: Message = {
+        id: `ai-${Date.now()}`,
+        role: "ai",
+        text:
+          result.status === "needs_detail"
+            ? "I could not read the whole request yet."
+            : result.valid
+              ? "The engine checked that change: it is valid, and it is now a pending proposal."
+              : "The engine checked that change: it cannot hold without breaking a hard rule.",
+        bullets,
+        actions: result.proposal_id
+          ? [
+              { label: "Open the approval queue", to: "/approvals" },
+              { label: "Back to the board", to: "/mosaic" },
+            ]
+          : [{ label: "Open the board", to: "/mosaic" }],
+        meta: `engine-checked · provider: ${provider}${ai?.enabled ? ` · ${ai.budget.requests_today}/${ai.daily_limit} calls today` : " · free tier, budget-guarded"}`,
+      };
+      if (result.proposal_id) {
+        notify({
+          tone: "valid",
+          title: "Proposal filed",
+          detail: "A second admin must approve it before the timetable changes.",
+        });
+        await reload();
+      }
+      return reply;
+    } catch {
+      // A provider outage must never look like an answer. Fall through to the deterministic reply,
+      // which is labelled as such.
+      return null;
+    }
+  };
+
   const send = async (question: string) => {
     if (!question.trim()) return;
     setMessages((current) => [...current, { id: `u-${Date.now()}`, role: "user", text: question.trim() }]);
     setInput("");
     setThinking(true);
-    const reply = await answer(question);
+    const engineReply = await askEngine(question);
+    const reply = engineReply ?? (await answer(question));
     window.setTimeout(() => {
       setMessages((current) => [...current, reply]);
       setThinking(false);
@@ -295,8 +386,8 @@ export default function Intelligence() {
         <div>
           <div className="row gap-8">
             <span className="eyebrow">TESSERA Intelligence</span>
-            <span className="chip violet">
-              <Icon name="sparkles" size={10} /> deterministic layer
+            <span className={`chip ${ai?.enabled ? "violet" : "outline"}`}>
+              <Icon name="sparkles" size={10} /> {ai?.enabled ? `groq · ${ai.model}` : "deterministic layer"}
             </span>
           </div>
           <h2 className="serif" style={{ fontSize: 32, marginTop: 4 }}>
@@ -316,7 +407,7 @@ export default function Intelligence() {
           <span>
             <b>{data.bookings.totals.approved}</b> bookings
           </span>
-          <span className="mono" style={{ fontSize: 9, color: "var(--muted)" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
             {MONTHS[active.getMonth()].toUpperCase()} · WEEK {data.calendar.festWeek}
           </span>
         </div>
@@ -396,7 +487,7 @@ export default function Intelligence() {
                 <span className="eyebrow">Recommendations</span>
                 <h3 style={{ marginTop: 3 }}>Contextual next actions</h3>
               </div>
-              <span className="mono" style={{ fontSize: 9, color: "var(--muted)" }}>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                 DERIVED, NOT INVENTED
               </span>
             </div>
@@ -433,8 +524,8 @@ export default function Intelligence() {
               <b>TESSERA Intelligence</b>
               <span>reasoning over the live workspace</span>
             </div>
-            <span className="ai-status">
-              <i /> ready
+            <span className={`ai-status ${ai && !ai.enabled ? "quiet" : ""}`}>
+              <i /> {ai?.enabled ? "groq ready" : "local rules"}
             </span>
           </div>
 
@@ -507,8 +598,9 @@ export default function Intelligence() {
             </button>
           </form>
           <p className="ai-foot">
-            Answers are computed from this workspace and every reply links to a screen. The assistant never
-            approves a booking on its own.
+            Read the small print: change requests go to the scheduling engine, which decides validity — the
+            model only reads your sentence. Answers come from this workspace, every reply links to a screen,
+            and the assistant never approves anything on its own.
           </p>
         </aside>
       </div>

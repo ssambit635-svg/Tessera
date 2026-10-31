@@ -43,8 +43,27 @@ export interface Layers {
   classes: boolean;
   events: boolean;
   exams: boolean;
-  library: boolean;
-  birthdays: boolean;
+  maintenance: boolean;
+}
+
+export const LAYER_KEYS: (keyof Layers)[] = ["classes", "events", "exams", "maintenance"];
+
+const DEFAULT_LAYERS: Layers = { classes: true, events: true, exams: true, maintenance: true };
+
+/** Old builds stored `library`/`birthdays`, which never controlled anything. Drop them. */
+function readLayers(raw: string | null): Layers {
+  if (!raw) return { ...DEFAULT_LAYERS };
+  try {
+    const parsed = JSON.parse(raw) as Partial<Layers>;
+    return {
+      classes: parsed.classes ?? true,
+      events: parsed.events ?? true,
+      exams: parsed.exams ?? true,
+      maintenance: parsed.maintenance ?? true,
+    };
+  } catch {
+    return { ...DEFAULT_LAYERS };
+  }
 }
 
 export type AuthState = "signed-in" | "signed-out";
@@ -140,6 +159,8 @@ const EMPTY_WORKSPACE: Workspace = {
   demoAccounts: [],
   unavailability: [],
   cancellations: [],
+  maintenance: [],
+  softRuleLabels: {},
 };
 
 function uid(prefix: string): string {
@@ -188,16 +209,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem("tessera.rail") === "collapsed";
   });
-  const [layers, setLayers] = useState<Layers>(() => {
-    if (typeof window === "undefined") return { classes: true, events: true, exams: true, library: true, birthdays: false };
-    try {
-      const raw = window.localStorage.getItem("tessera.layers");
-      if (raw) return JSON.parse(raw) as Layers;
-    } catch {
-      /* ignore malformed local state */
-    }
-    return { classes: true, events: true, exams: true, library: true, birthdays: false };
-  });
+  const [layers, setLayers] = useState<Layers>(() =>
+    typeof window === "undefined" ? { ...DEFAULT_LAYERS } : readLayers(window.localStorage.getItem("tessera.layers")),
+  );
   const [pending, setPending] = useState<PendingChange | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timers = useRef<Record<string, number>>({});

@@ -6,7 +6,7 @@ import { Icon } from "../components/Icon";
 import { SessionDrawer } from "../components/SessionDrawer";
 import { roomOccupancy, roomSummary, type CellState, type Occupancy } from "../lib/derive";
 import { ratio, DAY_LONG, addDays, dayCodeOf, formatDayLong, percent, plural, startOfWeek } from "../lib/format";
-import { ROOM_TYPE_LABELS, roomImage } from "../lib/persona";
+import { PHOTO_NOTE, ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
 import type { DayCode, Room } from "../lib/types";
 
 const STATE_LABEL: Record<CellState, string> = {
@@ -183,7 +183,7 @@ export default function Availability() {
               return (
                 <div key={room.id} className="matrix-row" style={{ display: "contents" }}>
                   <div className="matrix-rail">
-                    <img src={roomImage(room.id, room.type)} alt="" />
+                    <img src={roomImage(room.id, room.type)} alt={roomImageAlt(room.name)} title={PHOTO_NOTE} />
                     <div style={{ minWidth: 0 }}>
                       <b>{room.name}</b>
                       <span>
@@ -278,7 +278,7 @@ export default function Availability() {
       )}
 
       <div className="row gap-12 wrap" style={{ marginTop: 4 }}>
-        <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
           LEGEND
         </span>
         {(
@@ -304,7 +304,7 @@ export default function Availability() {
               <div>
                 <div className="eyebrow">{selected.occupancy.state === "free" ? "Available slot" : STATE_LABEL[selected.occupancy.state]}</div>
                 <h2 style={{ marginTop: 4 }}>{selected.room.name}</h2>
-                <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
                   {formatDayLong(active)} · {data.calendar.periods.find((p) => p.id === selected.period)?.start}–
                   {data.calendar.periods.find((p) => p.id === selected.period)?.end}
                 </div>

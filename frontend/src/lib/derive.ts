@@ -19,6 +19,8 @@ import { DAY_ORDER } from "./format";
 
 export type Tone = "lime" | "violet" | "sky" | "sage" | "coral" | "sand";
 
+/** Six tones, five teaching departments: CE shares ME's sand on purpose, and is told apart by
+ *  the diagonal hatch the board adds for it (`.tile.dept-CE`). Colour alone is never the only cue. */
 export const DEPT_TONE: Record<string, Tone> = {
   CSE: "sky",
   ECE: "violet",
@@ -809,6 +811,50 @@ export function bookingToBoardItem(ws: Workspace, booking: Booking): BoardItem |
   };
 }
 
+/** Exam slots ("AM", "PM") resolved to teaching periods from the published clock. */
+export function examPeriods(ws: Workspace, slot: string): { start: number; end: number } | null {
+  const window = ws.calendar.examWeek?.sessions?.find((s) => s.id === slot);
+  if (!window) {
+    if (slot === "AM") return { start: 2, end: 3 };
+    if (slot === "PM") return { start: 6, end: 7 };
+    return null;
+  }
+  const periods = ws.calendar.periods;
+  const start = periods.find((p) => p.start >= window.start) ?? periods[periods.length - 1];
+  const end = [...periods].reverse().find((p) => p.end <= window.end) ?? start;
+  return { start: start.id, end: Math.max(start.id, end.id) };
+}
+
+/** One board item per exam room, so the exams layer is a real calendar layer. */
+export function examBoardItems(ws: Workspace, day: DayCode): BoardItem[] {
+  const out: BoardItem[] = [];
+  ws.exams.forEach((exam) => {
+    if (exam.day !== day || !exam.rooms.length) return;
+    const span = examPeriods(ws, exam.slot);
+    if (!span) return;
+    exam.rooms.forEach((roomId) => {
+      const room = ws.rooms.find((r) => r.id === roomId);
+      out.push({
+        key: `exam-${exam.id}-${roomId}`,
+        courseId: exam.courseIds[0],
+        kind: "exam",
+        title: exam.courseIds.join(" + "),
+        subtitle: `Midsem · ${exam.groupIds.join(", ")}`,
+        day,
+        startPeriod: span.start,
+        endPeriod: span.end,
+        roomId,
+        roomName: room?.name ?? roomId,
+        groupIds: exam.groupIds,
+        groupNames: exam.groupNames,
+        tone: "violet",
+        size: exam.size,
+      });
+    });
+  });
+  return out;
+}
+
 export function boardItems(ws: Workspace, day: DayCode): BoardItem[] {
   const sessions: BoardItem[] = ws.sessions
     .filter((s) => s.day === day)
@@ -837,7 +883,11 @@ export function boardItems(ws: Workspace, day: DayCode): BoardItem[] {
     .map((b) => bookingToBoardItem(ws, b))
     .filter((b): b is BoardItem => b !== null && b.day === day);
 
-  return [...sessions, ...bookings].sort((a, b) => a.startPeriod - b.startPeriod);
+  const exams = examBoardItems(ws, day);
+  const booked = new Set(bookings.map((b) => `${b.roomId}-${b.startPeriod}`));
+  const uniqueExams = exams.filter((e) => !booked.has(`${e.roomId}-${e.startPeriod}`));
+
+  return [...sessions, ...uniqueExams, ...bookings].sort((a, b) => a.startPeriod - b.startPeriod);
 }
 
 /** Split overlapping items into side-by-side lanes (equal width), like a calendar app. */

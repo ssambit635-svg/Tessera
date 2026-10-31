@@ -15,6 +15,7 @@ from pathlib import Path
 import httpx
 
 from ..config import get_settings
+from . import budget
 
 ROOT = Path(__file__).resolve().parents[3]
 PROMPT_FILE = ROOT / "prompts" / "extract_booking.md"
@@ -68,7 +69,8 @@ class LLMStats:
         return {"attempts": self.attempts, "successes": self.successes,
                 "failures": self.failures, "last_error": self.last_error,
                 "last_model": self.last_model, "last_latency_ms": self.last_latency_ms,
-                "calls_by_model": dict(self.calls_by_model)}
+                "calls_by_model": dict(self.calls_by_model),
+                "budget": budget.snapshot()}
 
 
 STATS = LLMStats()
@@ -111,6 +113,8 @@ class GroqProvider(LLMProvider):
         self.base_url = s.groq_base_url.rstrip("/")
         self.timeout = s.llm_timeout
         self.transport = transport          # tests inject a mock; production uses the network
+        # A mock transport spends nothing, so the free-tier guard is skipped for it.
+        self.spends_quota = transport is None
         self.system_prompt = load_prompt()
 
     def available(self) -> bool:
@@ -153,6 +157,11 @@ class GroqProvider(LLMProvider):
             if not model:
                 continue
             for attempt in range(2):                     # one retry per model, small backoff
+                allowed, why = (budget.reserve(model) if self.spends_quota else (True, "ok"))
+                if not allowed:
+                    last_error = why
+                    STATS.last_error = why
+                    break                                    # try the next model, not this one
                 try:
                     STATS.attempts += 1
                     content, ms = self._call(model, text, context)
@@ -169,7 +178,9 @@ class GroqProvider(LLMProvider):
                     last_error = f"{type(exc).__name__}: {exc}"
                     STATS.failures += 1
                     STATS.last_error = last_error
-                    if attempt == 0 and "busy" in last_error:
+                    quota = any(code in last_error for code in ("429", "quota", "budget",
+                                                                "rate limit"))
+                    if attempt == 0 and "busy" in last_error and not quota:
                         time.sleep(0.4)
                         continue
                     break
@@ -181,7 +192,7 @@ class GroqProvider(LLMProvider):
         result = self.extract("Need a room for 40 people on Tuesday 6 to 8 pm with a projector.",
                               {"days": ["MON", "TUE", "WED", "THU", "FRI"], "role": "club"})
         return {"ok": result.ok, "model": result.model, "latency_ms": result.latency_ms,
-                "error": result.error, "sample": result.data}
+                "error": result.error, "sample": result.data, "budget": budget.snapshot()}
 
 
 def get_provider() -> LLMProvider:

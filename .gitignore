@@ -26,7 +26,3 @@ api/.env
 *.db
 *.db-wal
 *.db-shm
-
-# frontend build + test artifacts
-frontend/.smoke/
-frontend/dist/

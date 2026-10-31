@@ -67,7 +67,7 @@ export default function Departments() {
               <div>
                 <div className="eyebrow">Department</div>
                 <h2 style={{ marginTop: 3 }}>{active.code}</h2>
-                <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
                   {active.courses} courses · {active.sessions} sessions · {active.hours} teaching hours
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default function Departments() {
                           <span className={`avatar tone-${tintFor(person.id)}`}>{initials(person.name)}</span>
                           <span style={{ display: "flex", flexDirection: "column" }}>
                             <b style={{ fontSize: 12.5, fontFamily: "var(--font-display)", fontWeight: 500 }}>{person.name}</b>
-                            <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                            <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                               {summary.hours} h · {summary.classes.length} sessions
                             </span>
                           </span>
@@ -115,7 +115,7 @@ export default function Departments() {
               </div>
             </div>
             <div className="drawer-foot">
-              <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                 Read-only view of the shared dataset
               </span>
             </div>

@@ -112,7 +112,7 @@ export default function Bookings() {
             ))}
           </div>
           <span className="spacer" />
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
             {source.mode === "live" ? "DECIDED LIVE" : "PREVIEW ONLY"}
           </span>
         </div>
@@ -144,7 +144,7 @@ export default function Bookings() {
                   <td className="mono">{booking.request_id}</td>
                   <td>
                     <strong>{booking.title}</strong>
-                    <span className="mono" style={{ display: "block", fontSize: 9.5, color: "var(--muted)" }}>
+                    <span className="mono" style={{ display: "block", fontSize: 10.5, color: "var(--muted)" }}>
                       {booking.attendance} seats · {booking.duration_periods}h
                     </span>
                   </td>
@@ -184,11 +184,11 @@ export default function Bookings() {
           </table>
         </div>
         <div className="panel-foot">
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
             {visible.length} REQUEST{visible.length === 1 ? "" : "S"} · SORTED BY PRIORITY
           </span>
           <span className="spacer" />
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
             {Object.entries(data.roleCategoryCap)
               .map(([role, cap]) => `${role}: ${cap}`)
               .join(" · ")}
@@ -211,7 +211,7 @@ export default function Bookings() {
         />
       ) : null}
 
-      <p className="mono" style={{ fontSize: 9.5, color: "var(--muted)", letterSpacing: "0.06em" }}>
+      <p className="mono" style={{ fontSize: 10.5, color: "var(--muted)", letterSpacing: "0.06em" }}>
         {plural(bookings.length, "request")} · SPECTRA ’27 · WEEK 7
       </p>
     </div>
@@ -237,7 +237,7 @@ function BookingDrawer({ booking, onClose }: { booking: Booking; onClose: () => 
               {booking.cancelled ? <span className="chip coral">cancelled</span> : null}
             </div>
             <h2>{booking.title}</h2>
-            <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
               {booking.requester} · {formatStamp(booking.submitted_at)}
             </div>
           </div>
@@ -350,7 +350,7 @@ function BookingDrawer({ booking, onClose }: { booking: Booking; onClose: () => 
           >
             <Icon name="shield" size={14} /> Review for approval
           </button>
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)", marginLeft: "auto" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginLeft: "auto" }}>
             {booking.role.replace(/_/g, " ")}
           </span>
         </div>
@@ -557,7 +557,7 @@ function NaturalLanguageBooking({
                   <span className="chip violet">
                     <Icon name="sparkles" size={10} /> {draft.source}
                   </span>
-                  <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                  <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                     {source.mode === "live" ? "Returned by the API" : "Frontend fallback — the API is not reachable"}
                   </span>
                 </div>
@@ -745,7 +745,7 @@ function NaturalLanguageBooking({
                   </div>
                   {draft.requested_room ? (
                     <div className="row-between" style={{ marginTop: 8 }}>
-                      <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                      <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                         SELECTED {draft.requested_room}
                       </span>
                       <button className="btn sm quiet" onClick={() => updateDraft({ requested_room: null })}>
@@ -811,7 +811,7 @@ function NaturalLanguageBooking({
               Allow the API write
             </label>
           ) : (
-            <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+            <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
               PREVIEW ONLY · NOTHING IS SENT
             </span>
           )}

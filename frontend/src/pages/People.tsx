@@ -103,7 +103,7 @@ export default function People() {
             </button>
           </div>
           <span className="spacer" />
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
             {rows.length} PEOPLE
           </span>
         </div>
@@ -255,7 +255,7 @@ function FacultyDrawer({
           <div style={{ minWidth: 0 }}>
             <h2>{faculty.name}</h2>
             <div className="pc-role" style={{ marginTop: 2 }}>{designationFor(faculty.id, faculty.department)}</div>
-            <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
               {faculty.department} · {faculty.id} · max {faculty.maxHoursPerDay} h/day
             </div>
           </div>
@@ -381,7 +381,7 @@ function FacultyDrawer({
                         {candidate.compatible ? "suitable" : "not suitable"}
                       </span>
                     </div>
-                    <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                    <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                       {candidate.faculty.department} · {candidate.hours} h this week
                     </span>
                     <div className="candidate-reasons">
@@ -433,7 +433,7 @@ function FacultyDrawer({
           >
             <Icon name="edit" size={14} /> Request a change
           </button>
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)", marginLeft: "auto" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginLeft: "auto" }}>
             {formatStampShort(new Date().toISOString())}
           </span>
         </div>
