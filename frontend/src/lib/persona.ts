@@ -31,10 +31,16 @@ export function designationFor(facultyId: string, department: string): string {
 export function initials(name: string): string {
   const parts = name
     .replace(/^(Dr|Prof|Mr|Ms|Mrs|Shri|Smt)\.?\s+/i, "")
-    .split(/\s+/)
+    .split(/[\s/&,·]+/)
+    .map((part) => part.replace(/[^\p{L}\p{N}]/gu, ""))
     .filter(Boolean);
   if (!parts.length) return "·";
-  return (parts[0][0] + (parts[parts.length - 1][0] ?? "")).toUpperCase();
+  const first = parts[0][0];
+  const last = parts[parts.length - 1][0];
+  // "AI & DS (AI)" must not become "A(" — and a repeated letter reads as a typo, so fall
+  // back to the second word when the outer two agree.
+  const second = (parts[1] ?? "")[0] ?? "";
+  return `${first}${last && last !== first ? last : second || last}`.toUpperCase();
 }
 
 /** Stable warm/cool tint per person or entity — same id always gets the same tint. */

@@ -202,6 +202,13 @@ export default function Overview() {
         <Metric label="Faculty free" value={facultyNow.free} foot={`of ${facultyNow.total} right now`} tone="sage" icon="people" />
         <Metric label="Pending requests" value={pendingRequests} foot="need a second approver" tone="violet" icon="clock" />
         <Metric label="Conflicts" value={conflicts} foot={`soft penalty ${soft}`} tone={conflicts ? "coral" : "sage"} icon="shield" />
+        <Metric
+          label="Examinations"
+          value={data.exams.length}
+          foot={`${new Set(data.exams.flatMap((exam) => exam.rooms)).size} rooms · seated for ${data.exams.reduce((max, exam) => Math.max(max, exam.size), 0)}`}
+          tone="sand"
+          icon="clipboard"
+        />
       </section>
 
       {/* ---------------------------------------------------------------- today */}

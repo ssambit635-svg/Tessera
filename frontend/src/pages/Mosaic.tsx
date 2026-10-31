@@ -92,12 +92,33 @@ function Tile({
   const height = (item.endPeriod - item.startPeriod + 1) * ROW_H - 6;
   const share = 1 / lanes;
   const showMeta = height > 150;
-  const showPhoto = Boolean(photo) && height > 240 && lanes < 3;
+  const showPhoto = Boolean(photo) && height > 240;
+  /* A one-period tile is 66px tall: the code and who teaches it share one line, so the
+     title gets the full two lines it needs instead of being squeezed into 1.4. */
+  const compact = height <= 92;
+  const avatars = (
+    <span className={`tile-avatars ${compact ? "compact" : ""}`}>
+      {item.facultyName ? (
+        <span className={`avatar tone-${tintFor(item.facultyName)}`} title={item.facultyName}>
+          {initials(item.facultyName)}
+        </span>
+      ) : (
+        <span className={`avatar tone-sand`} title={item.subtitle}>
+          {initials(item.subtitle)}
+        </span>
+      )}
+      {item.groupIds.slice(0, height > 100 ? 2 : 0).map((group, index) => (
+        <span key={group} className={`avatar tone-${tintFor(group)}`} title={item.groupNames[index]}>
+          {initials(item.groupNames[index] ?? group)}
+        </span>
+      ))}
+    </span>
+  );
 
   return (
     <button
       type="button"
-      className={`tile tone-${item.tone} ${item.kind === "booking" ? "kind-booking" : ""} ${dragging ? "is-dragging" : ""} ${dimmed ? "is-muted" : ""}`}
+      className={`tile tone-${item.tone} ${compact ? "is-compact" : ""} ${item.kind === "booking" ? "kind-booking" : ""} ${dragging ? "is-dragging" : ""} ${dimmed ? "is-muted" : ""}`}
       style={{
         top,
         height,
@@ -109,36 +130,35 @@ function Tile({
       onDragStart={onDragStart}
       aria-label={`${item.title}, ${item.day} P${item.startPeriod} to P${item.endPeriod}, ${item.roomName}`}
     >
-      <span className="tile-code">
-        {item.courseId ?? item.subtitle}
-        <span className="tile-dot" aria-hidden="true" />
-      </span>
+      {compact ? (
+        <span className="tile-head">
+          <span className="tile-code">
+            {item.courseId ?? item.subtitle}
+            <span className="tile-dot" aria-hidden="true" />
+          </span>
+          {avatars}
+        </span>
+      ) : (
+        <span className="tile-code">
+          {item.courseId ?? item.subtitle}
+          <span className="tile-dot" aria-hidden="true" />
+        </span>
+      )}
       <span className="tile-title">{item.title}</span>
-      <span className="tile-time">{time}</span>
-      {showMeta ? (
-        <span className="tile-meta">
-          {item.kind === "booking" ? item.subtitle : `${item.roomId} · ${item.groupNames[0] ?? ""}`}
-        </span>
-      ) : null}
-      <span className="tile-foot">
-        <span className="tile-avatars">
-          {item.facultyName ? (
-            <span className={`avatar tone-${tintFor(item.facultyName)}`} title={item.facultyName}>
-              {initials(item.facultyName)}
+      {compact ? null : (
+        <>
+          <span className="tile-time">{time}</span>
+          {showMeta ? (
+            <span className="tile-meta">
+              {item.kind === "booking" ? item.subtitle : `${item.roomId} · ${item.groupNames[0] ?? ""}`}
             </span>
-          ) : (
-            <span className={`avatar tone-sand`} title={item.subtitle}>
-              {initials(item.subtitle)}
-            </span>
-          )}
-          {item.groupIds.slice(0, height > 100 ? 2 : 0).map((group, index) => (
-            <span key={group} className={`avatar tone-${tintFor(group)}`} title={item.groupNames[index]}>
-              {initials(item.groupNames[index] ?? group)}
-            </span>
-          ))}
-        </span>
-        <span className="tile-status" title="Validated · no hard conflicts" />
-      </span>
+          ) : null}
+          <span className="tile-foot">
+            {avatars}
+            <span className="tile-status" title="Validated · no hard conflicts" />
+          </span>
+        </>
+      )}
       {showPhoto ? (
         <span className="tile-photo">
           <img src={photo} alt="" loading="lazy" />

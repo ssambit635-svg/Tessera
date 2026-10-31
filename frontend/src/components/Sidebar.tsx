@@ -278,11 +278,12 @@ export function Sidebar() {
             </nav>
           ))}
 
-          <NextUp />
-
+          {/* The date picker earns the visible space; the next-up card scrolls in below it. */}
           <div className="rail-cal-wrap">
             <MiniCalendar />
           </div>
+
+          <NextUp />
 
           <div className="rail-layers">
             <div className="rail-section-head">

@@ -10,11 +10,11 @@ import type { DayCode } from "../lib/types";
 
 const WINDOW_START = 2;
 const WINDOW_END = 10;
-const ROWS = WINDOW_END - WINDOW_START + 1;
 
 interface Block {
   id: string;
   title: string;
+  code: string;
   day: DayCode;
   start: number;
   end: number;
@@ -67,6 +67,7 @@ export default function Ripple() {
           perDay.set(s.day, used + 1);
           push({
             title: s.courseTitle,
+            code: s.courseId,
             day: s.day,
             start: s.startPeriod,
             end: s.endPeriod,
@@ -87,7 +88,8 @@ export default function Ripple() {
     const affectedGroups = new Set(session.groupIds);
 
     push({
-      title: `${session.courseId} · ${session.courseTitle}`,
+      title: session.courseTitle,
+      code: session.courseId,
       day: from.day,
       start: from.startPeriod,
       end: from.endPeriod,
@@ -98,7 +100,8 @@ export default function Ripple() {
     });
 
     push({
-      title: `${session.courseId} · ${session.courseTitle}`,
+      title: session.courseTitle,
+      code: session.courseId,
       day: to.day,
       start: to.startPeriod,
       end: to.endPeriod,
@@ -119,6 +122,7 @@ export default function Ripple() {
       .forEach((s) =>
         push({
           title: s.courseTitle,
+          code: s.courseId,
           day: s.day,
           start: s.startPeriod,
           end: s.endPeriod,
@@ -156,7 +160,14 @@ export default function Ripple() {
 
   const colX = (day: DayCode) => ((days.indexOf(day) + 0.5) / days.length) * 100;
   const rowY = (period: number, duration = 1) =>
-    ((period - WINDOW_START + duration / 2) / ROWS) * 100;
+    ((period - WINDOW_START + duration / 2) / rows) * 100;
+
+  /** The map is only as tall as the data: empty grid rows read as missing information. */
+  const lastRow = Math.min(
+    WINDOW_END,
+    Math.max(blocks.reduce((max, block) => Math.max(max, block.end), WINDOW_START), WINDOW_START + 3),
+  );
+  const rows = lastRow - WINDOW_START + 1;
 
   const origin = blocks.find((b) => b.role === "origin");
   const target = blocks.find((b) => b.role === "target" || b.role === "conflict");
@@ -238,7 +249,7 @@ export default function Ripple() {
                     <b>{DAY_LONG[day].slice(0, 3)}</b>
                     <span>{blocks.filter((b) => b.day === day).length}</span>
                   </div>
-                  <div style={{ position: "relative", height: ROWS * 52 }}>
+                  <div style={{ position: "relative", height: rows * 52 }}>
                     {blocks
                       .filter((block) => block.day === day)
                       .map((block) => (
@@ -257,6 +268,7 @@ export default function Ripple() {
                           }}
                           title={`${block.title} · ${block.room}`}
                         >
+                          <span className="rs-code">{block.code}</span>
                           <span className="rs-title">{block.title}</span>
                           <span className="rs-time">
                             {block.start}–{block.end} · {block.room}

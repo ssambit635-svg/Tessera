@@ -306,9 +306,10 @@
 }
 
 /* ------------------------------------------------------------------ metrics */
+/* Four to a row, two rows, no hole: the eight metrics are real counters, not filler. */
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -2563,7 +2564,6 @@ body.reduced-motion *::after {
 
 /* ------------------------------------------------------------------ responsive */
 @media (max-width: 1440px) {
-  .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .booking-score { grid-template-columns: 1.2fr repeat(4, minmax(0, 0.5fr)); }
   .bs-note { grid-column: 1 / -1; }
 }
@@ -2602,7 +2602,6 @@ body.reduced-motion *::after {
 @media (max-width: 860px) {
   .hero-title { font-size: clamp(34px, 9vw, 46px); max-width: 100%; }
   .hero-figure { min-height: 240px; }
-  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .booking-score { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .bs-main { grid-column: 1 / -1; }
   .bs-cell { border-left: 0; border-top: 1px solid var(--line); padding-top: 8px; }
