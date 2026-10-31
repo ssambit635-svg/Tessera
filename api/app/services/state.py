@@ -227,7 +227,8 @@ def entities(ds: Dataset) -> dict:
 
 # --------------------------------------------------------------------------- disruption
 def preview_disruption(changes: list[dict], baseline: dict | None = None,
-                       time_limit: int | None = None) -> dict:
+                       time_limit: int | None = None,
+                       pins: dict[str, tuple[str, int]] | None = None) -> dict:
     """Compute a repair proposal. Never mutates stored state."""
     s = get_settings()
     ds = dataset()
@@ -237,7 +238,7 @@ def preview_disruption(changes: list[dict], baseline: dict | None = None,
     broken = broken_sessions(ds_after, base_assign, base_schedule)
     result = repair_or_refuse(ds_after, base_assign, base_schedule,
                               time_limit=float(time_limit or s.repair_time_limit),
-                              workers=s.solver_workers, seed=s.solver_seed)
+                              workers=s.solver_workers, seed=s.solver_seed, pins=pins)
     payload: dict[str, Any] = {
         "status": result["status"],
         "changes": change_log,
@@ -250,6 +251,7 @@ def preview_disruption(changes: list[dict], baseline: dict | None = None,
         "attempts": result.get("attempts", []),
         "explanation": result.get("explanation"),
         "reserved_room_periods": len(reservations_from_schedule(ds_after, base_schedule)[0]),
+        "pins": ({k: {"day": v[0], "start_period": v[1]} for k, v in pins.items()} if pins else None),
     }
     if result["status"] in ("OPTIMAL", "FEASIBLE"):
         schedule = {
@@ -268,6 +270,132 @@ def preview_disruption(changes: list[dict], baseline: dict | None = None,
     else:
         payload["valid"] = False
     return payload
+
+
+def store_proposal(session: Session, user, title: str, changes: list[dict], result: dict,
+                   kind: str = "disruption"):
+    """Queue a checked proposal. Status is `pending` only when the repair actually worked."""
+    import uuid
+
+    from ..db import Proposal
+
+    proposal = Proposal(
+        id=f"PR-{uuid.uuid4().hex[:8]}",
+        kind=kind,
+        title=title[:180],
+        changes_json=json.dumps(changes),
+        result_json=json.dumps(result),
+        status="pending" if result.get("valid") else "refused",
+        requested_by=getattr(user, "id", 0) or 0,
+        requested_by_email=getattr(user, "email", "system"),
+    )
+    session.add(proposal)
+    session.commit()
+    return proposal
+
+
+def move_conflicts(ds: Dataset, schedule: dict, session_id: str, day: str,
+                   start_period: int) -> list[str]:
+    """Fast, readable reasons a single session cannot sit at (day, start).
+
+    This runs before any solve: a judge gets an instant answer instead of a 20 second stall,
+    and the reason is a constraint, not a solver status.
+    """
+    sess = ds.sessions.get(session_id)
+    if sess is None:
+        return [f"{session_id} is not a session in this dataset"]
+    problems: list[str] = []
+    if day not in ds.days:
+        return [f"{day} is not a teaching day (this dataset has {', '.join(ds.days)})"]
+    end = start_period + sess["duration"] - 1
+    if start_period < 1 or end > ds.max_period:
+        problems.append(f"P{start_period} for {sess['duration']} period(s) runs outside the day")
+    if start_period <= ds.lunch_after < end:
+        problems.append(f"the session would cross lunch (after P{ds.lunch_after})")
+    if sess["kind"] == "lab" and start_period not in (2, 6):
+        problems.append("a 3-hour lab may only start at P2 or P6")
+
+    spots = {(e["day"], e["start_period"], e["session_id"]) for e in schedule.get("sessions", [])}
+    for e in schedule.get("sessions", []):
+        other = ds.sessions.get(e["session_id"])
+        if other is None or e["session_id"] == session_id:
+            continue
+        other_end = e["start_period"] + other["duration"] - 1
+        if e["day"] != day or other_end < start_period or e["start_period"] > end:
+            continue
+        if other["faculty_id"] == sess["faculty_id"]:
+            problems.append(f"{sess['faculty_id']} already teaches {other['course_id']} "
+                            f"({other['id']}) at {day} P{e['start_period']}")
+        shared = set(other["groups"]) & set(sess["groups"])
+        same_basket = (sess.get("basket_slot") and sess.get("basket_slot") == other.get("basket_slot"))
+        if shared and not same_basket:
+            problems.append(f"{', '.join(sorted(shared))} already have {other['course_id']} "
+                            f"({other['id']}) at {day} P{e['start_period']}")
+    for pref in ds.faculty.get(sess["faculty_id"], {}).get("unavailable", []):
+        if pref.get("day") != day:
+            continue
+        clash = sorted(set(range(start_period, end + 1)) & set(pref.get("periods") or []))
+        if clash:
+            problems.append(f"{sess['faculty_id']} is unavailable {day} P{clash[0]}")
+
+    hours = sum(ds.sessions[e["session_id"]]["duration"] for e in schedule.get("sessions", [])
+                if e["day"] == day and e["session_id"] in ds.sessions
+                and ds.sessions[e["session_id"]]["faculty_id"] == sess["faculty_id"])
+    cap = ds.faculty.get(sess["faculty_id"], {}).get("max_hours_per_day", 99)
+    if hours + sess["duration"] > cap:
+        problems.append(f"{sess['faculty_id']} would teach {hours + sess['duration']} h on {day} "
+                        f"(daily limit {cap} h)")
+
+    rooms = ds.feasible_rooms(sess)
+    open_rooms = [r for r in rooms
+                  if not any((day, p) in ds.room_unavailable[r] for p in range(start_period, end + 1))
+                  and not any(e["room_id"] == r and e["day"] == day and e["session_id"] != session_id
+                              and e["start_period"] <= end
+                              and e["start_period"] + ds.sessions[e["session_id"]]["duration"] - 1 >= start_period
+                              for e in schedule.get("sessions", []) if e["session_id"] in ds.sessions)]
+    if not open_rooms:
+        problems.append(f"no room of type {sess['room_types']} that seats {sess['size']} is free "
+                        f"at {day} P{start_period}")
+    return problems
+
+
+def preview_move(session_id: str, day: str, start_period: int,
+                 time_limit: int | None = None) -> dict:
+    """A single-session move request, checked fast first and then solved exactly."""
+    ds = dataset()
+    schedule = current_schedule()
+    current = next((e for e in schedule.get("sessions", [])
+                    if e["session_id"] == session_id), None)
+    if current is None:
+        return {"status": "REFUSED", "valid": False, "session_id": session_id,
+                "conflicts": [f"{session_id} is not scheduled in the current timetable"]}
+    if (current["day"], current["start_period"]) == (day, start_period):
+        return {"status": "NO_CHANGE", "valid": True, "moves": 0, "moved": [],
+                "conflicts": [], "session_id": session_id,
+                "note": f"{session_id} is already at {day} P{start_period}"}
+    conflicts = move_conflicts(ds, schedule, session_id, day, start_period)
+    if conflicts:
+        return {"status": "REFUSED", "valid": False, "session_id": session_id,
+                "requested": {"day": day, "start_period": start_period},
+                "conflicts": conflicts, "moves": None,
+                "explanation": {"reason": "the requested slot breaks a hard constraint",
+                                "suggestions": _slot_suggestions(ds, schedule, session_id)}}
+    return preview_disruption([], time_limit=time_limit, pins={session_id: (day, start_period)})
+
+
+def _slot_suggestions(ds: Dataset, schedule: dict, session_id: str, limit: int = 3) -> list[str]:
+    """A few slots that would actually work, found by the fast check (no solving)."""
+    out = []
+    sess = ds.sessions.get(session_id)
+    if sess is None:
+        return out
+    for day in ds.days:
+        for start in range(1, ds.max_period + 1):
+            if not move_conflicts(ds, schedule, session_id, day, start):
+                out.append(f"{day} P{start}")
+            if len(out) >= limit:
+                return out
+    return out
 
 
 def current_cached() -> dict:

@@ -139,7 +139,9 @@ tools/             feasibility probe, self-check helpers
       `exports/schedule_after.json`
 - [x] backend API: 4 roles + second admin, 30+ endpoints, demo seed/reset, audit trail
 - [x] plain-English / Hinglish request parsing with a deterministic parser (works with no model)
-- [ ] optional LLM reader behind `LLM_PROVIDER=groq` (the app must behave identically without it)
+- [x] optional LLM reader behind `LLM_PROVIDER=groq` (the app behaves identically without it)
+- [x] faculty change requests in plain language -> checked proposal -> second-admin approval
+- [x] "why is this class here?" explanations built from the constraint codes
 - [ ] Next.js UI: timetable by group/faculty/room, approvals, dashboard, mobile
 - [ ] deploy + video
 
@@ -206,8 +208,9 @@ the timetable: [`docs/DATABASE.md`](docs/DATABASE.md).
   room swap over a time change.
 * The before/after approval flow exists end to end in the API (`preview` -> `apply`), but its
   screens, like the rest of the UI, are still to come.
-* The LLM reader is implemented (`api/app/ai/providers.py`) but disabled by default and not
-  yet exercised against a live key; every test runs the deterministic path.
+* The LLM reader (`api/app/ai/providers.py`) is implemented and tested against a mocked
+  transport, but the deployed demo runs with `LLM_PROVIDER=none` until a key is added;
+  `POST /api/ai/selftest` is the one-click check once it is.
 * Generation takes ~40 s on 2 cores. The API serves the committed exports instantly and only
   re-solves when an admin asks it to.
 * Only the dataset in `vendor/` is supported so far; nothing is hard-coded to its ids, but

@@ -135,3 +135,76 @@ def session_detail(session_id: str, user: User = Depends(current_user)):
     return {"session": sess, "placement": placement,
             "rooms_that_fit": ds.feasible_rooms(sess),
             "legal_slots": [{"day": d, "start_period": p} for d, p, _per in ds.time_slots(sess)][:40]}
+
+
+@router.get("/sessions/{session_id}/explain")
+def explain_session(session_id: str, user: User = Depends(current_user)):
+    """Why is this class here? Built from the constraint codes, never from a model."""
+    ds = state.dataset()
+    sess = ds.sessions.get(session_id)
+    if sess is None:
+        raise HTTPException(404, f"unknown session {session_id}")
+    schedule = state.current_cached()
+    placement = next((e for e in schedule.get("sessions", []) if e["session_id"] == session_id), None)
+    if placement is None:
+        raise HTTPException(409, f"{session_id} is not placed in the current timetable")
+    day, start, room_id = placement["day"], placement["start_period"], placement["room_id"]
+    end = start + sess["duration"] - 1
+    room = ds.rooms.get(room_id, {})
+    faculty = ds.faculty.get(sess["faculty_id"], {})
+
+    reasons, tradeoffs = [], []
+    reasons.append(f"{room_id} is a {room.get('type')} that seats {room.get('capacity')} "
+                   f"- this session needs {sess['size']} seat(s) and a {sess['room_types']} room.")
+    if sess["needs_accessible"]:
+        reasons.append(f"{room_id} is accessible, which this session requires.")
+    if sess["kind"] == "lab":
+        reasons.append(f"A {sess['duration']}-hour lab may only start at P2 or P6; it is at P{start}.")
+    hours = sum(ds.sessions[e["session_id"]]["duration"] for e in schedule.get("sessions", [])
+                if e["day"] == day and e["session_id"] in ds.sessions
+                and ds.sessions[e["session_id"]]["faculty_id"] == sess["faculty_id"])
+    cap = faculty.get("max_hours_per_day")
+    reasons.append(f"{sess['faculty_id']} teaches {hours} h on {day}"
+                   + (f" (their daily limit is {cap} h)." if cap else "."))
+    reasons.append(f"The slot keeps {', '.join(sess['groups'])} and {sess['faculty_id']} "
+                   f"free of every other class at that hour.")
+
+    for pref in faculty.get("preferences") or []:
+        if pref.get("type") == "avoid" and day in (pref.get("days") or []) \
+                and start in (pref.get("periods") or []):
+            tradeoffs.append(f"it sits inside a preferred-avoid window ({pref.get('note', '')})")
+    if end >= ds.max_period:
+        tradeoffs.append(f"it uses P{end}, the last teaching period (soft cost S6)")
+    repeats = [e for e in schedule.get("sessions", [])
+               if e["day"] == day and e["session_id"] in ds.sessions
+               and e["session_id"] != session_id
+               and ds.sessions[e["session_id"]]["course_id"] == sess["course_id"]
+               and sess["groups"] and set(ds.sessions[e["session_id"]]["groups"]) & set(sess["groups"])]
+    if repeats:
+        tradeoffs.append(f"{sess['course_id']} also runs on {day} for the same group "
+                         f"(soft cost S4)")
+
+    alternatives = []
+    for d in ds.days:
+        for p in range(1, ds.max_period + 1):
+            if (d, p) == (day, start):
+                continue
+            if not state.move_conflicts(ds, schedule, session_id, d, p):
+                alternatives.append({"day": d, "start_period": p})
+            if len(alternatives) >= 5:
+                break
+        if len(alternatives) >= 5:
+            break
+
+    summary = (f"{session_id} sits at {day} P{start}-P{end} in {room_id} because that room "
+               f"fits the type, capacity and accessibility rules, and {sess['faculty_id']} and "
+               f"{', '.join(sess['groups']) or 'no group'} are free then.")
+    return {
+        "session": sess,
+        "placement": placement,
+        "summary": summary,
+        "reasons": reasons,
+        "tradeoffs": tradeoffs,
+        "alternatives": alternatives,
+        "checked_by": "core/constraints.py (hard rules) and core/repair.py (move cost)",
+    }

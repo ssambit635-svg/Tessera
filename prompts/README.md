@@ -12,3 +12,15 @@ our prompts are kept.
 
 Rule that cannot be broken: no prompt asks the model whether a schedule or booking is
 **valid**. Validity is decided by `api/app/core/constraints.py`.
+
+## Files
+
+| File | Used by | What the model is asked to do |
+| --- | --- | --- |
+| `extract_booking.md` | `POST /api/ai/parse` | read a venue request into the booking form |
+| `change_request.md` | `POST /api/ai/change-request` | read a faculty message into a change intent |
+| `explain_decision.md` | explain endpoints | re-word a reason our rules already produced |
+
+`api/app/ai/providers.py` loads `extract_booking.md` at runtime, so editing the file changes
+the prompt without touching Python. Every response is still schema-checked and
+existence-checked against the dataset before it is shown.

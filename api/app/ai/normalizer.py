@@ -155,6 +155,17 @@ def clock_to_period(hour24: int, periods: list[dict]) -> int | None:
 
 def find_time_window(text: str, periods: list[dict], default_evening: bool = False):
     """Return (start_period, end_period, evidence) or (None, None, None)."""
+    # explicit period notation: "P3", "p 3", "period 3", "3rd period", "P6-P8"
+    m = re.search(r"\bp\s?(\d{1,2})\s*(?:-|to|se|till|until)\s*p?\s?(\d{1,2})\b", text)
+    if m:
+        a, b = int(m.group(1)), int(m.group(2))
+        if 1 <= a <= 13 and a <= b <= 13:
+            return a, b, m.group(0)
+    m = re.search(r"(?:\bp\s?(\d{1,2})\b|period\s+(\d{1,2})\b|(\d{1,2})(?:st|nd|rd|th)?\s+period)", text)
+    if m:
+        period = int(next(g for g in m.groups() if g))
+        if 1 <= period <= 13:
+            return period, None, m.group(0)
     # "6 to 8 pm", "6-8pm", "6 se 8 baje", "6 baje se 8 baje tak"
     m = re.search(r"(\d{1,2})\s*(?:to|-|se|till|until)\s*(\d{1,2})\s*(am|pm|a\.m|p\.m)?", text)
     if m:
@@ -188,6 +199,40 @@ def find_time_window(text: str, periods: list[dict], default_evening: bool = Fal
         if word in text:
             return period, None, word
     return None, None, None
+
+
+def find_days(text: str, days: list[str], tomorrow: str | None = None,
+              today: str | None = None) -> list[str]:
+    """Every teaching day the text names, in the order it names them.
+
+    "our club meets every Monday and Wednesday" is two windows, not one - getting this wrong
+    silently books a club into a single day and loses the other meeting.
+    """
+    hits: list[tuple[int, str]] = []
+    for canonical, words in WEEKDAY_WORDS.items():
+        if canonical not in days:
+            continue
+        for word in words:
+            for m in re.finditer(rf"\b{re.escape(word)}\b", text):
+                hits.append((m.start(), canonical))
+    resolved_tomorrow = tomorrow or (days[(days.index(today) + 1) % len(days)] if today in days
+                                     else days[0])
+    for canonical, words in RELATIVE_DAYS.items():
+        for word in words:
+            for m in re.finditer(rf"\b{re.escape(word)}\b", text):
+                if canonical == "today":
+                    hits.append((m.start(), today if today in days else days[0]))
+                elif canonical == "tomorrow":
+                    hits.append((m.start(), resolved_tomorrow))
+                else:
+                    base = today if today in days else days[0]
+                    index = days.index(resolved_tomorrow)
+                    hits.append((m.start(), days[(index + 1) % len(days)]))
+    out: list[str] = []
+    for _pos, day in sorted(hits):
+        if day not in out:
+            out.append(day)
+    return out
 
 
 def find_day(text: str, days: list[str], tomorrow: str | None = None):

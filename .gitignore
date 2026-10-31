@@ -21,3 +21,8 @@ api/.env
 
 # uploaded datasets
 /data/
+
+# local sqlite + generated state
+*.db
+*.db-wal
+*.db-shm
