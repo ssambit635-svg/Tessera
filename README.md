@@ -80,7 +80,7 @@ Two ways to use it: run the API, or regenerate the exports from scratch.
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r api/requirements.txt
-cp .env.example .env          # optional: defaults work, no key needed
+sh tools/setup_env.sh         # creates .env from .env.example (gitignored; defaults work)
 
 cd api
 uvicorn app.main:app --reload --port 8000
@@ -197,6 +197,13 @@ in-memory-only state"). The organisers' dataset stays read-only in `vendor/`, th
 schedules are the two files in `exports/`, and everything else — users, proposals, audit rows,
 timetable versions — lives in `tessera.db`. Full detail, including why a restart cannot lose
 the timetable: [`docs/DATABASE.md`](docs/DATABASE.md).
+
+## Secrets
+
+`.env` is gitignored and per-machine; `.env.example` is the tracked template and must stay
+empty. `python3 tools/check_secrets.py` (also a CI job and an optional pre-commit hook) fails
+the build if a key-shaped string is ever committed. What happens if one leaks, and how to
+rotate it: [`docs/SECRETS.md`](docs/SECRETS.md).
 
 ## Known limitations
 
