@@ -8,8 +8,9 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session
@@ -42,13 +43,33 @@ app = FastAPI(
                  "api/app/core/constraints.py, never by a language model."),
     lifespan=lifespan,
 )
+# The UI is served by this same app, so CORS only matters for a separately hosted
+# frontend. A wildcard origin and credentials are mutually exclusive (browsers reject
+# `Access-Control-Allow-Origin: *` with credentials), so pick one deliberately.
+_origins = list(settings.cors_origins)
+_allow_all = "*" in _origins or not _origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins + ["*"],
-    allow_credentials=True,
+    allow_origins=["*"] if _allow_all else _origins,
+    allow_credentials=not _allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=800)
+
+
+@app.middleware("http")
+async def cache_policy(request: Request, call_next):
+    """Assets are cheap to re-validate; the page and JSON must never be stale."""
+    response: Response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/ui/"):
+        response.headers.setdefault("Cache-Control", "public, max-age=300")
+    elif path == "/" or path.startswith("/api/"):
+        response.headers.setdefault("Cache-Control", "no-store")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "same-origin")
+    return response
 
 for module in (auth, dataset, timetable, bookings, exams, disruption, ai, admin):
     app.include_router(module.router)
@@ -76,6 +97,13 @@ app.mount("/ui", StaticFiles(directory=str(WEB_DIR)), name="ui")
 def index():
     """The app itself. The machine-readable summary lives at /api/info."""
     return FileResponse(WEB_DIR / "index.html", media_type="text/html")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """Browsers ask for this; answering quietly keeps the demo log clean."""
+    return FileResponse(WEB_DIR / "favicon.svg", media_type="image/svg+xml",
+                        headers={"Cache-Control": "public, max-age=86400"})
 
 
 @app.get("/api/info", tags=["meta"])

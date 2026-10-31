@@ -86,11 +86,10 @@ async function start() {
     const h = await api("/health");
     $("healthChip").textContent = `${h.sessions} sessions · ${h.exams} exams · AI: ${h.llm}`;
   } catch { /* non-fatal */ }
-  document.querySelectorAll(".tab").forEach((t) =>
-    t.addEventListener("click", () => show(t.dataset.view)));
   show("dashboard");
   loadEntities();
   aiModeLabel();
+  loadFacultyPicker();
 }
 
 function show(view) {
@@ -187,8 +186,8 @@ async function loadTimetable() {
     }
     $("ttCard").innerHTML = `<div class="row between" style="margin-bottom:8px">
         <h2>${esc(id)}</h2><span class="chip">${g.entries.length} classes</span></div>
-      <table class="tt"><thead><tr><th></th>${g.days.map((d) => `<th>${esc(d)}</th>`).join("")}</tr></thead>
-      <tbody>${rows}</tbody></table>`;
+      <div class="scroll-x"><table class="tt"><thead><tr><th></th>${g.days.map((d) => `<th>${esc(d)}</th>`).join("")}</tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
   } catch (e) { $("ttCard").innerHTML = `<div class="muted">${esc(e.message)}</div>`; }
 }
 
@@ -447,12 +446,28 @@ async function aiBook() {
   }
 }
 
+async function loadFacultyPicker() {
+  const wrap = $("facPickerWrap");
+  const isFaculty = store.user && store.user.faculty_id;
+  wrap.classList.toggle("hidden", !!isFaculty);
+  if (isFaculty) {
+    $("facWho").textContent = `asking as ${store.user.faculty_id} (${store.user.email})`;
+    return;
+  }
+  $("facWho").textContent = "your account is not a faculty member - pick who this is about";
+  const e = await loadEntities();
+  $("facPicker").innerHTML = e.faculty
+    .map((f) => `<option value="${esc(f.id)}">${esc(f.id)} — ${esc(f.name)}</option>`).join("");
+}
+
 async function facultyChange() {
   const text = $("facText").value.trim();
   if (!text) return toast("Type what changed", "bad");
+  const facultyId = (store.user && store.user.faculty_id) || ($("facPicker") && $("facPicker").value) || "";
   $("facState").textContent = "checking…";
   try {
-    const r = await api("/api/ai/change-request", { method: "POST", body: JSON.stringify({ text }) });
+    const r = await api("/api/ai/change-request", { method: "POST",
+      body: JSON.stringify({ text, faculty_id: facultyId || null }) });
     $("facState").textContent = "";
     $("facResult").innerHTML = `<div class="list-item">${esc(r.answer)}</div>
       ${r.proposal_id ? `<small class="muted">proposal ${esc(r.proposal_id)} · ${esc(r.status)}</small>` : ""}
@@ -473,6 +488,19 @@ async function loadAdmin() {
   } catch (e) { $("dbInfo").innerHTML = `<span class="muted">${esc(e.message)}</span>`; }
   const e = await loadEntities();
   $("meDay").innerHTML = ["MON", "TUE", "WED", "THU", "FRI"].map((d) => `<option>${d}</option>`).join("");
+}
+
+async function aiSelftest() {
+  $("selftestState").textContent = "calling the provider…";
+  try {
+    const r = await api("/api/ai/selftest", { method: "POST" });
+    $("selftestState").textContent = "";
+    $("selftestResult").innerHTML = r.ok
+      ? `<div class="badge approved">live</div> <span class="pill">${esc(r.model || "")}</span>
+         <span class="pill">${r.latency_ms} ms</span>`
+      : `<div class="badge rejected">not configured / failed</div>
+         <div class="list-item" style="margin-top:6px">${esc(r.reason || r.error || "unknown")}</div>`;
+  } catch (e) { $("selftestState").textContent = ""; toast(e.message, "bad"); }
 }
 
 async function generateNow() {
@@ -532,8 +560,17 @@ async function manualBook() {
 }
 
 /* ------------------------------------------------------------------ init */
-$("logoutBtn").addEventListener("click", logout);
+function wireOnce() {
+  if (wireOnce.done) return;
+  wireOnce.done = true;
+  $("logoutBtn").addEventListener("click", logout);
+  // one listener per tab, installed once - registering inside start() stacked handlers
+  document.querySelectorAll(".tab").forEach((t) =>
+    t.addEventListener("click", () => show(t.dataset.view)));
+}
+
 window.addEventListener("DOMContentLoaded", () => {
+  wireOnce();
   bootLogin();
   if (store.token && store.user) start();
 });
