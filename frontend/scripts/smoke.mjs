@@ -335,7 +335,10 @@ if (LIVE) {
       const err = window.document.querySelector(".sf-error")?.textContent ?? "no error shown";
       return `still on the sign-in page (${err})`;
     }
-    return /LIVE API/i.test(text()) ? "" : "signed in but the workspace is not reading live data";
+    // the badge is the contract: .conn-badge.live only renders while the API is answering
+    return window.document.querySelector(".conn-badge.live")
+      ? ""
+      : "signed in but the workspace is not reading live data";
   });
 }
 
