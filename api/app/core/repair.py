@@ -336,10 +336,21 @@ def probe_zero_moves(ds: Dataset, baseline: dict[str, tuple], schedule: dict,
 
 def repair(ds: Dataset, baseline: dict[str, tuple], schedule: dict,
            time_limit: float = 60.0, workers: int = 2, seed: int = 20270131,
-           enforce_s3: bool = True, polish: bool = True) -> dict:
+           enforce_s3: bool = True, polish: bool = True,
+           pins: dict[str, tuple[str, int]] | None = None) -> dict:
+    """Minimal-move repair.
+
+    `pins` forces a session onto a specific (day, start) while leaving the room to the
+    solver - that is how a faculty "move my CS203 class to Wednesday P3" request is checked
+    without inventing a session id (which the validator would reject).
+    """
     reserved_rooms, blocked_groups = reservations_from_schedule(ds, schedule)
     m, maps, cost_terms = _build(ds, baseline, reserved_rooms, blocked_groups, enforce_s3,
                                  use_hint=True)
+    pinned = {sid: tuple(pos) for sid, pos in (pins or {}).items() if sid in ds.sessions}
+    for (sid, day, p, room), var in maps["x"].items():
+        if sid in pinned and (day, p) != pinned[sid]:
+            m.Add(var == 0)
     expr, forced = _move_expression(ds, baseline, maps)
 
     moves = sum(expr) + forced
@@ -542,17 +553,19 @@ def _suggestions(ds: Dataset, sessions: list[dict]) -> list[str]:
 
 
 def repair_or_refuse(ds: Dataset, baseline: dict[str, tuple], schedule: dict,
-                     time_limit: float = 60.0, workers: int = 2, seed: int = 20270131) -> dict:
+                     time_limit: float = 60.0, workers: int = 2, seed: int = 20270131,
+                     pins: dict[str, tuple[str, int]] | None = None) -> dict:
     """Try strict repair, then relaxed repair, then explain why nothing can be done."""
     attempts = []
-    zero = probe_zero_moves(ds, baseline, schedule, time_limit=min(12.0, time_limit / 4),
-                            workers=workers, seed=seed)
+    zero = None if pins else probe_zero_moves(ds, baseline, schedule,
+                                             time_limit=min(12.0, time_limit / 4),
+                                             workers=workers, seed=seed)
     if zero is not None:
         zero["attempts"] = [{"strategy": "no change needed", "status": "OPTIMAL", "moves": 0}]
         return zero
 
     result = repair(ds, baseline, schedule, time_limit=time_limit, workers=workers, seed=seed,
-                    enforce_s3=True)
+                    enforce_s3=True, pins=pins)
     attempts.append({"strategy": "minimal-move, group day capped at 6 h", "status": result["status"],
                      "moves": result["moves"]})
     if result["status"] in ("OPTIMAL", "FEASIBLE"):
@@ -560,7 +573,7 @@ def repair_or_refuse(ds: Dataset, baseline: dict[str, tuple], schedule: dict,
         return result
 
     result = repair(ds, baseline, schedule, time_limit=time_limit, workers=workers, seed=seed,
-                    enforce_s3=False)
+                    enforce_s3=False, pins=pins)
     attempts.append({"strategy": "minimal-move, 6 h cap relaxed", "status": result["status"],
                      "moves": result["moves"]})
     if result["status"] in ("OPTIMAL", "FEASIBLE"):

@@ -7,9 +7,10 @@ the project, where prompts live, and what the LLM is **not** allowed to decide.
 
 | Where | Model / API | What it does | What it may NOT do |
 | --- | --- | --- | --- |
-| `POST /api/ai/parse` (planned) | Groq `llama-3.3-70b-versatile` (primary; free tier ~1,000 req/day, ample for judging), `llama-3.1-8b-instant` as automatic fallback on 429/timeout | read an English/Hinglish venue request and fill the booking form (attendance, duration, day, window, needs, room type) | decide whether a booking is valid, invent room ids, change priority, approve anything |
-| `POST /api/ai/parse` follow-up (planned) | same | ask the single question that blocks the booking | ask for information already present in the request |
-| `POST /api/ai/explain` (planned) | same | re-word a reason chain that our rules engine already produced | create a new reason or a new fact |
+| `POST /api/ai/parse` | Groq `llama-3.3-70b-versatile` (primary; free tier ~1,000 req/day, ample for judging), `llama-3.1-8b-instant` as automatic fallback on 429/timeout | read an English/Hinglish venue request and fill the booking form (attendance, duration, day, window, needs, room type) | decide whether a booking is valid, invent room ids, change priority, approve anything |
+| `POST /api/ai/change-request` | same | read a faculty change message ("I'm out on Friday", "move my CS203 class to Wednesday P3") into an intent + change file | decide whether the change is allowed, or apply it |
+| `POST /api/ai/parse` follow-up | same | ask the single question that blocks the booking | ask for information already present in the request |
+| `POST /api/ai/explain` / `GET /api/timetable/sessions/{id}/explain` | same | re-word a reason chain that our rules engine already produced | create a new reason or a new fact |
 | Voice request (optional) | Sarvam ASR | Hinglish speech → text before parsing | any scheduling decision |
 
 Guarantees:
@@ -23,7 +24,14 @@ Guarantees:
 * **The product works with the LLM switched off.** `LLM_PROVIDER=none` is the default in
   `.env.example`; the deterministic parser and the manual form produce the same structured
   booking. Judges are invited to set it to `none` and retry.
-* Prompts live in `prompts/` and are versioned with the code.
+* Prompts live in `prompts/` (`extract_booking.md`, `change_request.md`,
+  `explain_decision.md`) and are versioned with the code; the provider loads
+  `prompts/extract_booking.md` at runtime.
+* The model is called with `temperature=0`, `response_format=json_object`, a 12 s timeout,
+  one retry on 429/5xx, and `llama-3.1-8b-instant` as the automatic fallback model.
+* `api/tests/test_llm.py` proves the contract with a mocked HTTP transport and no key:
+  a model may fill a field, may never override the text, invented ids are dropped, and a
+  failure/`429`/broken-JSON response leaves the deterministic result untouched.
 * No request text or schedule data is sent anywhere except the chosen provider's API, and
   only the text of the request itself.
 

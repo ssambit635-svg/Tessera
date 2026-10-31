@@ -21,6 +21,52 @@ class PreviewIn(BaseModel):
     time_limit: int | None = None
 
 
+class MoveIn(BaseModel):
+    session_id: str
+    day: str
+    start_period: int
+    time_limit: int | None = None
+    title: str = ""
+
+
+@router.post("/move")
+def move_request(body: MoveIn,
+                 user: User = Depends(require_roles("admin", "department_coordinator", "faculty")),
+                 session: Session = Depends(get_session)):
+    """One session, one target slot: checked instantly, then queued for a second admin.
+
+    Faculty use this through the AI assistant ("move my CS203 class to Wednesday P3"); the
+    session keeps its id, so the export stays valid.
+    """
+    ds = state.dataset()
+    if body.session_id not in ds.sessions:
+        raise HTTPException(404, f"unknown session {body.session_id}")
+    if body.day not in ds.days:
+        raise HTTPException(422, f"{body.day} is not a teaching day ({', '.join(ds.days)})")
+    result = state.preview_move(body.session_id, body.day, body.start_period,
+                                time_limit=body.time_limit or 25)
+    proposal = state.store_proposal(
+        session, user, body.title or f"Move {body.session_id} to {body.day} P{body.start_period}",
+        [], result, kind="timetable_change")
+    audit(session, user.email, user.role, "move_request",
+          f"{proposal.id}: {body.session_id} -> {body.day} P{body.start_period}, "
+          f"status={result.get('status')}")
+    return {
+        "proposal_id": proposal.id,
+        "status": proposal.status,
+        "valid": result.get("valid", False),
+        "session_id": body.session_id,
+        "requested": {"day": body.day, "start_period": body.start_period},
+        "moves": result.get("moves"),
+        "moved": result.get("moved"),
+        "conflicts": result.get("conflicts"),
+        "explanation": result.get("explanation"),
+        "report": result.get("report"),
+        "next": ("a different admin must approve this proposal"
+                 if result.get("valid") else "this slot breaks a hard constraint - see conflicts"),
+    }
+
+
 @router.get("/sample")
 def sample(user: User = Depends(current_user)):
     """The change file shipped with the dataset, so the UI can load it in one click."""

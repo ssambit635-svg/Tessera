@@ -405,6 +405,67 @@ def test_uploaded_dataset_is_validated_used_and_reversible(client):
     assert validate["scheduled"] == 189 and validate["hard_violations"] == 0
 
 
+# ------------------------------------------------------------------ AI change requests (item 7)
+def test_faculty_change_request_becomes_a_checked_proposal(client):
+    headers, me = login(client, "faculty")
+    faculty_id = me["user"]["faculty_id"]
+    assert faculty_id
+
+    vague = client.post("/api/ai/change-request", json={"text": "move my class"},
+                        headers=headers).json()
+    assert vague["status"] == "needs_detail" and vague["follow_up"]
+    assert vague["proposal_id"] is None
+
+    request = client.post("/api/ai/change-request", headers=headers, json={
+        "text": "I can't come on Friday P7 to P9", "time_limit": 15}).json()
+    assert request["parsed"]["intent"] == "faculty_unavailable"
+    assert request["parsed"]["faculty_id"] == faculty_id
+    assert request["proposal_id"]
+    assert request["status"] in ("OPTIMAL", "FEASIBLE", "INFEASIBLE")
+    assert request["answer"]
+
+    # a refused change is stored as refused, so it can never be applied later
+    if not request["valid"]:
+        proposals = client.get("/api/disruption/proposals?status=refused", headers=headers)
+        if proposals.status_code == 200:
+            assert any(p["id"] == request["proposal_id"] for p in proposals.json()["proposals"])
+
+
+def test_move_request_is_checked_before_any_solve(client):
+    headers, _ = login(client, "faculty")
+    week = client.get("/api/timetable/week", headers=headers).json()["entries"]
+    session = week[0]["session_id"]
+
+    bad_day = client.post("/api/disruption/move", headers=headers,
+                          json={"session_id": session, "day": "SAT", "start_period": 3})
+    assert bad_day.status_code == 422
+
+    unknown = client.post("/api/disruption/move", headers=headers,
+                          json={"session_id": "NOPE-1", "day": "WED", "start_period": 3})
+    assert unknown.status_code == 404
+
+    result = client.post("/api/disruption/move", headers=headers, json={
+        "session_id": session, "day": "WED", "start_period": 7, "time_limit": 15}).json()
+    assert result["proposal_id"]
+    assert result["status"] in ("pending", "refused")
+    if result["valid"]:
+        assert result["moved"] and result["moved"][0]["session_id"] == session
+    else:
+        assert result["conflicts"]
+
+
+def test_a_session_can_explain_itself(client):
+    headers, _ = login(client, "club")
+    week = client.get("/api/timetable/week", headers=headers).json()["entries"]
+    session = week[0]["session_id"]
+    body = client.get(f"/api/timetable/sessions/{session}/explain", headers=headers).json()
+    assert body["placement"]["session_id"] == session
+    assert body["reasons"] and body["summary"]
+    assert body["alternatives"] is not None
+    assert client.get("/api/timetable/sessions/NOPE/explain",
+                      headers=headers).status_code == 404
+
+
 def test_reset_restores_the_demo(client):
     headers, _ = login(client, "admin")
     r = client.post("/api/admin/reset", headers=headers).json()

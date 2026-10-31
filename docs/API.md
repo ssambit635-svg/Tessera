@@ -112,6 +112,36 @@ These events are deliberately **not** written into `exports/schedule.json`: they
 the organisers' 25 requests, and inventing a request id would be a validation violation. The
 response says so (`"scored_export": false`).
 
+## 4b. AI change requests (faculty, plain language)
+
+```
+POST /api/ai/change-request   {text, faculty_id?, create_proposal?: true, time_limit?}
+POST /api/disruption/move     {session_id, day, start_period}      (admin / dept / faculty)
+GET  /api/timetable/sessions/{session_id}/explain
+```
+
+A faculty member writes *"I can't come on Friday P7 to P9"* and gets a **checked proposal**,
+not a promise:
+
+```json
+{"parsed": {"intent": "faculty_unavailable", "faculty_id": "F01", "days": ["FRI"],
+            "periods": [7, 8, 9], "changes": [{"type": "faculty_unavailable", ...}]},
+ "status": "OPTIMAL", "valid": true, "proposal_id": "PR-64082da3", "moves": 3,
+ "answer": "Yes - this works. 3 session(s) would move and nothing breaks a hard rule. ...",
+ "next": "a different admin must approve this proposal"}
+```
+
+* `needs_detail` + `follow_up` when the sentence is missing something essential
+  ("move my class" → *which course/session?*).
+* `move_session` pins one session to a day and period (`/api/disruption/move`). It keeps the
+  session id, so the export stays valid; the room is still chosen by the solver.
+* A blocked slot is refused **before any solve**, with the rule and the free alternatives:
+  `"F31 is unavailable WED P7"`, `"CE-2 already have CS101 at MON P3"`.
+* `explain` answers "why is this class at 8 AM": the room fit, faculty load, group freedom,
+  the soft trade-offs, and five slots that would also work.
+
+Nothing here can be applied by the person who asked for it - a second admin approves.
+
 ## 5. Exams
 
 ```
@@ -165,7 +195,8 @@ given instead of editing it into our shape.
 
 ```
 POST /api/ai/parse     {text, role?, allow_llm?}   -> draft + confidence + assumptions + checks
-GET  /api/ai/status                                -> which provider is configured
+GET  /api/ai/status                                -> provider, mode, prompt file, live stats
+POST /api/ai/selftest                              -> one real call: does the key work?
 GET  /api/ai/samples                               -> the organisers' practice requests
 ```
 

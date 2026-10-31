@@ -55,6 +55,12 @@ class ParseResult(BaseModel):
     source: dict
 
 
+def _today_name(ds: Dataset, today: date | None = None) -> str:
+    today = today or date.today()
+    name = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"][today.weekday()]
+    return name if name in ds.days else ds.days[0]
+
+
 def _tomorrow(ds: Dataset, today: date | None = None) -> str:
     today = today or date.today()
     for offset in range(1, 8):
@@ -76,7 +82,10 @@ def parse(text: str, ds: Dataset, role: str = "club", *, allow_llm: bool = True,
     # ---------------------------------------------------------------- rules pass
     attendance, attendance_ev = nz.find_attendance(raw)
     duration, duration_ev = nz.find_duration(raw)
-    day, day_ev = nz.find_day(raw, ds.days, tomorrow=_tomorrow(ds, today))
+    today_name = _today_name(ds, today)
+    mentioned_days = nz.find_days(raw, ds.days, tomorrow=_tomorrow(ds, today), today=today_name)
+    day = mentioned_days[0] if mentioned_days else None
+    day_ev = day
     start, end, time_ev = nz.find_time_window(raw, ds.periods)
     needs = nz.find_needs(raw)
     room_types = nz.find_room_types(raw)
@@ -146,20 +155,31 @@ def parse(text: str, ds: Dataset, role: str = "club", *, allow_llm: bool = True,
     windows: list[Window] = []
     if day and start is not None:
         end_period = end if end is not None else (start + (duration or 1) - 1)
-        windows.append(Window(day=day, from_period=start, to_period=end_period))
+        for window_day in (mentioned_days or [day]):
+            windows.append(Window(day=window_day, from_period=start, to_period=end_period))
+        if len(windows) > 1:
+            assumptions.append(Assumption(
+                field="windows", value=", ".join(f"{w.day} P{w.from_period}-{w.to_period}"
+                                                  for w in windows),
+                why="every day named in the request gets the same time window"))
         if end is None:
             assumptions.append(Assumption(
                 field="windows", value=f"{day} P{start}-P{end_period}",
                 why=f"\u201c{time_ev}\u201d on {day} - the window is the rest of that part of the day"))
     elif day and start is None:
         # a day but no time: propose the evening event window
-        windows.append(Window(day=day, from_period=10, to_period=13))
+        for window_day in (mentioned_days or [day]):
+            windows.append(Window(day=window_day, from_period=10, to_period=13))
         assumptions.append(Assumption(
             field="windows", value=f"{day} P10-P13",
             why="a day was given but no time; proposed the evening event window (18:00-21:00)"))
 
     if attendance is None:
         warnings.append("attendance was not stated - this is required before a room can be chosen")
+    elif vague:
+        assumptions.append(Assumption(
+            field="attendance", value=attendance,
+            why=f"read as {attendance}; if more are expected, edit the number before submitting"))
 
     if requested_room and requested_room in ds.rooms and not room_types:
         room_types = [ds.rooms[requested_room]["type"]]
@@ -249,9 +269,6 @@ def _follow_up(attendance, duration, windows, vague) -> str | None:
         return "Which day and time should this be? Evening events can use 18:00-21:00."
     if duration is None:
         return "How long is the event?"
-    if vague and attendance:
-        return (f"I read \u201caround {attendance}\u201d as {attendance} - is that the maximum, "
-                f"or should I keep room for more?")
     return None
 
 
