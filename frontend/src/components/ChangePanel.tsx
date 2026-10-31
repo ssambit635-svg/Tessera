@@ -121,7 +121,7 @@ export function ChangePanel({ compact = false }: { compact?: boolean }) {
             <span className="ic-label">People affected</span>
             <span className="ic-value">
               {local.impact.peopleAffected}
-              <small style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, color: "var(--muted)", marginLeft: 5 }}>
+              <small style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--muted)", marginLeft: 5 }}>
                 {local.impact.studentsAffected} students
               </small>
             </span>
@@ -134,7 +134,7 @@ export function ChangePanel({ compact = false }: { compact?: boolean }) {
             <span className="ic-label">Conflicts</span>
             <span className="ic-value" style={{ color: local.impact.conflictsIntroduced ? "#8c2c19" : "var(--text)" }}>
               {local.impact.conflictsIntroduced}
-              <small style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, color: "var(--muted)", marginLeft: 5 }}>
+              <small style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--muted)", marginLeft: 5 }}>
                 introduced
               </small>
             </span>

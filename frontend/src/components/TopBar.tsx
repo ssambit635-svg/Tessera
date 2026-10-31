@@ -145,7 +145,7 @@ export function TopBar() {
               <div className="menu-label">Where these numbers come from</div>
               <div style={{ padding: "4px 10px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
                 <span style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.5 }}>{source.detail}</span>
-                <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                   {source.mode === "live"
                     ? "Numbers come from the scheduling API. Writes are authenticated."
                     : "A bundled copy of this week is on screen. No requests are sent."}
@@ -249,7 +249,7 @@ export function TopBar() {
                 <span className={`avatar lg tone-${tintFor(displayUser.email)}`}>{initials(displayUser.name)}</span>
                 <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <b style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 500 }}>{displayUser.name}</b>
-                  <span className="mono" style={{ fontSize: 10, color: "var(--muted)" }}>
+                  <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                     {displayUser.email}
                   </span>
                 </span>

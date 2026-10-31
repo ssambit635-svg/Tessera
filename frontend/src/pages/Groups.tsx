@@ -18,7 +18,11 @@ export default function Groups() {
           <h2 className="serif" style={{ fontSize: 34, marginTop: 5 }}>
             Academic groups.
           </h2>
-          <p>{data.groups.length} cohorts share rooms, faculty and hours. Click a row for its week.</p>
+          <p>
+            {data.groups.length} cohorts share rooms, faculty and hours. The curriculum is uniform, so
+            every cohort carries the same teaching load — that is the dataset, not a rendering bug.
+            Click a row for its week.
+          </p>
         </div>
       </div>
 
@@ -32,7 +36,7 @@ export default function Groups() {
                 <th>Department</th>
                 <th>Size</th>
                 <th>Sessions</th>
-                <th>Teaching hours</th>
+                <th>Curriculum hours</th>
                 <th>Access</th>
               </tr>
             </thead>
@@ -46,7 +50,7 @@ export default function Groups() {
                         <span className={`avatar sm tone-${tintFor(group.id)}`}>{initials(group.name)}</span>
                         <span>
                           <strong>{group.name}</strong>
-                          <span className="mono" style={{ display: "block", fontSize: 9.5, color: "var(--muted)" }}>{group.id}</span>
+                          <span className="mono" style={{ display: "block", fontSize: 10.5, color: "var(--muted)" }}>{group.id}</span>
                         </span>
                       </div>
                     </td>
@@ -56,7 +60,9 @@ export default function Groups() {
                     </td>
                     <td className="mono">{group.size}</td>
                     <td className="mono">{summary.classes.length}</td>
-                    <td className="mono">{summary.hours}h</td>
+                    <td className="mono" title="Same for every cohort by curriculum design">
+                      {summary.hours}h
+                    </td>
                     <td>
                       <span className={`status ${group.needsAccessible ? "warning" : "valid"}`}>
                         {group.needsAccessible ? "step-free" : "standard"}
@@ -78,7 +84,7 @@ export default function Groups() {
               <div>
                 <div className="eyebrow">Academic group</div>
                 <h2 style={{ marginTop: 3 }}>{active.name}</h2>
-                <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
                   {active.id} · {active.size} students · {active.department ?? "COMMON"}
                 </div>
               </div>

@@ -72,16 +72,56 @@ Design choices that matter:
 
 ## The app
 
-One command serves the whole product — UI and API — with **no npm, no build step, no CDN**:
+Two surfaces, one backend — and no mystery about which is which.
+
+**1. The product UI (React, `frontend/`)** — the interface the judges are scored on: the Mosaic
+board, approvals, exams, operations console, assistant.
 
 ```bash
-cd api && uvicorn app.main:app --port 8000   # then open http://localhost:8000
+cd api      && uvicorn app.main:app --port 8000     # terminal 1 (API)
+cd frontend && npm install && npm run dev           # terminal 2 → http://localhost:5173
 ```
 
-`http://localhost:8000/` is the app (login → overview → timetable → bookings → changes → AI → admin).
-`/docs` is the raw API for judges who want to poke it, `/api/info` the machine-readable summary.
-The page is plain HTML/CSS/JS in `api/app/web/`, so it works offline, deploys as one service,
-and every number on screen comes from an endpoint - nothing is hard-coded.
+Vite proxies `/api/*` to port 8000, so the browser only ever talks to one origin. `npm run
+typecheck` and `npx vite build` are part of CI, and `npm run smoke` renders every route in
+snapshot mode so a broken screen fails the build, not the demo.
+
+**2. The zero-dependency UI (`api/app/web/`)** — the same API served as plain HTML/CSS/JS at
+`http://localhost:8000/`. It exists so that a single container is a complete, offline-capable
+product: no npm, no build step, no CDN. It is deliberately smaller than the React app (it is
+the fallback front door, not the pitch).
+
+Every number on both surfaces comes from an endpoint; nothing is hard-coded in the markup.
+
+### Requirement coverage — where each rule is exercised
+
+| # | Requirement | Where it lives |
+| --- | --- | --- |
+| 1 | Clash-free weekly timetable for 189 sessions | `core/solver.py` (CP-SAT), `/api/timetable`, Mosaic board |
+| 2 | 41 midsem exams | `core/exams.py`, **`/exams`** page (halls, seats vs cohort, exam blocks on the board) |
+| 3 | Plain-English / Hinglish request → editable booking | `ai/parser.py`, `/api/ai/parse`, Bookings → “Natural-language request” |
+| 4 | Approve / reject / alternative for 25 Spectra requests, with reasons | `core/bookings.py`, `/bookings` (score 67/70) |
+| 5 | Change file → minimal-move repair → admin approval | `core/repair.py`, **`/approvals`** (upload or sample, preview, four-eyes approve) |
+| 6 | Views by group / faculty / room + pending approvals, conflicts, utilisation | Mosaic perspectives, `/approvals`, `/reports` |
+| 7 | AI assistant for faculty change requests | **`/intelligence`** → `/api/ai/change-request` (Groq or deterministic) |
+| 8 | Explain decisions | `/api/timetable/sessions/{id}/explain`, every session drawer → “Why is it here?” |
+| 9 | Admin: load dataset, load change file, export `schedule.json` | **`/operations`** (upload, generate, exports, database, audit) |
+| 10 | Manual event under hard constraints | `/api/bookings/manual[/check]`, Bookings → manual event |
+
+### The assistant and the free tier
+
+The assistant is not a chat wrapper. A sentence is read (Groq `llama-3.3-70b-versatile` on the
+free tier, with `llama-3.1-8b-instant` as a fallback) and the *engine* decides whether the
+proposed change is legal; the model never approves anything.
+
+* With no key configured the deterministic parser answers and the UI says so — that is the state
+  CI runs in.
+* With a key, every call is counted **before** it is made, against the free-tier budget
+  (1,000 requests/day on the 70B model, 14,400 on the 8B fallback, 30/minute). The counter lives
+  in the database, so restarting the server cannot reset it; when the budget is gone the
+  assistant falls back to the parser instead of erroring.
+* `GET /api/ai/budget` reports what is left; `POST /api/ai/budget/reset` (admin) starts a new
+  day. The key itself is never returned by any endpoint and never written to the repo.
 
 ### The interface
 

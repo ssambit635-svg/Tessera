@@ -67,3 +67,25 @@ jobs:
           path: |
             ci-report.json
             ci-report-after.json
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+      - name: Typecheck (no `any` escapes)
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Production build
+        working-directory: frontend
+        run: npx vite build
+      - name: Smoke the rendered workspace offline
+        working-directory: frontend
+        run: npm run smoke

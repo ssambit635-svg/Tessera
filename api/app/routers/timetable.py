@@ -154,8 +154,11 @@ def explain_session(session_id: str, user: User = Depends(current_user)):
     faculty = ds.faculty.get(sess["faculty_id"], {})
 
     reasons, tradeoffs = [], []
-    reasons.append(f"{room_id} is a {room.get('type')} that seats {room.get('capacity')} "
-                   f"- this session needs {sess['size']} seat(s) and a {sess['room_types']} room.")
+    wanted = sess["room_types"]
+    wanted_txt = wanted if isinstance(wanted, str) else " or ".join(str(w).replace("_", " ") for w in wanted)
+    seats = sess["size"]
+    reasons.append(f"{room_id} is a {str(room.get('type')).replace('_', ' ')} with {room.get('capacity')} seats. "
+                   f"This session needs {seats} seat{'s' if seats != 1 else ''} in a {wanted_txt} room.")
     if sess["needs_accessible"]:
         reasons.append(f"{room_id} is accessible, which this session requires.")
     if sess["kind"] == "lab":
@@ -164,7 +167,7 @@ def explain_session(session_id: str, user: User = Depends(current_user)):
                 if e["day"] == day and e["session_id"] in ds.sessions
                 and ds.sessions[e["session_id"]]["faculty_id"] == sess["faculty_id"])
     cap = faculty.get("max_hours_per_day")
-    reasons.append(f"{sess['faculty_id']} teaches {hours} h on {day}"
+    reasons.append(f"{faculty.get('name') or sess['faculty_id']} teaches {hours} h on {day}"
                    + (f" (their daily limit is {cap} h)." if cap else "."))
     reasons.append(f"The slot keeps {', '.join(sess['groups'])} and {sess['faculty_id']} "
                    f"free of every other class at that hour.")

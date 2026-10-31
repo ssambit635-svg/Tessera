@@ -16,6 +16,9 @@ import Reports from "./pages/Reports";
 import Departments from "./pages/Departments";
 import Groups from "./pages/Groups";
 import Locations from "./pages/Locations";
+import Approvals from "./pages/Approvals";
+import Exams from "./pages/Exams";
+import Operations from "./pages/Operations";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -75,6 +78,9 @@ function Gate() {
         <Route path="availability" element={<Availability />} />
         <Route path="people" element={<People />} />
         <Route path="bookings" element={<Bookings />} />
+        <Route path="approvals" element={<Approvals />} />
+        <Route path="exams" element={<Exams />} />
+        <Route path="operations" element={<Operations />} />
         <Route path="intelligence" element={<Intelligence />} />
         <Route path="reports" element={<Reports />} />
         <Route path="departments" element={<Departments />} />

@@ -64,7 +64,13 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string |
   return body as T;
 }
 
-export const snapshotWorkspace = snapshot as unknown as Workspace;
+/** The committed snapshot predates the maintenance layer and the soft-rule labels, so the
+ *  offline workspace fills them honestly with "nothing known" rather than `undefined`. */
+export const snapshotWorkspace: Workspace = {
+  ...(snapshot as unknown as Workspace),
+  maintenance: (snapshot as unknown as Workspace).maintenance ?? [],
+  softRuleLabels: (snapshot as unknown as Workspace).softRuleLabels ?? {},
+};
 
 /** Published availability for one room — called only when a room is opened, not at boot. */
 export async function fetchRoomAvailability(roomId: string, token?: string | null): Promise<AvailabilityResponse> {
@@ -151,6 +157,35 @@ interface AvailabilityResponse {
   free_slots: Room["availability"];
 }
 
+/** /api/exams row (snake_case) - the midsem schedule. */
+interface ExamRow {
+  exam_id: string;
+  course_ids: string[];
+  groups: string[];
+  size: number;
+  duration_hours: number;
+  day: DayCode | null;
+  session: string | null;
+  rooms: string[];
+  seats: number;
+}
+
+function normaliseExam(row: ExamRow): Workspace["exams"][number] {
+  return {
+    id: row.exam_id,
+    courseIds: row.course_ids,
+    courseTitles: row.course_ids,
+    groupIds: row.groups,
+    groupNames: row.groups,
+    size: row.size,
+    durationHours: row.duration_hours,
+    day: row.day ?? "MON",
+    slot: row.session ?? "unscheduled",
+    rooms: row.rooms,
+    seats: row.seats,
+  };
+}
+
 /**
  * Turn live API responses into the same shape `snapshot.json` has.
  *
@@ -162,15 +197,21 @@ export async function loadLiveWorkspace(token: string, datasetId: string): Promi
   const auth = { Authorization: `Bearer ${token}` };
   const json = <T,>(path: string) => request<T>(path, { headers: auth }, token);
 
-  const [summary, entities, week, bookings, dashboard, manual] = await Promise.all([
-    json<{ summary: Workspace["summary"]; calendar: Record<string, unknown>; priority_order: string[]; role_category_cap: Record<string, string> }>(
-      "/api/dataset/summary",
-    ),
+  const [summary, entities, week, bookings, dashboard, manual, exams] = await Promise.all([
+    json<{
+      summary: Workspace["summary"];
+      calendar: Record<string, unknown>;
+      priority_order: string[];
+      role_category_cap: Record<string, string>;
+      maintenance?: { room_id: string; day: DayCode; period: number }[];
+      soft_rule_labels?: Record<string, string>;
+    }>("/api/dataset/summary"),
     json<Entities>("/api/dataset/entities"),
     json<WeekResponse>("/api/timetable/week"),
     json<Workspace["bookings"]>("/api/bookings"),
     json<LiveDashboard>("/api/admin/dashboard"),
     json<{ events: Workspace["manualEvents"] }>("/api/bookings/manual"),
+    json<{ exams: ExamRow[]; exam_week?: unknown }>("/api/exams"),
   ]);
 
   // The per-room availability endpoint is a 1:1 mirror of the timetable we already hold.
@@ -186,7 +227,9 @@ export async function loadLiveWorkspace(token: string, datasetId: string): Promi
   );
 
   const courseById = new Map(courses.map((c) => [c.id, c]));
-  const roomMeta = new Map(availability.map((a) => [a.room.id, a.room]));
+  // NOTE: per-room availability is fetched lazily (one room at a time), so this map must be
+  // built from /dataset/entities — otherwise every tile shows a raw id like "CR-103".
+  const roomMeta = new Map(entities.rooms.map((r) => [r.id, r]));
   const busyByRoom = new Map<string, Workspace["rooms"][number]["busy"]>();
   week.entries.forEach((entry) => {
     const list = busyByRoom.get(entry.room_id) ?? [];
@@ -236,6 +279,7 @@ export async function loadLiveWorkspace(token: string, datasetId: string): Promi
       roomId: entry.room_id,
       roomName: roomMeta.get(entry.room_id)?.name ?? entry.room_id,
       building: roomMeta.get(entry.room_id)?.building ?? "",
+      roomType: roomMeta.get(entry.room_id)?.type ?? "",
       facultyId: entry.faculty_id,
       facultyName: facultyName.get(entry.faculty_id) ?? entry.faculty_id,
       groupIds: entry.groups,
@@ -299,6 +343,14 @@ export async function loadLiveWorkspace(token: string, datasetId: string): Promi
       days: week.days,
       periods,
       lunchAfterPeriod: week.lunch_after_period,
+      // The dataset speaks snake_case; a judge's own upload must not fall back to our
+      // snapshot's exam window, so read it from the live payload when it is there.
+      festWeek: (summary.calendar?.fest_week as string | undefined) ?? snapshotWorkspace.calendar.festWeek,
+      examWeek: (summary.calendar?.exam_week as Workspace["calendar"]["examWeek"]) ?? snapshotWorkspace.calendar.examWeek,
+      labStartPeriods:
+        (summary.calendar?.lab_start_periods as number[] | undefined) ?? snapshotWorkspace.calendar.labStartPeriods,
+      eventOnlyPeriods:
+        (summary.calendar?.event_only_periods as number[] | undefined) ?? snapshotWorkspace.calendar.eventOnlyPeriods,
     },
     rooms,
     faculty,
@@ -307,6 +359,7 @@ export async function loadLiveWorkspace(token: string, datasetId: string): Promi
     sessions,
     bookings,
     manualEvents: manual.events ?? [],
+    exams: (exams.exams ?? []).map(normaliseExam),
     dashboard: {
       counts: dashboard.counts,
       conflicts: { hard: dashboard.conflicts?.hard ?? 0, by_rule: dashboard.conflicts?.by_rule ?? {} },
@@ -316,6 +369,8 @@ export async function loadLiveWorkspace(token: string, datasetId: string): Promi
       pendingProposals: dashboard.pending_proposals ?? 0,
       risks: dashboard.risks ?? [],
     },
+    maintenance: summary.maintenance ?? [],
+    softRuleLabels: summary.soft_rule_labels ?? {},
     priorityOrder: summary.priority_order,
     roleCategoryCap: summary.role_category_cap,
   };
@@ -494,4 +549,184 @@ export function createManualEvent(token: string | null, payload: Record<string, 
 
 export function listProposals(token: string | null) {
   return request<{ count: number; proposals: Record<string, unknown>[] }>("/api/disruption/proposals", {}, token);
+}
+
+/* ------------------------------------------------------- approvals & operations */
+
+export interface ProposalRow {
+  id: string;
+  title: string;
+  status: string;
+  requested_by: string;
+  decided_by: string | null;
+  created_at: string;
+  moves: number | null;
+  valid: boolean | null;
+  changes: Record<string, unknown>[];
+  can_i_approve: boolean;
+}
+
+export function listProposalQueue(token: string | null) {
+  return request<{ count: number; proposals: ProposalRow[] }>("/api/disruption/proposals", {}, token);
+}
+
+export function rejectProposal(token: string | null, proposalId: string, note: string) {
+  return request<Record<string, unknown>>(
+    `/api/disruption/${proposalId}/reject?note=${encodeURIComponent(note)}`,
+    { method: "POST" },
+    token,
+  );
+}
+
+/** A whole change file, previewed without touching the timetable. */
+export function previewChangeFile(token: string | null, changes: unknown[], title = "Uploaded change file") {
+  return request<Record<string, unknown>>(
+    "/api/disruption/preview-file",
+    { method: "POST", body: JSON.stringify({ changes, title }) },
+    token,
+  );
+}
+
+export function fetchSampleChanges(token: string | null) {
+  return request<{ file: string; changes: Record<string, unknown>[] }>("/api/disruption/sample", {}, token);
+}
+
+/** "Why is this class here?" - the phrase a judge asks, answered by the constraint codes. */
+export function fetchExplain(token: string | null, sessionId: string) {
+  return request<{
+    summary: string;
+    reasons: string[];
+    tradeoffs: string[];
+    alternatives: { day: string; start_period: number }[];
+    checked_by: string;
+  }>(`/api/timetable/sessions/${sessionId}/explain`, {}, token);
+}
+
+export function facultyChangeRequest(token: string | null, text: string, facultyId?: string | null) {
+  return request<Record<string, unknown>>(
+    "/api/ai/change-request",
+    { method: "POST", body: JSON.stringify({ text, faculty_id: facultyId ?? null, create_proposal: true }) },
+    token,
+  );
+}
+
+export function fetchAiStatus(token: string | null) {
+  return request<{
+    enabled: boolean;
+    mode: string;
+    model: string | null;
+    fallback_model: string | null;
+    daily_limit: number;
+    note: string;
+    budget: BudgetSnapshot;
+    stats: Record<string, unknown>;
+  }>("/api/ai/status", {}, token);
+}
+
+export interface BudgetSnapshot {
+  date: string;
+  enabled: boolean;
+  primary_model: string;
+  fallback_model: string;
+  requests_today: number;
+  by_model: Record<string, number>;
+  remaining_primary: number;
+  remaining_fallback: number;
+  daily_limit: number;
+  daily_limit_fallback: number;
+  per_minute_limit: number;
+  denied_today: number;
+  note: string;
+}
+
+export function fetchAiBudget(token: string | null) {
+  return request<BudgetSnapshot>("/api/ai/budget", {}, token);
+}
+
+export function runAiSelfTest(token: string | null) {
+  return request<{ ok: boolean; model?: string; latency_ms?: number; error?: string; reason?: string; budget?: BudgetSnapshot }>(
+    "/api/ai/selftest",
+    { method: "POST" },
+    token,
+  );
+}
+
+export function generateTimetable(token: string | null, timeLimit?: number) {
+  return request<{
+    ok: boolean;
+    hard_violations: number;
+    soft_total: number;
+    seed: number;
+    solve_seconds: number;
+    hard_by_rule: Record<string, number>;
+  }>("/api/timetable/generate", { method: "POST", body: JSON.stringify({ time_limit: timeLimit }) }, token);
+}
+
+export function writeExports(token: string | null) {
+  return request<{ written: Record<string, unknown> }>("/api/admin/exports", { method: "POST" }, token);
+}
+
+/** The files the judges download - written by the same code CI validates. */
+export const EXPORT_NAMES = [
+  { name: "schedule.json", note: "the semester timetable" },
+  { name: "schedule_after.json", note: "after the sample disruption is repaired" },
+];
+
+/** Authenticated download: an <a href> would arrive without the bearer token. */
+export async function downloadExport(token: string | null, name: string) {
+  const response = await fetch(`/api/admin/exports/${name}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text.slice(0, 200) || `download failed (${response.status})`);
+  }
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+export function uploadDataset(token: string | null, payload: unknown) {
+  return request<Record<string, unknown>>("/api/admin/dataset", { method: "POST", body: JSON.stringify(payload) }, token);
+}
+
+export function restoreDataset(token: string | null) {
+  return request<Record<string, unknown>>("/api/admin/dataset", { method: "DELETE" }, token);
+}
+
+export function resetDemo(token: string | null) {
+  return request<{ ok: boolean; users: number; sessions: number; after: boolean }>(
+    "/api/admin/reset",
+    { method: "POST" },
+    token,
+  );
+}
+
+export function fetchDatabase(token: string | null) {
+  return request<{
+    engine: string;
+    url: string;
+    file_bytes: number | null;
+    tables: Record<string, number>;
+    active_version: Record<string, unknown> | null;
+    note: string;
+  }>("/api/admin/db", {}, token);
+}
+
+export function fetchAudit(token: string | null, limit = 40) {
+  return request<{ audit: { at: string; actor: string; role: string; action: string; detail: string }[] }>(
+    `/api/admin/audit?limit=${limit}`,
+    {},
+    token,
+  );
+}
+
+export function fetchHistory(token: string | null) {
+  return request<{ versions: Record<string, unknown>[] }>("/api/admin/history", {}, token);
 }

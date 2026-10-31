@@ -188,6 +188,7 @@ export interface ExamEntry {
   day: DayCode;
   slot: string;
   rooms: string[];
+  seats?: number;
 }
 
 export interface UtilisationRow {
@@ -251,6 +252,10 @@ export interface Workspace {
   roleCategoryCap: Record<string, string>;
   demoAccounts: DemoAccount[];
   unavailability: { room_id: string; day: DayCode; periods: number[]; reason: string }[];
+  /** Flat maintenance / declared-unavailable cells, straight from the dataset. */
+  maintenance: { room_id: string; day: DayCode; period: number }[];
+  /** What each soft-rule code (S1..S6) means, published by the API so the UI can explain it. */
+  softRuleLabels: Record<string, string>;
   cancellations: { request_id: string; cancelled_at: string; by: string; note: string }[];
 }
 

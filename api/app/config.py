@@ -107,6 +107,11 @@ class Settings:
     groq_fallback_model: str = field(default_factory=lambda: _env("GROQ_FALLBACK_MODEL", "llama-3.1-8b-instant"))
     groq_base_url: str = field(default_factory=lambda: _env("GROQ_BASE_URL", "https://api.groq.com/openai/v1"))
     llm_timeout: float = field(default_factory=lambda: float(_env("LLM_TIMEOUT_SECONDS", "12")))
+    # Free-tier spend guard (see app/ai/budget.py). Groq's published free limits: about
+    # 30 requests/minute and 1,000/day on the 70B, 14,400/day on the 8B.
+    llm_rpd: int = field(default_factory=lambda: int(_env("LLM_RPD", "1000")))
+    llm_rpd_fallback: int = field(default_factory=lambda: int(_env("LLM_RPD_FALLBACK", "14400")))
+    llm_rpm: int = field(default_factory=lambda: int(_env("LLM_RPM", "30")))
 
     @property
     def llm_enabled(self) -> bool:

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWorkspace } from "../lib/workspace";
+import { Layers, useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
 import { initials, tintFor } from "../lib/persona";
@@ -14,6 +14,14 @@ const TOKENS = [
   { name: "Coral", value: "#F16B55", role: "conflict · warning" },
   { name: "Sky Blue", value: "#8EC9E9", role: "information" },
   { name: "Sage", value: "#BFE2D1", role: "validated" },
+];
+
+/** Every layer controls something you can see on the board. No decorative toggles. */
+const LAYER_COPY: [keyof Layers, string][] = [
+  ["classes", "Teaching sessions"],
+  ["exams", "Midsem examination blocks"],
+  ["events", "Approved venue bookings"],
+  ["maintenance", "Maintenance / unavailable cells"],
 ];
 
 export default function Settings() {
@@ -54,7 +62,7 @@ export default function Settings() {
               <span className={`avatar xl tone-${tintFor(displayUser.email)}`}>{initials(displayUser.name)}</span>
               <div>
                 <b style={{ fontFamily: "var(--font-display)", fontSize: 15 }}>{displayUser.name}</b>
-                <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 2 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 2 }}>
                   {displayUser.email} · {displayUser.role.replace(/_/g, " ")}
                 </div>
               </div>
@@ -153,11 +161,15 @@ export default function Settings() {
             </div>
             <div className="divider" />
             <span className="eyebrow">Calendar layers</span>
-            {Object.entries(layers).map(([key, value]) => (
+            {LAYER_COPY.map(([key, label]) => (
               <div key={key} className="settings-row">
                 <Icon name="layers" size={13} />
-                <span style={{ flex: 1, textTransform: "capitalize" }}>{key === "birthdays" ? "AI holds" : key}</span>
-                <button className={`switch ${value ? "on" : ""}`} onClick={() => toggleLayer(key as keyof typeof layers)} aria-label={`Toggle ${key}`} />
+                <span style={{ flex: 1 }}>{label}</span>
+                <button
+                  className={`switch ${layers[key] ? "on" : ""}`}
+                  onClick={() => toggleLayer(key)}
+                  aria-label={`Toggle ${label}`}
+                />
               </div>
             ))}
           </div>
@@ -185,7 +197,7 @@ export default function Settings() {
             </div>
             <div className="row gap-10" style={{ marginTop: 14, alignItems: "center" }}>
               <TileMark size={30} />
-              <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                 THE TESSERA TILE · FOUR INTERLOCKING BLOCKS
               </span>
             </div>

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session
 
+from ..ai import budget as ai_budget
 from ..ai import change as change_ai
 from ..ai.parser import _today_name, _tomorrow, parse
 from ..auth import current_user, require_admin, require_roles
@@ -148,7 +149,10 @@ def selftest(admin: User = Depends(require_admin)):
         return {"ok": False, "provider": provider.name,
                 "reason": "no key configured - set LLM_PROVIDER=groq and GROQ_API_KEY, "
                           "or keep using the deterministic parser (same endpoints, no model)"}
-    return {"provider": provider.name, **provider.selftest()}
+    result = {"provider": provider.name, **provider.selftest()}
+    result["reason"] = result.get("reason") or result.get("error") or ""
+    result["budget"] = ai_budget.snapshot()
+    return result
 
 
 @router.get("/status")
@@ -162,17 +166,31 @@ def ai_status(user: User = Depends(current_user)):
         "prompt_file": "prompts/extract_booking.md",
         "endpoint": s.groq_base_url,
         "stats": providers.STATS.as_dict(),
+        "budget": ai_budget.snapshot(),
         "free_tier_note": ("Groq free tier is about 1,000 requests/day on the 70B model and "
                            "14,400 on the 8B; the 8B is the automatic fallback."),
         "how_to_enable": ("put GROQ_API_KEY=... in .env and set LLM_PROVIDER=groq, then "
                           "POST /api/ai/selftest"),
         "enabled": s.llm_enabled,
         "model": s.groq_model if s.llm_enabled else None,
+        "daily_limit": ai_budget.snapshot()["daily_limit"],
         "fallback_model": s.groq_fallback_model if s.llm_enabled else None,
         "note": ("deterministic parser only - the product behaves identically with no model"
                  if not s.llm_enabled else "the model reads requests; rules still decide validity"),
         "prompts": ["prompts/extract_booking.md", "prompts/followup.md", "prompts/explain_decision.md"],
     }
+
+
+@router.post("/budget/reset")
+def reset_budget(admin: User = Depends(require_admin)):
+    """Forget today's provider counters (never touches the key itself)."""
+    return ai_budget.reset_today()
+
+
+@router.get("/budget")
+def budget_status(user: User = Depends(current_user)):
+    """How much of the free tier we have spent today - shown in the admin panel."""
+    return ai_budget.snapshot()
 
 
 @router.get("/samples")

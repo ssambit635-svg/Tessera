@@ -42,7 +42,7 @@
 
 .board-title .academic-period {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--muted);
@@ -164,7 +164,7 @@
   top: 7px;
   right: 8px;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 10.5px;
   color: var(--muted);
 }
 
@@ -198,7 +198,7 @@
 }
 
 .control-select:hover { background: var(--card); border-color: var(--line-3); }
-.control-select .cs-label { color: var(--muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+.control-select .cs-label { color: var(--muted); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
 
 .board-search {
   margin-left: auto;
@@ -274,7 +274,7 @@
 
 .board-head-cell .bh-sub {
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 10.5px;
   color: var(--muted);
   letter-spacing: 0.05em;
   margin-left: auto;
@@ -297,7 +297,7 @@
   justify-content: flex-end;
   padding: 5px 8px 0 0;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.01em;
   color: var(--muted-2);
   border-bottom: 1px solid rgba(25, 26, 28, 0.045);
@@ -321,7 +321,7 @@
   left: 8px;
   transform: translateY(-50%) rotate(-90deg);
   transform-origin: left center;
-  font-size: 8px;
+  font-size: 10.5px;
   letter-spacing: 0.16em;
   color: var(--muted-2);
 }
@@ -344,7 +344,7 @@
   display: flex;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 10.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted-2);
@@ -391,7 +391,7 @@
 
 .drag-ghost .ghost-state {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.04em;
   display: flex;
   align-items: center;
@@ -438,7 +438,7 @@
   align-items: center;
   gap: 4px;
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 10.5px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   opacity: 0.62;
@@ -480,7 +480,7 @@
 
 .tile .tile-time {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   opacity: 0.66;
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -501,7 +501,7 @@
   }
 
   .tile .tile-code {
-    font-size: 7px;
+    font-size: 10.5px;
     letter-spacing: 0.06em;
   }
 
@@ -523,7 +523,7 @@
   }
 
   .tile .tile-title {
-    font-size: 9px;
+    font-size: 10.5px;
     line-height: 1.15;
     -webkit-line-clamp: 4;
   }
@@ -534,7 +534,7 @@
 }
 
 .tile .tile-meta {
-  font-size: 9.5px;
+  font-size: 10.5px;
   opacity: 0.78;
   white-space: nowrap;
   overflow: hidden;
@@ -544,7 +544,7 @@
 
 .tile .tile-code {
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 10.5px;
   letter-spacing: 0.08em;
   opacity: 0.6;
   text-transform: uppercase;
@@ -579,7 +579,7 @@
   width: 20px;
   height: 20px;
   border-radius: 7px;
-  font-size: 7.5px;
+  font-size: 10.5px;
   letter-spacing: -0.03em;
   border-width: 1.5px;
 }
@@ -596,7 +596,7 @@
 }
 
 .tile .tile-avatars { display: flex; align-items: center; }
-.tile .tile-avatars .avatar { padding: 0 1px; width: 18px; height: 18px; border-radius: 6px; font-size: 7.5px; border: 1.5px solid rgba(255, 253, 248, 0.92); }
+.tile .tile-avatars .avatar { padding: 0 1px; width: 18px; height: 18px; border-radius: 6px; font-size: 10.5px; border: 1.5px solid rgba(255, 253, 248, 0.92); }
 .tile .tile-avatars .avatar + .avatar { margin-left: -5px; }
 
 .tile .tile-status {
@@ -683,7 +683,7 @@
   color: var(--muted);
   box-shadow: none;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.06em;
 }
 
@@ -710,7 +710,7 @@
 .month-dow {
   padding: 8px 10px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
@@ -761,7 +761,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 9.5px;
+  font-size: 10.5px;
   padding: 2px 5px;
   border-radius: 5px;
   background: var(--tint-neutral);
@@ -772,7 +772,7 @@
 }
 
 .month-chip i { width: 4px; height: 4px; border-radius: 50%; flex: none; }
-.month-more { font-family: var(--font-mono); font-size: 8.5px; color: var(--muted); }
+.month-more { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); }
 
 /* ------------------------------------------------------------------ event popover */
 .event-popover {
@@ -929,7 +929,7 @@
 
 .impact-cell .ic-label {
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 10.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -1023,7 +1023,7 @@
 
 .ripple-col-head {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -1076,7 +1076,7 @@
 .ripple-slot .rs-code {
   display: none;
   font-family: var(--font-mono);
-  font-size: 7.5px;
+  font-size: 10.5px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
@@ -1088,7 +1088,7 @@
 
 .ripple-slot .rs-title {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 500;
   line-height: 1.16;
   display: -webkit-box;
@@ -1101,7 +1101,7 @@
 
 .ripple-slot .rs-time {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 10.5px;
   color: var(--muted);
   flex: none;
   white-space: nowrap;
@@ -1118,7 +1118,7 @@
 
   .ripple-slot .rs-title {
     -webkit-line-clamp: 1;
-    font-size: 9.5px;
+    font-size: 10.5px;
   }
 
   .ripple-slot .rs-time {
@@ -1157,7 +1157,7 @@
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -1224,7 +1224,7 @@
   .day-strip { grid-template-columns: 34px repeat(var(--day-count, 7), minmax(0, 1fr)); gap: 5px; }
   .day-pill { height: 50px; border-radius: 11px; }
   .day-pill .dow {
-    font-size: 9px;
+    font-size: 10.5px;
     max-width: 100%;
     padding: 0 4px;
     overflow: hidden;
@@ -1232,7 +1232,7 @@
     white-space: nowrap;
   }
   .day-pill .dom { font-size: 14px; }
-  .day-pill .day-count { top: auto; bottom: 4px; right: 5px; font-size: 7.5px; }
+  .day-pill .day-count { top: auto; bottom: 4px; right: 5px; font-size: 10.5px; }
   .board-search { min-width: 0; width: 100%; }
   .event-popover { width: min(324px, calc(100vw - 24px)); }
   .impact-grid { grid-template-columns: 1fr 1fr; }
@@ -1253,7 +1253,7 @@
 
 .tile-stack .stack-count {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -1265,7 +1265,7 @@
 
 .tile-stack .stack-label {
   font-family: var(--font-mono);
-  font-size: 7px;
+  font-size: 10.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted-2);
@@ -1351,7 +1351,7 @@
 
 .stack-popover .sp-body span {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -1385,7 +1385,7 @@
   }
 
   .tile .tile-code {
-    font-size: 7.5px;
+    font-size: 10.5px;
     letter-spacing: 0.06em;
   }
 
@@ -1403,7 +1403,7 @@
   .tile .tile-avatars .avatar {
     width: 18px;
     height: 18px;
-    font-size: 8px;
+    font-size: 10.5px;
     border-radius: 5px;
   }
 
@@ -1432,4 +1432,32 @@
   .tile .tile-photo {
     display: block;
   }
+}
+
+/* ME and CE share the sand tone; CE carries a hatch so the two are never told apart by hue alone. */
+.tile.dept-CE::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(71, 56, 26, 0.08) 0 3px,
+    transparent 3px 7px
+  );
+}
+
+/* Layer toggles on the board itself, matching the rail's four real layers. */
+.board-layers { display: flex; gap: 6px; flex-wrap: wrap; }
+.board-layers .chip {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--muted);
+  cursor: pointer;
+}
+.board-layers .chip.on {
+  background: var(--tint-lime);
+  border-color: transparent;
+  color: var(--lime-ink);
 }

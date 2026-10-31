@@ -9,7 +9,7 @@ import {
   roomSummary,
   type RoomMatch,
 } from "../lib/derive";
-import { FEATURE_LABELS, ROOM_TYPE_LABELS, roomImage } from "../lib/persona";
+import { FEATURE_LABELS, PHOTO_NOTE, ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
 import { DAY_LONG, MONTHS_SHORT, percent, plural, ratio } from "../lib/format";
 import { dateFromISO } from "../lib/ui";
 import { useUi } from "../lib/ui";
@@ -224,7 +224,7 @@ export default function Discovery() {
             </button>
           </div>
           <span className="spacer" />
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
             {activeFilters} FILTERS · {matches.length} RESULTS
           </span>
           <button className="btn sm quiet" onClick={reset}>
@@ -236,7 +236,8 @@ export default function Discovery() {
       {hero ? (
         <section className="discovery-feature">
           <button className="disc-hero" onClick={() => setParams({ room: hero.room.id })}>
-            <img src={roomImage(hero.room.id, hero.room.type)} alt={hero.room.name} />
+            <img src={roomImage(hero.room.id, hero.room.type)} alt={roomImageAlt(hero.room.name)} />
+            <span className="photo-note">{PHOTO_NOTE}</span>
             <span className="disc-hero-top">
               <span className="chip lime lg">
                 <Icon name="sparkles" size={11} /> Best match
@@ -272,7 +273,7 @@ export default function Discovery() {
               <button key={match.room.id} className="disc-small" onClick={() => setParams({ room: match.room.id })}>
                 <img src={roomImage(match.room.id, match.room.type)} alt={match.room.name} />
                 <span className="disc-small-body">
-                  <span className="mono" style={{ fontSize: 9, color: "rgba(255,255,255,.6)" }}>
+                  <span className="mono" style={{ fontSize: 10.5, color: "rgba(255,255,255,.6)" }}>
                     {String(index + 2).padStart(2, "0")} · {match.room.id}
                   </span>
                   <span className="disc-small-name">{match.room.name}</span>
@@ -320,7 +321,7 @@ export default function Discovery() {
         />
       ) : null}
 
-      <p className="mono" style={{ fontSize: 9.5, color: "var(--muted)", letterSpacing: "0.06em" }}>
+      <p className="mono" style={{ fontSize: 10.5, color: "var(--muted)", letterSpacing: "0.06em" }}>
         AVAILABILITY IS COMPUTED FROM {data.rooms.reduce((sum, r) => sum + r.availability.length, 0)} REAL
         ROOM-PERIOD RECORDS · WEEK OF {MONTHS_SHORT[dateFromISO(activeDate).getMonth()].toUpperCase()}{" "}
         {dateFromISO(activeDate).getFullYear()}
@@ -369,7 +370,7 @@ function SpaceCard({ match, onOpen }: { match: RoomMatch; onOpen: () => void }) 
           <span className="meter thin" style={{ flex: 1 }}>
             <i style={{ width: `${Math.max(3, ratio(availability.ratio, 1) * 100)}%`, background: "var(--sage-ink)" }} />
           </span>
-          <span className="mono" style={{ fontSize: 9, color: "var(--muted)" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
             {percent(availability.ratio)} free · {summary.classes.length} classes
           </span>
         </span>
@@ -411,7 +412,7 @@ function RoomDrawer({
               {room.accessible ? <span className="chip sage">step-free</span> : <span className="chip coral">no step-free access</span>}
             </div>
             <h2>{room.name}</h2>
-            <div className="mono" style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
               {room.building} · {room.capacity} seats · {room.allowedUses.join(" / ")}
             </div>
           </div>
@@ -421,7 +422,7 @@ function RoomDrawer({
         </div>
 
         <div className="drawer-body">
-          <img src={roomImage(room.id, room.type)} alt={room.name} style={{ borderRadius: 16, aspectRatio: "16/9", objectFit: "cover", width: "100%" }} />
+          <img src={roomImage(room.id, room.type)} alt={roomImageAlt(room.name)} style={{ borderRadius: 16, aspectRatio: "16/9", objectFit: "cover", width: "100%" }} />
 
           <div className="detail-grid">
             <div className="detail-item">

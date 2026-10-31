@@ -211,7 +211,7 @@ export default function Ripple() {
             <span className="eyebrow" style={{ color: "var(--muted)" }}>
               Impact map
             </span>
-            <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+            <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
               {session?.courseId} · {pending ? "proposed move" : "current placement"}
             </span>
             <span className="spacer" />
@@ -402,7 +402,7 @@ export default function Ripple() {
                       <b style={{ fontFamily: "var(--font-display)", fontSize: 12.5, fontWeight: 500 }}>
                         {session.facultyName}
                       </b>
-                      <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                      <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                         {session.facultyId} · {session.department}
                       </span>
                     </div>
@@ -447,7 +447,7 @@ export default function Ripple() {
                   <div className="divider" />
 
                   <div className="row-between">
-                    <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+                    <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
                       {periodSpan(data, session.startPeriod, session.endPeriod)} · {session.day}
                     </span>
                     <span className="chip outline">{plural(affected.length + 1, "session")} in the ripple</span>

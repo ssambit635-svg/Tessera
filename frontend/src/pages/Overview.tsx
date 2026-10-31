@@ -19,7 +19,7 @@ import {
   startOfWeek,
 } from "../lib/format";
 import { availabilityWindow, periodSpan, toneForDepartment } from "../lib/derive";
-import { FEATURE_LABELS, initials, roomImage, tintFor, ROOM_TYPE_LABELS } from "../lib/persona";
+import { FEATURE_LABELS, initials, roomImage, roomImageAlt, tintFor, ROOM_TYPE_LABELS } from "../lib/persona";
 
 export default function Overview() {
   const { data } = useWorkspace();
@@ -57,7 +57,9 @@ export default function Overview() {
     return { free: data.faculty.length - busy.size, total: data.faculty.length };
   }, [data, teachingDay]);
 
-  const pendingRequests = data.bookings.totals.alternatives + data.dashboard.pendingProposals;
+  // Two different things were being added under one label. An "alternative offered" booking is
+  // already decided; a proposal is the only item genuinely waiting on a second admin.
+  const pendingProposals = data.dashboard.pendingProposals;
   const conflicts = data.dashboard.conflicts.hard;
   const soft = data.dashboard.soft.total;
 
@@ -127,7 +129,7 @@ export default function Overview() {
               TESSERA · {instituteName(data.institute)}
             </span>
             <span className="hairline-dot" />
-            <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)", letterSpacing: "0.1em" }}>
+            <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)", letterSpacing: "0.1em" }}>
               {data.calendar.festWeek?.toUpperCase() ?? "TEACHING WEEK"}
             </span>
           </div>
@@ -200,7 +202,13 @@ export default function Overview() {
         <Metric label="Active bookings" value={data.bookings.totals.approved + data.bookings.totals.alternatives} foot={`${data.bookings.totals.alternatives} awaiting confirmation`} tone="lime" icon="ticket" />
         <Metric label="Scheduled sessions" value={data.dashboard.counts.sessions} foot={`${data.summary.teaching_hours} teaching hours`} tone="sky" icon="book" />
         <Metric label="Faculty free" value={facultyNow.free} foot={`of ${facultyNow.total} right now`} tone="sage" icon="people" />
-        <Metric label="Pending requests" value={pendingRequests} foot="need a second approver" tone="violet" icon="clock" />
+        <Metric
+          label="Proposals awaiting approval"
+          value={pendingProposals}
+          foot={pendingProposals ? "a second admin must approve" : "nothing in the four-eyes queue"}
+          tone={pendingProposals ? "violet" : "sage"}
+          icon="clock"
+        />
         <Metric label="Conflicts" value={conflicts} foot={`soft penalty ${soft}`} tone={conflicts ? "coral" : "sage"} icon="shield" />
         <Metric
           label="Examinations"
@@ -273,7 +281,7 @@ export default function Overview() {
         <div className="feature-grid">
           {featured[0] ? (
             <button className="feature feature-large" onClick={() => navigate(`/discovery?room=${featured[0]!.id}`)}>
-              <img src={roomImage(featured[0].id, featured[0].type)} alt={featured[0].name} />
+              <img src={roomImage(featured[0].id, featured[0].type)} alt={roomImageAlt(featured[0].name)} />
               <span className="feature-annot">
                 <span>{featured[0].id}</span>
                 <span>{featured[0].building}</span>
@@ -366,7 +374,7 @@ export default function Overview() {
             <button className="btn sm quiet" onClick={() => navigate("/reports")}>
               Full audit trail <Icon name="arrowRight" size={12} />
             </button>
-            <span className="mono" style={{ marginLeft: "auto", fontSize: 9, color: "var(--muted)" }}>
+            <span className="mono" style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--muted)" }}>
               {data.dashboard.conflicts.hard} HARD · {data.dashboard.soft.total} SOFT
             </span>
           </div>
@@ -410,7 +418,7 @@ export default function Overview() {
                 </span>
               ))}
             </div>
-            <span className="mono" style={{ marginLeft: "auto", fontSize: 9, color: "var(--muted)" }}>
+            <span className="mono" style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--muted)" }}>
               {data.bookings.totals.score}/{data.bookings.totals.max} SCORE
             </span>
           </div>
