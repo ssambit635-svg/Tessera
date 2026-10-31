@@ -16,7 +16,15 @@ import type {
   Workspace,
 } from "./types";
 
-export const API_BASE = ""; // same origin — vite proxies /api to the scheduling backend
+/**
+ * Where the API lives.
+ *
+ * Empty by default: the dev server proxies /api, and the single-service deployment has
+ * FastAPI serving this bundle on its own origin. When the UI is hosted separately (a
+ * Render static site, for example) the build sets VITE_API_BASE to the API origin and the
+ * browser calls it cross-origin — the API allows it through CORS_ORIGINS.
+ */
+export const API_BASE = (import.meta.env.VITE_API_BASE ?? "").trim().replace(/\/+$/, "");
 
 export class ApiError extends Error {
   status: number;
