@@ -48,11 +48,11 @@ export default function Bookings() {
             Requests, decided with reasons.
           </h2>
           <p>
-            Every Spectra-week request, the venue it was given, and the rule chain behind the decision. Nothing is
-            silently approved.
+            Every Spectra-week request, the venue it was given, and the rule chain behind the
+            decision. Nothing is silently approved.
           </p>
         </div>
-        <div className="row gap-8">
+        <div className="row gap-8" style={{ flexShrink: 0 }}>
           <button className="btn primary" onClick={() => setNlOpen(true)}>
             <Icon name="sparkles" size={14} /> Natural-language request
           </button>

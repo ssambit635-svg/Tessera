@@ -49,10 +49,22 @@ export default function Ripple() {
     };
 
     if (!pending) {
-      data.sessions
-        .filter((s) => s.day === session.day || s.roomId === session.roomId || s.facultyId === session.facultyId)
-        .slice(0, 26)
-        .forEach((s) =>
+      // Context, not a timetable: the chosen session plus everything that shares its room,
+      // its teacher or its students — spread across the week rather than one heavy day.
+      const connected = data.sessions.filter(
+        (s) =>
+          s.id === session.id ||
+          s.roomId === session.roomId ||
+          s.facultyId === session.facultyId ||
+          s.groupIds.some((g) => session.groupIds.includes(g)),
+      );
+      const perDay = new Map<DayCode, number>();
+      connected
+        .sort((a, b) => Number(b.id === session.id) - Number(a.id === session.id))
+        .forEach((s) => {
+          const used = perDay.get(s.day) ?? 0;
+          if (s.id !== session.id && used >= 6) return;
+          perDay.set(s.day, used + 1);
           push({
             title: s.courseTitle,
             day: s.day,
@@ -62,8 +74,8 @@ export default function Ripple() {
             faculty: s.facultyName,
             groups: s.groupNames,
             role: s.id === session.id ? "origin" : "plain",
-          }),
-        );
+          });
+        });
       return list;
     }
 
@@ -119,6 +131,28 @@ export default function Ripple() {
 
     return list;
   }, [data.sessions, days, pending, session]);
+
+  /** Greedy lane packing per day so nothing ever overlaps. */
+  const lanesByDay = useMemo(() => {
+    const map = new Map<string, { lane: number; lanes: number }>();
+    days.forEach((day) => {
+      const inDay = blocks
+        .filter((block) => block.day === day)
+        .sort((a, b) => a.start - b.start || a.end - b.end);
+      const lanes: Block[][] = [];
+      inDay.forEach((block) => {
+        const lane = lanes.find((candidate) =>
+          candidate.every((other) => block.start > other.end || block.end < other.start),
+        );
+        if (lane) lane.push(block);
+        else lanes.push([block]);
+      });
+      lanes.forEach((lane, index) =>
+        lane.forEach((block) => map.set(block.id, { lane: index, lanes: lanes.length })),
+      );
+    });
+    return map;
+  }, [blocks, days]);
 
   const colX = (day: DayCode) => ((days.indexOf(day) + 0.5) / days.length) * 100;
   const rowY = (period: number, duration = 1) =>
@@ -215,8 +249,8 @@ export default function Ripple() {
                             position: "absolute",
                             top: (block.start - WINDOW_START) * 52 + 2,
                             height: (block.end - block.start + 1) * 52 - 4,
-                            left: 0,
-                            right: 0,
+                            left: `calc(${((lanesByDay.get(block.id)?.lane ?? 0) / (lanesByDay.get(block.id)?.lanes ?? 1)) * 100}% + 2px)`,
+                            width: `calc(${100 / (lanesByDay.get(block.id)?.lanes ?? 1)}% - 4px)`,
                             background:
                               block.role === "plain" ? "var(--ivory)" : undefined,
                             borderStyle: block.role === "plain" ? "solid" : undefined,

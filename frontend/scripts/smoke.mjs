@@ -100,7 +100,7 @@ async function waitForMount(maxMs) {
   while (Date.now() - started < maxMs) {
     await wait(150);
     if (window.document.querySelector(".app-frame")) return "app";
-    if (window.document.querySelector(".login")) return "login";
+    if (window.document.querySelector(".signin")) return "login";
   }
   return null;
 }
@@ -118,9 +118,9 @@ if (process.argv.includes("--dump") && mounted === "login") {
 // A first visit must land on the sign-in spread, not straight in the workspace.
 if (mounted !== "login") errors.push("a first visit did not open the sign-in page");
 if (mounted === "login") {
-  if (!/accounted for/i.test(text())) errors.push("the sign-in spread is missing its statement");
-  if (!window.document.querySelector(".identity-list .identity")) errors.push("no demo identities on the sign-in page");
-  click(window.document.querySelector(".identity-list .identity"));
+  if (!/campus scheduling/i.test(text())) errors.push("the sign-in page is missing its title");
+  if (!window.document.querySelector(".sf-identities .sf-identity")) errors.push("no demo identities on the sign-in page");
+  click(window.document.querySelector(".sf-identities .sf-identity"));
   const entered = await waitForMount(LIVE ? 12000 : 5000);
   if (entered !== "app") errors.push("signing in from a first visit did not open the workspace");
 }
@@ -159,7 +159,7 @@ for (const route of routes) {
     if (process.argv.includes("--dump")) console.log("ROOT TEXT:", body.slice(0, 700), "| path:", window.location.pathname);
   }
   if (route === "/login") {
-    if (!/accounted for/i.test(body)) errors.push("/login is missing the editorial statement");
+    if (!/sign in/i.test(body)) errors.push("/login is missing the sign-in card");
     if (window.document.querySelector(".app-frame")) errors.push("/login rendered the app shell");
   }
   if (/Cannot read propert|is not a function|Minified React error/i.test(body)) {
@@ -190,7 +190,7 @@ const go = async (route) => {
 async function ensureSignedIn() {
   if (window.document.querySelector(".app-frame")) return;
   await go("/login");
-  click(window.document.querySelector(".identity-list .identity"));
+  click(window.document.querySelector(".sf-identities .sf-identity"));
   await wait(800);
 }
 
@@ -274,7 +274,7 @@ await interaction("sign-in page signs a demo identity into the board", async () 
   await ensureSignedIn();
   await go("/login");
   if (process.argv.includes("--dump")) console.log("--- login text ---\n" + text() + "\n---");
-  const identity = window.document.querySelector(".identity-list .identity");
+  const identity = window.document.querySelector(".sf-identities .sf-identity");
   if (!identity) return "no demo identities listed";
   click(identity);
   await wait(700);
@@ -292,7 +292,7 @@ await interaction("sign out returns to the spread", async () => {
   if (!click(signOut)) return "no sign-out action";
   await wait(700);
   if (window.document.querySelector(".app-frame")) return "the shell is still mounted";
-  return /accounted for/i.test(text()) ? "" : "did not land on the sign-in page";
+  return /sign in/i.test(text()) ? "" : "did not land on the sign-in page";
 });
 
 await interaction("password sign-in rejects bad credentials", async () => {
@@ -307,9 +307,9 @@ await interaction("password sign-in rejects bad credentials", async () => {
   if (!email || !password) return "form fields missing";
   set(email, "nobody@cit.edu");
   set(password, "wrong-password");
-  window.document.querySelector(".panel-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+  window.document.querySelector(".sf-card form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
   await wait(500);
-  const error = window.document.querySelector(".panel-error");
+  const error = window.document.querySelector(".sf-error");
   if (!error) return "no error was shown";
   return /not match|not reachable|failed/i.test(error.textContent) ? "" : `unexpected error copy: ${error.textContent}`;
 });
@@ -329,10 +329,10 @@ if (LIVE) {
     };
     set(window.document.querySelector("#email"), "admin@cit.edu");
     set(window.document.querySelector("#password"), "Tessera@2027");
-    window.document.querySelector(".panel-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    window.document.querySelector(".sf-card form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
     await wait(4000);
     if (!window.document.querySelector(".app-frame")) {
-      const err = window.document.querySelector(".panel-error")?.textContent ?? "no error shown";
+      const err = window.document.querySelector(".sf-error")?.textContent ?? "no error shown";
       return `still on the sign-in page (${err})`;
     }
     return /LIVE API/i.test(text()) ? "" : "signed in but the workspace is not reading live data";

@@ -69,6 +69,9 @@ export default function Availability() {
     return { free, busy, blocked };
   }, [activeDay, periods, rooms, data]);
 
+  const freeCount = stats.free;
+  const occupiedCount = stats.busy;
+
   const openCell = (room: Room, period: number) => {
     const occupancy = cellFor(room, activeDay, period);
     setSelected({ room, period, occupancy });
@@ -89,8 +92,8 @@ export default function Availability() {
             {formatDayLong(active)}
           </h2>
           <p>
-            {rooms.length} resources × {periods.length} periods, read from {data.rooms.reduce((sum, r) => sum + r.availability.length, 0)} real
-            room-period records — not a hardcoded spreadsheet.
+            {rooms.length} resources × {periods.length} periods, {freeCount} free and {occupiedCount} taken —
+            derived from {data.sessions.length} placed sessions and {data.bookings.bookings.length} venue decisions.
           </p>
         </div>
         <div className="row gap-8 wrap">

@@ -31,7 +31,20 @@ import type { DayCode } from "../lib/types";
 type View = "week" | "month" | "day";
 type Perspective = "days" | "rooms" | "faculty" | "groups" | "departments";
 
-const ROW_H = 62;
+const ROW_H = 72;
+/** Beyond four lanes a column stops being readable; the rest is filed into a ribbon. */
+const MAX_LANES = 4;
+
+/** How many concurrent sessions a column shows before it starts filing them.
+ *  Week view splits the canvas five ways, so two lanes keep every title readable;
+ *  day and room views have room for more. */
+function laneBudget(view: View): number {
+  // Week view is the agenda: one session per slot, the rest counted in the ribbon.
+  // Day, room and faculty views are the working views and open up to four lanes.
+  if (view === "week") return 1;
+  return MAX_LANES;
+}
+const RIBBON_W = 26;
 
 interface Column {
   key: string;
@@ -61,6 +74,7 @@ function Tile({
   photo,
   dimmed,
   time,
+  reserve = 0,
 }: {
   item: BoardItem;
   lane: number;
@@ -71,12 +85,14 @@ function Tile({
   photo?: string;
   dimmed?: boolean;
   time: string;
+  /** Pixels kept clear on the right for the "+N more" ribbon. */
+  reserve?: number;
 }) {
   const top = (item.startPeriod - 1) * ROW_H + 3;
   const height = (item.endPeriod - item.startPeriod + 1) * ROW_H - 6;
-  const width = 100 / lanes;
-  const showMeta = height > 72;
-  const showPhoto = Boolean(photo) && height > 132 && lanes < 3;
+  const share = 1 / lanes;
+  const showMeta = height > 150;
+  const showPhoto = Boolean(photo) && height > 240 && lanes < 3;
 
   return (
     <button
@@ -85,14 +101,18 @@ function Tile({
       style={{
         top,
         height,
-        left: `calc(${lane * width}% + 3px)`,
-        width: `calc(${width}% - 6px)`,
+        left: `calc((100% - ${reserve}px) * ${lane * share} + 3px)`,
+        width: `calc((100% - ${reserve}px) * ${share} - 6px)`,
       }}
       onClick={onOpen}
       draggable={Boolean(onDragStart)}
       onDragStart={onDragStart}
       aria-label={`${item.title}, ${item.day} P${item.startPeriod} to P${item.endPeriod}, ${item.roomName}`}
     >
+      <span className="tile-code">
+        {item.courseId ?? item.subtitle}
+        <span className="tile-dot" aria-hidden="true" />
+      </span>
       <span className="tile-title">{item.title}</span>
       <span className="tile-time">{time}</span>
       {showMeta ? (
@@ -117,11 +137,7 @@ function Tile({
             </span>
           ))}
         </span>
-        <span
-          className="tile-status"
-          style={{ background: item.kind === "booking" ? "var(--sage-ink)" : "var(--sage-ink)" }}
-          title="Validated · no hard conflicts"
-        />
+        <span className="tile-status" title="Validated · no hard conflicts" />
       </span>
       {showPhoto ? (
         <span className="tile-photo">
@@ -130,6 +146,27 @@ function Tile({
       ) : null}
     </button>
   );
+}
+
+/** Everything past the readable lanes, filed by the period it starts in.
+ *  One ribbon per start period keeps the count honest: "+5" means five sessions
+ *  begin at 09:00 and did not fit, not "five sessions somewhere below". */
+function groupOverflow(
+  overflow: { item: BoardItem; lane: number; lanes: number }[],
+  _lanes: number,
+): { startPeriod: number; endPeriod: number; items: BoardItem[] }[] {
+  const byStart = new Map<number, { startPeriod: number; endPeriod: number; items: BoardItem[] }>();
+  overflow.forEach(({ item }) => {
+    const group = byStart.get(item.startPeriod) ?? {
+      startPeriod: item.startPeriod,
+      endPeriod: item.endPeriod,
+      items: [],
+    };
+    group.items.push(item);
+    group.endPeriod = Math.max(group.endPeriod, item.endPeriod);
+    byStart.set(item.startPeriod, group);
+  });
+  return [...byStart.values()].sort((a, b) => a.startPeriod - b.startPeriod);
 }
 
 export default function Mosaic() {
@@ -143,6 +180,8 @@ export default function Mosaic() {
   const [drag, setDrag] = useState<DragState | null>(null);
   const [popover, setPopover] = useState<{ item: BoardItem; x: number; y: number } | null>(null);
   const [drawer, setDrawer] = useState<string | null>(null);
+  /** A day column with more concurrent sessions than can be read is filed into one stack. */
+  const [stack, setStack] = useState<{ title: string; items: BoardItem[]; x: number; y: number } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const active = dateFromISO(activeDate);
   const activeDay = dayCodeOf(active);
@@ -162,6 +201,11 @@ export default function Mosaic() {
   }, [view, perspective]);
 
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  // The strip is the grid's own header, so it lists exactly the days the grid draws.
+  const teachingWeekDates = useMemo(
+    () => weekDates.filter((date) => data.calendar.days.includes(dayCodeOf(date))),
+    [data.calendar.days, weekDates],
+  );
 
   const filteredSessions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -192,7 +236,9 @@ export default function Mosaic() {
     if (perspective === "days") {
       const byDay = new Map<DayCode, number>();
       filteredSessions.forEach((s) => byDay.set(s.day, (byDay.get(s.day) ?? 0) + 1));
-      return weekDates.map((date) => {
+      // Weekend columns would be 470px of "no teaching"; the calendar strip above still
+      // shows all seven dates, the grid only spends width on days that hold sessions.
+      return weekDates.filter((date) => data.calendar.days.includes(dayCodeOf(date))).map((date) => {
         const code = dayCodeOf(date);
         return {
           key: code,
@@ -200,7 +246,7 @@ export default function Mosaic() {
           sub: `${date.getDate()} ${MONTHS[date.getMonth()].slice(0, 3)}`,
           dayCode: code,
           count: byDay.get(code) ?? 0,
-          closed: !data.calendar.days.includes(code),
+          closed: false,
         };
       });
     }
@@ -423,13 +469,16 @@ export default function Mosaic() {
         <>
           {view === "week" ? (
             <div className="board-subhead">
-              <div className="day-strip" style={{ "--day-count": 7 } as CSSProperties}>
+              <div
+                className="day-strip"
+                style={{ "--day-count": teachingWeekDates.length } as CSSProperties}
+              >
                 <div className="day-strip-gutter">
                   <button aria-label="Open date picker" onClick={() => setView("month")} title="Month view">
                     <Icon name="calendar" size={17} />
                   </button>
                 </div>
-                {weekDates.map((date) => {
+                {teachingWeekDates.map((date) => {
                   const code = dayCodeOf(date);
                   const iso = isoDate(date);
                   const count = data.sessions.filter((s) => s.day === code).length;
@@ -547,7 +596,15 @@ export default function Mosaic() {
               </div>
 
               {columns.map((column) => {
-                const packed = packItems(itemsByColumn.get(column.key) ?? []);
+                const raw = packItems(itemsByColumn.get(column.key) ?? []);
+                // Nine sessions can share an hour. Three lanes stay readable; the rest is
+                // filed into one honest "+N" stack you can open.
+                const widest = raw.reduce((max, entry) => Math.max(max, entry.lanes), 1);
+                const lanes = Math.min(widest, laneBudget(view));
+                const visible = raw.filter((entry) => entry.lane < lanes);
+                const hidden = raw.filter((entry) => entry.lane >= lanes);
+                const packed = visible.map((entry) => ({ ...entry, lanes }));
+                const stacks = groupOverflow(hidden, lanes);
                 const closed = column.closed || (view === "day" && !data.calendar.days.includes(activeDay));
                 return (
                   <div
@@ -565,6 +622,7 @@ export default function Mosaic() {
                         lane={lane}
                         lanes={lanes}
                         time={periodSpan(data, item.startPeriod, item.endPeriod)}
+                        reserve={stacks.length ? RIBBON_W + 9 : 0}
                         dragging={drag?.sessionId === item.sessionId}
                         photo={
                           item.kind === "booking"
@@ -586,6 +644,32 @@ export default function Mosaic() {
                             : undefined
                         }
                       />
+                    ))}
+
+                    {stacks.map((group) => (
+                      <button
+                        key={`stack-${group.startPeriod}-${group.items[0]?.key ?? ""}`}
+                        className="tile tile-stack"
+                        style={{
+                          top: (group.startPeriod - 1) * ROW_H + 3,
+                          height: (group.endPeriod - group.startPeriod + 1) * ROW_H - 6,
+                          right: 3,
+                          width: RIBBON_W,
+                        }}
+                        onClick={(event) => {
+                          const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+                          setStack({
+                            title: `${column.label} · ${group.items.length} more`,
+                            items: group.items,
+                            x: rect.right,
+                            y: rect.top,
+                          });
+                        }}
+                        aria-label={`${group.items.length} more sessions on ${column.label}`}
+                      >
+                        <span className="stack-count">+{group.items.length}</span>
+                        <span className="stack-label">more</span>
+                      </button>
                     ))}
 
                     {drag ? (
@@ -684,6 +768,42 @@ export default function Mosaic() {
           </div>
         </>
       )}
+
+      {stack ? (
+        <>
+          <div className="scrim soft" onClick={() => setStack(null)} />
+          <div className="stack-popover" style={{ left: Math.min(stack.x - 300, window.innerWidth - 320), top: stack.y }}>
+            <div className="sp-head">
+              <b>{stack.title}</b>
+              <button className="icon-square sm" onClick={() => setStack(null)} aria-label="Close">
+                <Icon name="x" size={12} />
+              </button>
+            </div>
+            <ul>
+              {stack.items.map((entry) => (
+                <li key={entry.key}>
+                  <button
+                    onClick={() => {
+                      setStack(null);
+                      if (entry.sessionId) setDrawer(entry.sessionId);
+                    }}
+                  >
+                    <span className={`sp-swatch tone-${entry.tone}`} />
+                    <span className="sp-body">
+                      <b>{entry.title}</b>
+                      <span>
+                        {periodSpan(data, entry.startPeriod, entry.endPeriod)} · {entry.roomId}
+                        {entry.facultyName ? ` · ${entry.facultyName}` : ""}
+                      </span>
+                    </span>
+                    <Icon name="chevronRight" size={12} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      ) : null}
 
       {popover ? (
         <EventPopover

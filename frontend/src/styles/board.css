@@ -422,7 +422,7 @@
   text-align: left;
   transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease), opacity var(--dur-1) var(--ease);
   animation: tile-in var(--dur-2) var(--ease-out) both;
-  container-type: inline-size;
+  container-type: size;
 }
 
 .tile:hover {
@@ -433,16 +433,49 @@
 
 .tile:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 
+.tile .tile-code {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  opacity: 0.62;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tile .tile-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  flex: none;
+}
+
 .tile .tile-title {
   font-family: var(--font-display);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.24;
+  line-height: 1.22;
   letter-spacing: -0.008em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: break-word;
+}
+
+.tile .tile-status {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sage-ink);
+  opacity: 0.5;
+  margin-left: auto;
+  flex: none;
 }
 
 .tile .tile-time {
@@ -453,6 +486,50 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@container (max-width: 118px) {
+  .tile {
+    padding: 6px 6px 5px;
+    border-radius: 9px;
+  }
+
+  .tile .tile-title {
+    font-size: 10.5px;
+    line-height: 1.22;
+    -webkit-line-clamp: 3;
+  }
+
+  .tile .tile-code {
+    font-size: 7px;
+    letter-spacing: 0.06em;
+  }
+
+  .tile .tile-time,
+  .tile .tile-meta,
+  .tile .tile-avatars {
+    display: none;
+  }
+
+  .tile .tile-foot {
+    margin-top: auto;
+  }
+}
+
+@container (max-width: 68px) {
+  .tile {
+    padding: 5px 4px;
+  }
+
+  .tile .tile-title {
+    font-size: 9px;
+    line-height: 1.15;
+    -webkit-line-clamp: 4;
+  }
+
+  .tile .tile-code {
+    display: none;
+  }
 }
 
 .tile .tile-meta {
@@ -955,11 +1032,13 @@
 
 .ripple-slot .rs-title {
   font-family: var(--font-display);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 500;
-  white-space: nowrap;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .ripple-slot .rs-time { font-family: var(--font-mono); font-size: 8.5px; color: var(--muted); }
@@ -1049,4 +1128,200 @@
   .board-search { min-width: 0; width: 100%; }
   .event-popover { width: min(324px, calc(100vw - 24px)); }
   .impact-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ------------------------------------------------ overflow stack in a busy day */
+.tile-stack {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0;
+  padding: 6px 0 0;
+  background: rgba(25, 26, 28, 0.035);
+  border: 1px solid transparent;
+  color: var(--text-soft);
+  box-shadow: none;
+  border-radius: 7px;
+}
+
+.tile-stack .stack-count {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.tile-stack .stack-label {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin-top: 5px;
+}
+
+.tile-stack:hover {
+  background: rgba(25, 26, 28, 0.075);
+  border-color: var(--line);
+}
+
+.stack-popover {
+  position: fixed;
+  z-index: 101;
+  width: 300px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-float);
+  padding: 10px;
+  animation: fade-up var(--dur-2) var(--ease-out);
+}
+
+.stack-popover .sp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 6px;
+}
+
+.stack-popover .sp-head b {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stack-popover li button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 6px;
+  border-radius: 8px;
+  text-align: left;
+  transition: background var(--dur-1) var(--ease);
+}
+
+.stack-popover li button:hover {
+  background: rgba(25, 26, 28, 0.045);
+}
+
+.stack-popover .sp-swatch {
+  width: 3px;
+  height: 26px;
+  border-radius: 3px;
+  background: var(--tone, var(--sky));
+  flex: none;
+}
+
+.stack-popover .sp-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 1px;
+}
+
+.stack-popover .sp-body b {
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stack-popover .sp-body span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stack-popover svg {
+  color: var(--muted-2);
+}
+
+.scrim.soft {
+  background: rgba(17, 17, 18, 0.18);
+  backdrop-filter: none;
+  z-index: 100;
+}
+
+/* ------------------------------------------------------------ tile density
+   A single-period tile is 66px tall. Content is chosen by the height it actually
+   has (container queries), so a title is never clipped mid-word. */
+.tile .tile-time,
+.tile .tile-meta,
+.tile .tile-photo {
+  display: none;
+}
+
+/* one period — code, title, who */
+@container (max-height: 92px) {
+  .tile {
+    padding: 7px 7px 6px;
+    gap: 1px;
+  }
+
+  .tile .tile-code {
+    font-size: 7.5px;
+    letter-spacing: 0.06em;
+  }
+
+  .tile .tile-title {
+    font-size: 10.5px;
+    line-height: 1.18;
+    -webkit-line-clamp: 2;
+    margin-top: 1px;
+  }
+
+  .tile .tile-foot {
+    margin-top: auto;
+  }
+
+  .tile .tile-avatars .avatar {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+    border-radius: 5px;
+  }
+
+  .tile .tile-status {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+/* two periods — add the clock */
+@container (min-height: 93px) {
+  .tile .tile-time {
+    display: block;
+  }
+}
+
+/* three periods — add the room and the group */
+@container (min-height: 150px) {
+  .tile .tile-meta {
+    display: block;
+  }
+}
+
+/* four or more — the tile may carry its room photograph */
+@container (min-height: 210px) {
+  .tile .tile-photo {
+    display: block;
+  }
 }

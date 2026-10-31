@@ -1940,6 +1940,44 @@
   border-bottom: 1px solid rgba(25, 26, 28, 0.05);
 }
 
+.icg-cell.has-sessions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  text-align: left;
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid rgba(25, 26, 28, 0.05);
+  transition: background var(--dur-1) var(--ease);
+}
+
+.icg-cell.has-sessions:hover {
+  background: rgba(25, 26, 28, 0.03);
+}
+
+.icg-bars {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.icg-bars i {
+  height: 22px;
+  flex: 1 1 0;
+  min-width: 3px;
+  max-width: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(25, 26, 28, 0.05);
+}
+
+.icg-count {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .icg-tile {
   position: absolute;
   top: 2px;

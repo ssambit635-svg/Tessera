@@ -172,7 +172,7 @@ export default function Intelligence() {
           { label: `See ${matches[0].room.name}`, to: `/availability?room=${matches[0].room.id}` },
           { label: "Request a lab booking", to: `/bookings?space=${matches[0].room.id}&day=${nextTeaching}&from=4&to=6` },
         ],
-        meta: `availability computed from ${data.rooms.reduce((sum, r) => sum + r.availability.length, 0)} room-period records`,
+        meta: `availability derived from ${data.sessions.length} placed sessions and ${data.bookings.bookings.length} venue decisions`,
       };
     }
 
@@ -359,26 +359,31 @@ export default function Intelligence() {
                     const items = packItems(boardItems(data, day)).filter(
                       (entry) => entry.item.startPeriod === period.id,
                     );
+                    if (!items.length) {
+                      return <div key={`${day}-${period.id}`} className="icg-cell" />;
+                    }
+                    // This is a density map, not a timetable: every session in the slot is
+                    // shown as a tint bar, and the count is stated once.
+                    const lead = items[0].item;
+                    const tones = [...new Set(items.map((entry) => toneForDepartment(entry.item.department)))];
                     return (
-                      <div key={`${day}-${period.id}`} className="icg-cell">
-                        {items.map(({ item, lane, lanes }) => (
-                          <button
-                            key={item.key}
-                            className={`icg-tile tone-${toneForDepartment(item.department)}`}
-                            style={{
-                              left: `calc(${(lane / lanes) * 100}% + 2px)`,
-                              width: `calc(${100 / lanes}% - 4px)`,
-                              background: `var(--tint-${toneForDepartment(item.department)})`,
-                              ["--span" as string]: item.endPeriod - item.startPeriod + 1,
-                            }}
-                            onClick={() => item.sessionId && setDrawer(item.sessionId)}
-                            title={`${item.title} · ${item.roomName}`}
-                          >
-                            <b>{item.title}</b>
-                            <span>{item.sessionId ? periodSpan(data, item.startPeriod, item.endPeriod) : item.subtitle}</span>
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        key={`${day}-${period.id}`}
+                        className="icg-cell has-sessions"
+                        onClick={() => lead.sessionId && setDrawer(lead.sessionId)}
+                        title={`${items.length} session${items.length === 1 ? "" : "s"} · ${items
+                          .slice(0, 4)
+                          .map((entry) => entry.item.title)
+                          .join(" · ")}${items.length > 4 ? " …" : ""}`}
+                        aria-label={`${items.length} sessions on ${DAY_LONG[day]} at ${period.start}`}
+                      >
+                        <span className="icg-bars" aria-hidden="true">
+                          {tones.slice(0, 4).map((tone) => (
+                            <i key={tone} style={{ background: `var(--tint-${tone})` }} />
+                          ))}
+                        </span>
+                        <span className="icg-count">{items.length > 1 ? items.length : ""}</span>
+                      </button>
                     );
                   })}
                 </div>
