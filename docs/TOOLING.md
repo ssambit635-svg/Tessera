@@ -76,7 +76,7 @@ FastAPI + **Jinja2 + HTMX + Tailwind**. One deployable, no CORS, no build step. 
 
 | Provider | Model | Use | Guard |
 |---|---|---|---|
-| **Groq** | `llama-3.3-70b-versatile` (or `qwen2.5-32b` for strict JSON) | request text → structured booking JSON; follow-up question generation; natural-language explanation wording | JSON mode + schema validation + repair pass; timeout 8 s; 1 retry |
+| **Groq** | `llama-3.3-70b-versatile` (primary, free tier ~1,000 req/day and 100K tokens/day); `llama-3.1-8b-instant` fallback (14,400 req/day) | request text → structured booking JSON; follow-up question generation; natural-language explanation wording | JSON mode + schema validation + repair pass; timeout 8 s; 1 retry |
 | **Sarvam** | `sarvam-m` (chat) + Indic ASR | Hinglish/Hindi understanding; **voice booking request** (mic → text → form); answer back in Hinglish | same schema gate |
 | **Deterministic** | our own rules + regex/normaliser | dates ("kal", "tomorrow", "after lunch"), times ("shaam 6 baje"), quantities ("2 ghante", "100 log"), room ids, needs synonyms, category caps | always available, never fails, is the fallback |
 
@@ -87,7 +87,7 @@ Hard rules for the adapter:
 4. Failure = fall back to the manual form with a visible "AI unavailable, fill manually" banner, not an error page.
 5. Every prompt stored in `prompts/` and referenced in `AI_USAGE.md`.
 
-Cost control: 14,000 req/day on Groq free is far beyond judging needs. Cache identical prompts (hash → response) so the video/demo repeats cost nothing.
+Cost control: ~1,000 req/day on the 70B model and 14,400 on the 8B fallback are far beyond judging needs (a demo day is tens of requests). No local/self-hosted models anywhere - the deployed app only needs outbound HTTPS. Cache identical prompts (hash → response) so the video/demo repeats cost nothing.
 
 ---
 

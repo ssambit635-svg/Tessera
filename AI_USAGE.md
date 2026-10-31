@@ -7,7 +7,7 @@ the project, where prompts live, and what the LLM is **not** allowed to decide.
 
 | Where | Model / API | What it does | What it may NOT do |
 | --- | --- | --- | --- |
-| `POST /api/ai/parse` (planned) | Groq `llama-3.1-8b-instant` (primary, 14.4k req/day free tier), `llama-3.3-70b-versatile` (hard cases only) | read an English/Hinglish venue request and fill the booking form (attendance, duration, day, window, needs, room type) | decide whether a booking is valid, invent room ids, change priority, approve anything |
+| `POST /api/ai/parse` (planned) | Groq `llama-3.3-70b-versatile` (primary; free tier ~1,000 req/day, ample for judging), `llama-3.1-8b-instant` as automatic fallback on 429/timeout | read an English/Hinglish venue request and fill the booking form (attendance, duration, day, window, needs, room type) | decide whether a booking is valid, invent room ids, change priority, approve anything |
 | `POST /api/ai/parse` follow-up (planned) | same | ask the single question that blocks the booking | ask for information already present in the request |
 | `POST /api/ai/explain` (planned) | same | re-word a reason chain that our rules engine already produced | create a new reason or a new fact |
 | Voice request (optional) | Sarvam ASR | Hinglish speech → text before parsing | any scheduling decision |
@@ -18,6 +18,8 @@ Guarantees:
   re-implementation of the organisers' rules) and the OR-Tools model are the only
   authorities. Every LLM output is schema-checked and existence-checked against the
   dataset before it is even displayed.
+* **No local models.** The product never runs a model on the demo machine (no Ollama, no
+  bundled weights); it calls one hosted API, and the deployed app needs no GPU.
 * **The product works with the LLM switched off.** `LLM_PROVIDER=none` is the default in
   `.env.example`; the deterministic parser and the manual form produce the same structured
   booking. Judges are invited to set it to `none` and retry.
