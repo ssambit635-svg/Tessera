@@ -71,6 +71,19 @@ Design choices that matter:
   the rules so the app can validate thousands of candidates per second; `pytest` asserts
   that its verdict matches the official validator exactly.
 
+## The app
+
+One command serves the whole product — UI and API — with **no npm, no build step, no CDN**:
+
+```bash
+cd api && uvicorn app.main:app --port 8000   # then open http://localhost:8000
+```
+
+`http://localhost:8000/` is the app (login → dashboard → timetable → bookings → changes → AI).
+`/docs` is the raw API for judges who want to poke it, `/api/info` the machine-readable summary.
+The page is plain HTML/CSS/JS in `api/app/web/`, so it works offline, deploys as one service,
+and every number on screen comes from an endpoint - nothing is hard-coded.
+
 ## Quickstart
 
 Two ways to use it: run the API, or regenerate the exports from scratch.

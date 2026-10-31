@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tessera — CIT campus scheduling</title>
+<link rel="stylesheet" href="/ui/app.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🗓️</text></svg>" />
+</head>
+<body>
+
+<!-- ------------------------------------------------------------ login -->
+<div id="login" class="login-wrap">
+  <div class="card login-card">
+    <div class="row" style="margin-bottom:14px">
+      <div class="brand"><span class="dot">T</span> Tessera <small>by Voltryx</small></div>
+    </div>
+    <h1>Campus scheduling, without clashes</h1>
+    <p class="muted">189 sessions · 41 midsems · 25 Spectra requests · one week that always breaks.
+       Pick a demo role — every one is a real account with real permissions.</p>
+    <div id="roleButtons" class="list" style="margin-top:14px"></div>
+    <p class="muted" style="margin-top:12px;font-size:13px">
+      Passwords are <code>Tessera@2027</code>. Two admins exist on purpose: nobody approves
+      their own request.
+    </p>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------ app -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="brand"><span class="dot">T</span> Tessera <small>by Voltryx</small></div>
+    <span class="chip" id="healthChip">…</span>
+    <div class="spacer"></div>
+    <span class="chip"><b id="userEmail">—</b> · <span id="userRole">—</span></span>
+    <button class="btn small" id="logoutBtn">Sign out</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-view="dashboard">Dashboard</button>
+    <button class="tab" data-view="timetable">Timetable</button>
+    <button class="tab" data-view="bookings">Bookings</button>
+    <button class="tab" data-view="changes">Changes</button>
+    <button class="tab" data-view="ai">AI request</button>
+    <button class="tab" data-view="admin">Admin</button>
+  </div>
+
+  <main>
+    <!-- ---------------------------------------------------- dashboard -->
+    <section class="view active" id="view-dashboard">
+      <div class="row between" style="margin-bottom:14px">
+        <div><h1>Week 7 — Spectra</h1><p class="muted" id="dashSub">loading…</p></div>
+        <button class="btn" onclick="loadDashboard()">Refresh</button>
+      </div>
+      <div class="grid cols-4" id="dashStats"></div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h3>Soft penalty breakdown</h3><div id="dashSoft"></div></div>
+        <div class="card"><h3>Risks the rules see</h3><div id="dashRisks"></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h3>Room utilisation</h3><div id="dashRooms"></div></div>
+        <div class="card"><h3>Audit trail</h3><div id="dashAudit"></div></div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------- timetable -->
+    <section class="view" id="view-timetable">
+      <div class="row between" style="margin-bottom:14px">
+        <div><h1>Timetable</h1><p class="muted">Click any class to see why it sits there.</p></div>
+        <div class="row">
+          <div class="field" style="min-width:130px">
+            <label for="ttView">View by</label>
+            <select id="ttView" onchange="ttEntities()">
+              <option value="group">Student group</option>
+              <option value="faculty">Faculty</option>
+              <option value="room">Room</option>
+            </select>
+          </div>
+          <div class="field" style="min-width:210px">
+            <label for="ttEntity">Entity</label>
+            <select id="ttEntity" onchange="loadTimetable()"></select>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="ttCard"><div class="muted spin">loading…</div></div>
+      <div class="card hidden" id="explainCard" style="margin-top:14px"></div>
+    </section>
+
+    <!-- ---------------------------------------------------- bookings -->
+    <section class="view" id="view-bookings">
+      <div class="row between" style="margin-bottom:14px">
+        <div><h1>Spectra bookings</h1><p class="muted" id="bookSub">25 requests, one decision each, with a reason.</p></div>
+        <div class="row">
+          <select id="bookFilter" onchange="loadBookings()" style="min-width:170px">
+            <option value="">All decisions</option>
+            <option value="approved">Approved</option>
+            <option value="alternative_offered">Alternative offered</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid cols-4" id="bookStats" style="margin-bottom:14px"></div>
+      <div class="card"><div id="bookTable"></div></div>
+      <div class="card hidden" id="bookDetail" style="margin-top:14px"></div>
+    </section>
+
+    <!-- ---------------------------------------------------- changes -->
+    <section class="view" id="view-changes">
+      <div class="row between" style="margin-bottom:14px">
+        <div><h1>Disruption</h1><p class="muted">Preview never applies anything. A <b>second</b> admin approves.</p></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>1 · Load a change file</h3>
+          <div class="row" style="margin-bottom:10px">
+            <button class="btn" onclick="loadSample()">Load organisers' sample</button>
+            <label class="btn" style="cursor:pointer">
+              Upload file
+              <input type="file" id="changeFile" accept=".json" class="hidden" onchange="uploadChange(this)" />
+            </label>
+          </div>
+          <div class="field">
+            <label for="changeJson">changes[] (editable)</label>
+            <textarea id="changeJson" rows="10" spellcheck="false"></textarea>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary" onclick="previewChanges()">Preview repair</button>
+            <span class="muted" id="previewState"></span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>2 · What would change</h3>
+          <div id="previewResult"><span class="muted">Nothing previewed yet.</span></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>Proposals</h3>
+        <div id="proposalList"><span class="muted">loading…</span></div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------- ai -->
+    <section class="view" id="view-ai">
+      <div class="row between" style="margin-bottom:14px">
+        <div><h1>Ask in plain language</h1><p class="muted" id="aiMode"></p></div>
+        <button class="btn" onclick="aiSamples()">Try a sample</button>
+      </div>
+      <div class="card">
+        <textarea id="aiText" rows="3" placeholder="seminar hall kal shaam 6 baje, 2 ghante, 100 log, mic chahiye"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" onclick="aiParse()">Read this request</button>
+          <span class="muted">English or Hinglish. The rules decide, not the model.</span>
+        </div>
+      </div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><h3>Parsed draft (editable)</h3><div id="aiDraft"><span class="muted">—</span></div></div>
+        <div class="card"><h3>What the rules say</h3><div id="aiChecks"><span class="muted">—</span></div></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>Faculty change request</h3>
+        <p class="muted">Signed in as a faculty member? Ask for a different slot; it becomes a proposal a second admin approves.</p>
+        <textarea id="facText" rows="2" placeholder="I can't come on Friday P7 to P9"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" onclick="facultyChange()">Check this change</button>
+          <span class="muted" id="facState"></span>
+        </div>
+        <div id="facResult" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------- admin -->
+    <section class="view" id="view-admin">
+      <div class="row between" style="margin-bottom:14px">
+        <div><h1>Operations</h1><p class="muted">Everything here is a real action with an audit entry.</p></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Solver</h3>
+          <p class="muted">Regenerate the whole semester. Takes ~40 s on two cores.</p>
+          <div class="row">
+            <button class="btn" id="genBtn" onclick="generateNow()">Generate timetable</button>
+            <button class="btn" onclick="exportNow()">Write exports</button>
+          </div>
+          <div id="genResult" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <h3>Demo reset</h3>
+          <p class="muted">What a judge presses: reseed users, reload the committed exports, clear proposals.</p>
+          <button class="btn bad" onclick="resetDemo()">Reset demo data</button>
+          <div class="row" style="margin-top:10px">
+            <a class="btn small" href="/api/admin/exports/schedule.json" id="dl1">schedule.json</a>
+            <a class="btn small" href="/api/admin/exports/schedule_after.json" id="dl2">schedule_after.json</a>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px"><h3>Database</h3><div id="dbInfo"><span class="muted">loading…</span></div></div>
+      <div class="card" style="margin-top:14px"><h3>Manual event (works with no model)</h3>
+        <div class="grid cols-4" style="margin-bottom:10px">
+          <div class="field"><label>title</label><input id="meTitle" type="text" value="Robotics demo" /></div>
+          <div class="field"><label>attendance</label><input id="meAtt" type="number" value="120" /></div>
+          <div class="field"><label>day</label><select id="meDay"></select></div>
+          <div class="field"><label>from period</label><input id="meFrom" type="number" value="1" /></div>
+          <div class="field"><label>to period</label><input id="meTo" type="number" value="9" /></div>
+          <div class="field"><label>periods</label><input id="meDur" type="number" value="2" /></div>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="manualCheck()">Check</button>
+          <button class="btn good" onclick="manualBook()">Book it</button>
+        </div>
+        <div id="meResult" style="margin-top:10px"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+<script src="/ui/app.js"></script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -182,5 +184,9 @@ def samples(user: User = Depends(current_user)):
     if not path.exists():
         return {"samples": []}
     lines = [ln.strip() for ln in path.read_text(encoding="utf-8").splitlines()]
-    items = [ln for ln in lines if ln[:2].strip().rstrip(".").isdigit()]
-    return {"samples": items}
+    items = []
+    for line in lines:
+        if re.match(r"^\d+[.)]\s+", line):
+            items.append({"text": re.sub(r"^\d+[.)]\s+", "", line),
+                          "source": "vendor/sample_requests.md"})
+    return {"count": len(items), "samples": items}
