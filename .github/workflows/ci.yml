@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -r api/requirements.txt
+      - name: Tests (kernel + exports + model)
+        working-directory: api
+        run: python -m pytest tests -q
+      - name: Official validator on the committed exports
+        run: |
+          python vendor/validator.py --data vendor/cit_public.json \
+            --schedule exports/schedule.json --json ci-report.json
+      - name: Fail on any hard violation
+        run: |
+          python - <<'PY'
+          import json, sys
+          r = json.load(open("ci-report.json"))
+          print("hard:", r["hard_by_rule"], "soft:", r["soft_total"],
+                "bookings:", r["bookings"]["booking_score"])
+          sys.exit(1 if r["hard_violation_count"] else 0)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: ci-report.json
+
+  regenerate:
+    # proves the exports are produced by the app, not typed by hand
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r api/requirements.txt
+      - name: Generate from the dataset
+        working-directory: api
+        run: |
+          python -m app.core.pipeline --data ../vendor/cit_public.json \
+            --out ../exports/regenerated.json --time-limit 120 --workers 2
+      - name: Verify the regenerated timetable
+        run: |
+          python vendor/validator.py --data vendor/cit_public.json \
+            --schedule exports/regenerated.json --quiet --json regen-report.json
+          python - <<'PY'
+          import json, sys
+          r = json.load(open("regen-report.json"))
+          print("regenerated hard:", r["hard_by_rule"], "soft:", r["soft_total"])
+          sys.exit(1 if r["hard_violation_count"] else 0)
+          PY
