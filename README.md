@@ -7,10 +7,9 @@ generates the semester timetable, schedules midsem exams, decides Spectra-week v
 requests by the institute's priority rules, and repairs the timetable when something
 changes — moving as few sessions as possible and explaining every decision.
 
-> **Status (in progress):** the scheduling core, the disruption/repair engine **and the full
-> backend API** (roles, approvals, exports, reset, plain-language parsing) are complete and
-> verified. The Next.js UI is next. Numbers below are produced by this repo and re-verified
-> in CI on every push.
+> **Status:** the scheduling core, the disruption/repair engine, the full backend API and the
+> signed-in app are complete and verified — 80 tests, and every number on screen comes from an
+> endpoint. Numbers below are produced by this repo and re-verified in CI on every push.
 
 ## Verified numbers
 
@@ -79,10 +78,36 @@ One command serves the whole product — UI and API — with **no npm, no build 
 cd api && uvicorn app.main:app --port 8000   # then open http://localhost:8000
 ```
 
-`http://localhost:8000/` is the app (login → dashboard → timetable → bookings → changes → AI).
+`http://localhost:8000/` is the app (login → overview → timetable → bookings → changes → AI → admin).
 `/docs` is the raw API for judges who want to poke it, `/api/info` the machine-readable summary.
 The page is plain HTML/CSS/JS in `api/app/web/`, so it works offline, deploys as one service,
 and every number on screen comes from an endpoint - nothing is hard-coded.
+
+### The interface
+
+Tessera looks like a campus tool, not a chatbot demo: a dark navigation rail with a live
+mini-calendar and calendar layers, a paper-white canvas, a pastel week grid, a floating
+event card that explains any block, and an assistant rail that is always one question away.
+
+* **Overview** — four KPIs (scheduled, hard violations, soft penalty, booking score), a
+  miniature of the real week, an attention list, the Spectra score split, room utilisation,
+  the audit trail, and **illustrated venue cards** for the main halls.
+* **Timetable** — group / faculty / room, explicit grid placement so a 3-period lab really
+  spans three rows, lunch and evening bands, and a room view with a full-width hall plate.
+* **Bookings** — all 25 Spectra requests, one decision each, with a drawer that shows the
+  original message, the parsed structure and the reason chain.
+* **Changes** — load the organisers' change file, preview the minimal-move repair, then a
+  *different* admin approves it (self-approval returns `403`).
+* **Ask Tessera** — English or Hinglish in, an editable booking draft out, with per-field
+  confidence, the assumptions it made, and the rule check before anything is booked.
+* **Admin** — solver, demo reset, export links, key self-test, database tables, manual event.
+
+The venue artwork is hand-drawn inline SVG (`function venueArt` in `app.js`): one plate per
+hall type — auditorium, lecture hall, classroom, seminar hall, computing and electronics
+labs, workshop, open-air theatre. Nothing is fetched, so the pictures survive an offline
+demo, a projector and the sandboxed preview. The design system is in `app.css` (8pt spacing,
+a 12→32 type scale, one indigo accent, pastels for calendar blocks, AA contrast, no glows,
+no decorative gradients, `prefers-reduced-motion` respected).
 
 ## Quickstart
 
@@ -178,7 +203,7 @@ tools/             feasibility probe, self-check helpers
 - [x] optional LLM reader behind `LLM_PROVIDER=groq` (the app behaves identically without it)
 - [x] faculty change requests in plain language -> checked proposal -> second-admin approval
 - [x] "why is this class here?" explanations built from the constraint codes
-- [ ] Next.js UI: timetable by group/faculty/room, approvals, dashboard, mobile
+- [x] UI: timetable by group/faculty/room, approvals, dashboard, mobile, hall artwork
 - [ ] deploy + video
 
 ## Demo accounts
@@ -198,8 +223,8 @@ admin who previews a change cannot be the one who applies it. That rule is enfor
 API (a self-approval attempt returns `403`).
 
 One-click login: `POST /api/auth/demo-login/{role}` (add `?email=dean@cit.edu` for the second
-admin). **The live application is not deployed yet** — this README will carry the link as soon
-as the UI lands.
+admin). The login screen lists every demo role as a button — no password typing for judges,
+but still a real signed token.
 
 ## Backend architecture
 
@@ -263,8 +288,6 @@ rotate it: [`docs/SECRETS.md`](docs/SECRETS.md).
 * The repair optimises the number of moved sessions, which is what the validator scores. It
   does not attempt to minimise how *disruptive* a move is to a student beyond preferring a
   room swap over a time change.
-* The before/after approval flow exists end to end in the API (`preview` -> `apply`), but its
-  screens, like the rest of the UI, are still to come.
 * The LLM reader (`api/app/ai/providers.py`) is implemented and tested against a mocked
   transport, but the deployed demo runs with `LLM_PROVIDER=none` until a key is added;
   `POST /api/ai/selftest` is the one-click check once it is.

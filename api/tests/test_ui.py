@@ -5,6 +5,7 @@ every endpoint the page calls with a token exists. The behaviour behind those en
 covered by the rest of the suite.
 """
 import os
+import re
 import sys
 
 import pytest
@@ -26,6 +27,59 @@ def test_index_serves_the_app(client):
     # (the inline SVG favicon carries the w3.org namespace string, which is not a request)
     assert 'src="http' not in html
     assert 'href="http' not in html
+
+
+DESIGN_MARKERS = [
+    'id="kpis"', 'id="miniWeek"', 'id="venueStrip"', 'id="roomHero"', 'id="ttBody"',
+    'id="bookTable"', 'id="changeJson"', 'id="proposalList"', 'id="aiDraft"',
+    'id="sideChat"', 'id="dbInfo"', 'id="roleButtons"',
+    'data-view="overview"', 'data-view="timetable"', 'data-view="bookings"',
+    'data-view="changes"', 'data-view="ai"', 'data-view="admin"',
+]
+
+
+def test_the_shell_carries_the_full_design(client):
+    """Every panel the design promises is in the markup the API serves."""
+    html = client.get("/").text
+    missing = [m for m in DESIGN_MARKERS if m not in html]
+    assert not missing, missing
+
+
+def test_javascript_only_touches_ids_that_exist(client):
+    """The classic break: rewrite the HTML, forget the script. Catch it here."""
+    html = client.get("/").text
+    js = client.get("/ui/app.js").text
+    html_ids = set(re.findall(r'id="([^"]+)"', html))
+    js_made_ids = set(re.findall(r'id=\\?"([A-Za-z0-9_]+)', js))
+    used = set(re.findall(r'\$\("([^"]+)"\)', js))
+    used |= set(re.findall(r"getElementById\(\\?['\"]([A-Za-z0-9_]+)", js))
+    missing = sorted(u for u in used if u not in html_ids and u not in js_made_ids)
+    assert not missing, missing
+
+
+def test_inline_handlers_are_real_functions(client):
+    html = client.get("/").text
+    js = client.get("/ui/app.js").text
+    handlers = set(re.findall(r'on(?:click|change)="([A-Za-z_$][\w$]*)\(', html))
+    handlers |= set(re.findall(r'onclick=\\?"([A-Za-z_$][\w$]*)\(', js))
+    defined = set(re.findall(r'(?:async )?function ([A-Za-z0-9_]+)\(', js))
+    defined |= set(re.findall(r'const ([A-Za-z0-9_]+) = ', js))
+    missing = sorted(h for h in handlers if h not in defined)
+    assert not missing, missing
+
+
+def test_no_cdn_no_gradients_and_art_is_inline_svg(client):
+    """The design rule we promised the judges: borders and space, no glow."""
+    css = client.get("/ui/app.css").text
+    js = client.get("/ui/app.js").text
+    html = client.get("/").text
+    assert "gradient(" not in css, "no decorative gradients"
+    assert "url(http" not in css and "url(//" not in css
+    assert "<img" not in html, "venue art is drawn, not linked"
+    assert "http://" not in js and "https://" not in js, "no CDN, no telemetry"
+    assert "function venueArt(" in js, "halls must have artwork"
+    for kind in ("auditorium", "lecture_hall", "seminar_hall", "outdoor", "workshop"):
+        assert kind in js, kind
 
 
 def test_assets_are_served(client):
