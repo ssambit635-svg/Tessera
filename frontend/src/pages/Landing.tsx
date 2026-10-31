@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useWorkspace } from "../lib/workspace";
+import { API_BASE } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
 import { plural } from "../lib/format";
@@ -17,6 +18,10 @@ import { plural } from "../lib/format";
    Deliberately absent: glows, blooms, gradient text, floating blobs, count-up
    stats. The only colour is the hero art and the app's own department tones.
    ========================================================================== */
+
+/* The API's Swagger UI. Same origin in dev (vite proxies /docs); on the split deployment the
+   UI is a separate static origin, so the docs must point at the API itself. */
+const DOCS_URL = `${API_BASE}/docs`;
 
 const NAV_LINKS = [
   { href: "#product", label: "Product" },
@@ -498,7 +503,7 @@ export default function Landing() {
             </span>
             Sign in
           </Link>
-          <a className="rk-btn outline lg" href="/docs" target="_blank" rel="noreferrer">
+          <a className="rk-btn outline lg" href={DOCS_URL} target="_blank" rel="noreferrer">
             API docs
           </a>
         </div>
@@ -513,7 +518,7 @@ export default function Landing() {
             <a href="https://github.com/ssambit635-svg/Tessera" target="_blank" rel="noreferrer">
               GitHub
             </a>
-            <a href="/docs" target="_blank" rel="noreferrer">
+            <a href={DOCS_URL} target="_blank" rel="noreferrer">
               API
             </a>
           </span>
