@@ -83,6 +83,8 @@ Two ways to use it: run the API, or regenerate the exports from scratch.
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r api/requirements.txt
 sh tools/setup_env.sh         # creates .env from .env.example (gitignored; defaults work)
+# Groq later, one command (hidden input, writes .env only):
+#   python3 tools/set_groq_key.py
 
 cd api
 uvicorn app.main:app --reload --port 8000
@@ -99,7 +101,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass   # only if activatio
 .\.venv\Scripts\Activate.ps1
 pip install -r api\requirements.txt
 Copy-Item .env.example .env                                   # or: powershell -ExecutionPolicy Bypass -File tools\setup_env.ps1
-notepad .env                                                  # defaults work; add GROQ_API_KEY later
+notepad .env                                                  # defaults work
+# or one command that asks for the key without echoing it:
+#   python tools\set_groq_key.py
 
 cd api
 python -m uvicorn app.main:app --reload --port 8000
@@ -216,6 +220,15 @@ in-memory-only state"). The organisers' dataset stays read-only in `vendor/`, th
 schedules are the two files in `exports/`, and everything else — users, proposals, audit rows,
 timetable versions — lives in `tessera.db`. Full detail, including why a restart cannot lose
 the timetable: [`docs/DATABASE.md`](docs/DATABASE.md).
+
+## Turning the model on (optional, 30 seconds)
+
+```bash
+python3 tools/set_groq_key.py     # Windows: python tools\set_groq_key.py
+```
+Type the key (input hidden), then restart the server. `GET /health` flips from
+`"llm":"none"` to `"llm":"groq"`, and `POST /api/ai/selftest` makes one real call.
+The key is written to `.env` only - it is gitignored and never pushed.
 
 ## Secrets
 

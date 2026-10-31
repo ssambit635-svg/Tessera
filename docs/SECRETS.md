@@ -21,8 +21,15 @@ put the file back to `GROQ_API_KEY=` (empty).
 1. **Rotate the key** - console.groq.com -> API Keys -> delete the key that was exposed ->
    `Create API Key`. Deleting the line from git is *not* enough: the value may still exist in
    an unreachable object on GitHub, in a screenshot, or in a chat log. A rotated key is dead.
-2. Put the new key in **`.env`** only (this repo ships `.env` gitignored; if it is missing in
-   your clone: `sh tools/setup_env.sh`).
+2. Put the new key in **`.env`** only. The safe way, no editor and no shell history:
+
+   ```bash
+   python3 tools/set_groq_key.py      # Windows: python tools\set_groq_key.py
+   ```
+
+   It asks for the key with hidden input, writes `LLM_PROVIDER=groq` and `GROQ_API_KEY=...`
+   into `.env`, then prints whether the app can actually see it. If `.env` is missing:
+   `sh tools/setup_env.sh` (or `Copy-Item .env.example .env` on Windows).
 3. Never paste it into `.env.example`, a commit, an issue, a PR, a screenshot, or a chat -
    including this one. If a key ever appears in chat, treat it as public and rotate it.
 
@@ -47,6 +54,7 @@ GROQ_API_KEY=
 | Guard | What it does |
 | --- | --- |
 | `tools/check_secrets.py` | scans every tracked file for Groq/OpenAI/Google/GitHub/Slack key shapes, JWTs and private-key blocks; exits 1 on a hit |
+| `tools/set_groq_key.py` | the only supported way to put a key on a machine; hidden input, `.env` only |
 | `tools/install_hooks.sh` | one-time install of the same check as a `pre-commit` hook |
 | CI job `secrets` | runs the scan on every push, so a leaked key fails the build instead of sitting in `main` |
 | `.gitignore` | `.env`, `.env.local`, `api/.env`, `*.db` |
