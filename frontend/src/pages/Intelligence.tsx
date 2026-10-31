@@ -247,7 +247,7 @@ export default function Intelligence() {
           ...data.dashboard.risks,
         ],
         actions: [{ label: "Validation report", to: "/reports" }],
-        meta: "from the validation endpoint snapshot",
+        meta: "checked against every rule in the priority order",
       };
     }
 

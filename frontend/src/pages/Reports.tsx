@@ -47,7 +47,7 @@ export default function Reports() {
         <div className="row gap-8">
           <span className={`conn-badge ${source.mode}`}>
             <span className="led" />
-            {source.mode === "live" ? "LIVE" : "SNAPSHOT"}
+            {source.mode === "live" ? "LIVE" : "OFFLINE"}
           </span>
           <button className="btn sm" onClick={() => navigate("/availability")}>
             <Icon name="grid" size={13} /> Availability
@@ -313,14 +313,14 @@ export default function Reports() {
             <h3 style={{ marginTop: 3 }}>Where these numbers come from</h3>
           </div>
           <span className={`status ${source.mode === "live" ? "valid" : "warning"}`} style={{ marginLeft: "auto" }}>
-            {source.mode === "live" ? "live api" : "snapshot"}
+            {source.mode === "live" ? "connected" : "bundled copy"}
           </span>
         </div>
         <div className="panel-body">
           <div className="detail-grid">
             <div className="detail-item">
-              <span className="eyebrow">Dataset</span>
-              <b className="mono" style={{ fontSize: 13 }}>{data.datasetId}</b>
+              <span className="eyebrow">Schedule</span>
+              <b style={{ fontSize: 13 }}>Spectra ’27 · week 7</b>
               <span className="mono">{data.summary.teaching_hours} teaching hours</span>
             </div>
             <div className="detail-item">
@@ -336,7 +336,7 @@ export default function Reports() {
             <div className="detail-item">
               <span className="eyebrow">Exports</span>
               <b style={{ fontSize: 12 }}>Owned by the API</b>
-              <span className="mono">{source.mode === "live" ? "see /docs" : "unavailable in snapshot mode"}</span>
+              <span className="mono">{source.mode === "live" ? "download from the API" : "not available offline"}</span>
             </div>
           </div>
           <div className="row gap-8 wrap" style={{ marginTop: 14 }}>
@@ -345,7 +345,7 @@ export default function Reports() {
                 <Icon name="external" size={13} /> Open API docs
               </a>
             ) : (
-              <span className="chip sand">Snapshot mode — export endpoints are not reachable</span>
+              <span className="chip sand">Exports need the scheduling service</span>
             )}
             <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
               {data.sessions.length} placements · {data.rooms.reduce((sum, r) => sum + roomSummary(data, r.id).classes.length, 0)} room assignments

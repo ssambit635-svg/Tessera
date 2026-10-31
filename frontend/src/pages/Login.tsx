@@ -5,7 +5,7 @@ import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { TileMark, TileSpinner } from "../components/TileMark";
 import { initials, tintFor } from "../lib/persona";
-import { instituteName, plural } from "../lib/format";
+import { instituteName } from "../lib/format";
 
 const DEMO_PASSWORD = "Tessera@2027";
 
@@ -28,7 +28,7 @@ function shortSeat(label: string, role: string): string {
   return role.replace(/_/g, " ");
 }
 
-const CAMPUS_PHOTO = "/media/campus-glass.jpg";
+const CAMPUS_PHOTO = "/media/campus-road.jpg";
 
 export default function Login() {
   const { data, source, user, personas, signIn, signInLocal, status } = useWorkspace();
@@ -102,7 +102,7 @@ export default function Login() {
       <div className="sf-side">
         <header className="sf-brand">
           <span className="sf-mark">
-            <TileMark size={22} />
+            <TileMark size={24} />
           </span>
           <span className="sf-wordmark">
             <b>TESSERA</b>
@@ -216,7 +216,7 @@ export default function Login() {
                         {working ? (
                           <TileSpinner size={14} label="Signing in" />
                         ) : (
-                          <Icon name={seatGlyph(persona.role, persona.label)} size={14} strokeWidth={1.5} />
+                          <Icon name={seatGlyph(persona.role, persona.label)} size={16} strokeWidth={1.7} />
                         )}
                       </span>
                       <span className="sf-identity-label">{shortSeat(persona.label, persona.role)}</span>
@@ -239,15 +239,14 @@ export default function Login() {
         </main>
 
         <footer className="sf-foot">
-          <span className="mono">
-            <i className={online ? "live" : ""} />
-            {data.datasetId || "cit-public-v1"}
+          <span>
+            <i className={online ? "live" : "idle"} />
+            {instituteName(data.institute)}
           </span>
-          <span className="mono">{plural(data.summary.sessions, "session")}</span>
-          <span className="mono">{data.dashboard.conflicts.hard} conflicts</span>
+          <span className="mono sf-foot-meta">Spectra ’27 · Week 7</span>
           <span className="sf-foot-spacer" />
-          <Link className="mono sf-foot-link" to="/mosaic">
-            Board <Icon name="arrowUpRight" size={11} />
+          <Link className="sf-foot-link" to="/mosaic">
+            Open the board <Icon name="arrowUpRight" size={11} />
           </Link>
         </footer>
       </div>
@@ -255,19 +254,10 @@ export default function Login() {
       {/* ---------------------------------------------------------------- photo */}
       <figure className="sf-photo">
         <span className="sf-photo-veil" aria-hidden="true" />
-        <img src={CAMPUS_PHOTO} alt="The academic core at golden hour: louvred sandstone and glass facades over a paved court." />
-        <figcaption>
-          <span className="sf-photo-rule" aria-hidden="true" />
-          <span className="sf-photo-copy">
-            <b>Academic Core</b>
-            <span>
-              {data.summary.rooms} rooms and laboratories · {instituteName(data.institute)}
-            </span>
-          </span>
-          <span className="mono sf-photo-coord">
-            {data.datasetId || "cit-public-v1"} · 13.0827° N 80.2707° E
-          </span>
-        </figcaption>
+        <img
+          src={CAMPUS_PHOTO}
+          alt="The approach road to the academic block at golden hour, lined with rain trees and a bicycle stand."
+        />
       </figure>
     </div>
   );

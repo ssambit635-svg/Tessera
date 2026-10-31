@@ -22,7 +22,7 @@ import { availabilityWindow, periodSpan, toneForDepartment } from "../lib/derive
 import { FEATURE_LABELS, initials, roomImage, tintFor, ROOM_TYPE_LABELS } from "../lib/persona";
 
 export default function Overview() {
-  const { data, source } = useWorkspace();
+  const { data } = useWorkspace();
   const { activeDate } = useUi();
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState<string | null>(null);
@@ -152,8 +152,8 @@ export default function Overview() {
             </span>
             <span className="hairline-v" />
             <span className="hero-fact">
-              <b>{source.mode === "live" ? "Live API" : "Snapshot"}</b>
-              <span>{data.datasetId}</span>
+              <b>{data.summary.teaching_hours} teaching hours</b>
+              <span>scheduled this week</span>
             </span>
           </div>
 
@@ -432,9 +432,8 @@ export default function Overview() {
           </p>
         </div>
         <div className="editorial-note-meta">
-          <span className="mono">{data.datasetId}</span>
-          <span className="mono">{formatStamp(data.generatedAt)}</span>
-          <span className="mono">{source.mode === "live" ? "LIVE" : "SNAPSHOT"}</span>
+          <span className="mono">Spectra ’27 · Week 7</span>
+          <span className="mono">read {formatStamp(data.generatedAt)}</span>
         </div>
       </section>
 
@@ -446,7 +445,7 @@ export default function Overview() {
   );
 }
 
-const DATA_NOTE = "numbers come from the scheduling API or its committed snapshot";
+const DATA_NOTE = "every figure is computed from this week\u2019s schedule";
 
 function Metric({
   label,

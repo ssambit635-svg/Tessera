@@ -334,7 +334,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         notify({
           tone: "info",
           title: `Viewing as ${account?.label ?? role}`,
-          detail: "Snapshot mode — roles are labels here, not authenticated sessions.",
+          detail: "Offline preview — identities are labels here, not authenticated sessions.",
         });
         return;
       }
@@ -453,7 +453,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     notify({
       tone: "valid",
       title: "Change rehearsed",
-      detail: "Snapshot mode: the move is drawn, not written. Nothing was sent to the backend.",
+      detail: "Offline preview: the move is drawn, not written. Nothing was sent.",
     });
     return true;
   }, [bootstrap, notify, pending, source.mode, source.token]);

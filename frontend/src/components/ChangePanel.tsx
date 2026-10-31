@@ -77,7 +77,7 @@ export function ChangePanel({ compact = false }: { compact?: boolean }) {
               <b>Instant local rule check.</b>{" "}
               {source.mode === "live"
                 ? "The authoritative verdict is computed by the scheduling API when the move is proposed."
-                : "Snapshot mode: this preview is computed in the browser and nothing is written to the backend."}
+                : "This preview is computed in the browser — nothing is written to the schedule."}
             </span>
           </div>
         )}

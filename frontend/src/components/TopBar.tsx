@@ -137,22 +137,22 @@ export function TopBar() {
             title={source.detail}
           >
             <span className="led" />
-            {source.mode === "live" ? "LIVE API" : "SNAPSHOT"}
+            {source.mode === "live" ? "Live" : "Offline"}
             <Icon name="chevronDown" size={11} />
           </button>
           {sourceOpen ? (
             <div className="popover menu" style={{ right: 0, top: "calc(100% + 8px)", width: 300 }}>
-              <div className="menu-label">Data source</div>
+              <div className="menu-label">Where these numbers come from</div>
               <div style={{ padding: "4px 10px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
                 <span style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.5 }}>{source.detail}</span>
                 <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
                   {source.mode === "live"
                     ? "Numbers come from the scheduling API. Writes are authenticated."
-                    : "Read-only snapshot bundled with the UI. No requests are sent."}
+                    : "A bundled copy of this week is on screen. No requests are sent."}
                 </span>
-                <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
-                  {data?.sessions.length ?? 0} sessions · {data?.rooms.length ?? 0} rooms · dataset{" "}
-                  {data?.datasetId ?? "—"}
+                <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                  {data?.sessions.length ?? 0} sessions across {data?.rooms.length ?? 0} rooms, refreshed{" "}
+                  {data?.generatedAt ? new Date(data.generatedAt).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" }) : "just now"}
                 </span>
               </div>
               <div className="menu-sep" />

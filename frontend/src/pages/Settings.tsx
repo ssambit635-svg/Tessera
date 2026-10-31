@@ -78,7 +78,7 @@ export default function Settings() {
               <span className="field-hint">
                 {source.mode === "live"
                   ? "Switching persona requests a real token from /api/auth/demo-login."
-                  : "Snapshot mode: personas are cosmetic labels; no token is issued."}
+                  : "Offline: identities are labels for this preview; no token is issued."}
               </span>
             </div>
           </div>
@@ -87,30 +87,30 @@ export default function Settings() {
         <section className="panel">
           <div className="panel-head">
             <div>
-              <div className="eyebrow">Data source</div>
-              <h3 style={{ marginTop: 3 }}>Frontend integration boundary</h3>
+              <div className="eyebrow">Connection</div>
+              <h3 style={{ marginTop: 3 }}>Where these numbers come from</h3>
             </div>
             <span className={`status ${source.mode === "live" ? "valid" : "warning"}`} style={{ marginLeft: "auto" }}>
-              {source.mode === "live" ? "connected" : "snapshot"}
+              {source.mode === "live" ? "connected" : "offline"}
             </span>
           </div>
           <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="settings-kv">
-              <span>Mode</span>
-              <b>{source.mode === "live" ? "Live scheduling API" : "Committed snapshot"}</b>
+              <span>Schedule</span>
+              <b>{source.mode === "live" ? "Read live from the scheduling service" : "This week, read offline"}</b>
             </div>
             <div className="settings-kv">
-              <span>Detail</span>
-              <b style={{ fontSize: 11.5, textAlign: "right" }}>{source.detail}</b>
+              <span>Signed in as</span>
+              <b style={{ fontSize: 11.5, textAlign: "right" }}>{user?.email ?? "—"}</b>
             </div>
             <div className="settings-kv">
-              <span>Dataset</span>
-              <b className="mono">{data.datasetId}</b>
+              <span>Week</span>
+              <b>Spectra ’27 · week 7 · {data.summary.exams} examinations</b>
             </div>
             <div className="settings-kv">
-              <span>Records</span>
-              <b className="mono">
-                {data.sessions.length} sessions · {data.rooms.length} rooms · {data.bookings.count} requests
+              <span>In this week</span>
+              <b>
+                {data.sessions.length} sessions · {data.rooms.length} rooms · {data.bookings.count} venue requests
               </b>
             </div>
             <div className="row gap-8">
@@ -126,9 +126,8 @@ export default function Settings() {
             <div className="callout" style={{ fontSize: 11 }}>
               <Icon name="shield" size={13} />
               <span>
-                TESSERA's frontend only reads the documented endpoints. It never edits API routes, models,
-                migrations or environment files — if a write is needed it goes through the endpoint the backend
-                already exposes.
+                Every approval, move and venue decision is written back with the signed-in identity, so the audit
+                trail always names a person. Nothing is edited on the client.
               </span>
             </div>
           </div>
@@ -167,8 +166,8 @@ export default function Settings() {
         <section className="panel">
           <div className="panel-head">
             <div>
-              <div className="eyebrow">Design system</div>
-              <h3 style={{ marginTop: 3 }}>Colour has one meaning each</h3>
+              <div className="eyebrow">Legend</div>
+              <h3 style={{ marginTop: 3 }}>One meaning per colour</h3>
             </div>
           </div>
           <div className="panel-body">

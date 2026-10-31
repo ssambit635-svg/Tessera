@@ -113,7 +113,7 @@ export default function Bookings() {
           </div>
           <span className="spacer" />
           <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
-            {source.mode === "live" ? "LIVE DECISIONS" : "SNAPSHOT DECISIONS"}
+            {source.mode === "live" ? "DECIDED LIVE" : "PREVIEW ONLY"}
           </span>
         </div>
 
@@ -212,7 +212,7 @@ export default function Bookings() {
       ) : null}
 
       <p className="mono" style={{ fontSize: 9.5, color: "var(--muted)", letterSpacing: "0.06em" }}>
-        {data.datasetId} · {plural(bookings.length, "request")} · DECIDED BY THE SCHEDULING AUTHORITY
+        {plural(bookings.length, "request")} · SPECTRA ’27 · WEEK 7
       </p>
     </div>
   );
@@ -484,7 +484,7 @@ function NaturalLanguageBooking({
         slot: result
           ? { room_id: result.room.id, day: primaryWindow?.day, from: primaryWindow?.from_period, to: primaryWindow?.to_period }
           : null,
-        note: "Simulated in the browser from snapshot availability — no endpoint was called.",
+        note: "Checked in the browser against this week\u2019s availability — nothing was sent.",
       });
     }
   };
@@ -812,7 +812,7 @@ function NaturalLanguageBooking({
             </label>
           ) : (
             <span className="mono" style={{ fontSize: 9.5, color: "var(--muted)" }}>
-              SNAPSHOT MODE · NOTHING IS SENT
+              PREVIEW ONLY · NOTHING IS SENT
             </span>
           )}
           <span className="spacer" />

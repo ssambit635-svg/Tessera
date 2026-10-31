@@ -6,7 +6,6 @@
    ========================================================================== */
 
 .signin {
-  --sf-page: #f1f0ec;
   --sf-card: #ffffff;
   --sf-ink: #161614;
   --sf-ink-soft: #56534b;
@@ -14,28 +13,38 @@
   --sf-line: #e0ddd4;
   --sf-line-soft: #eae7df;
   --sf-accent: #161614;
+  --sf-on-photo: #ffffff;
+  --sf-on-photo-soft: rgba(255, 255, 255, 0.78);
 
-  height: 100vh;
-  height: 100dvh;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 54%);
-  background: var(--sf-page);
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #2a2723;
   color: var(--sf-ink);
   overflow: hidden;
+}
+
+/* The photograph is the page: the campus runs edge to edge behind everything. */
+.sf-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  overflow: hidden;
+  background: #2a2723;
 }
 
 /* ------------------------------------------------------------------ form side */
 .sf-side {
   position: relative;
   z-index: 2;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 30px 40px 22px 52px;
-  background:
-    radial-gradient(760px 520px at 4% -22%, rgba(255, 255, 255, 0.86), transparent 62%),
-    radial-gradient(620px 460px at 92% 120%, rgba(255, 255, 255, 0.5), transparent 60%),
-    var(--sf-page);
+  padding: 30px 44px 24px 52px;
 }
 
 .sf-brand {
@@ -49,11 +58,15 @@
 .sf-mark {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: var(--sf-ink);
-  color: #f7f5ef;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #121211;
+  color: #fbfaf6;
+  border-radius: 9px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 10px 24px -14px rgba(0, 0, 0, 0.8);
 }
 
 .sf-wordmark {
@@ -64,19 +77,22 @@
 
 .sf-wordmark b {
   font-family: var(--font-display);
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.26em;
+  color: var(--sf-on-photo);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
 }
 
 .sf-wordmark i {
-  margin-top: 4px;
+  margin-top: 5px;
   font-style: normal;
   font-family: var(--font-mono);
   font-size: 8.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--sf-muted);
+  color: rgba(255, 255, 255, 0.66);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
 }
 
 /* stage ----------------------------------------------------------------- */
@@ -87,8 +103,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding: 26px 0 20px;
+  gap: 16px;
+  padding: 26px 0 22px;
   overflow-y: auto;
 }
 
@@ -99,10 +115,10 @@
   background: var(--sf-card);
   border: 1px solid rgba(22, 22, 20, 0.06);
   box-shadow:
-    0 1px 1px rgba(22, 22, 20, 0.03),
-    0 1px 3px rgba(22, 22, 20, 0.04),
-    0 24px 48px -34px rgba(22, 22, 20, 0.35),
-    0 60px 100px -70px rgba(22, 22, 20, 0.45);
+    0 1px 1px rgba(12, 12, 10, 0.08),
+    0 2px 6px rgba(12, 12, 10, 0.08),
+    0 30px 60px -30px rgba(8, 8, 7, 0.55),
+    0 80px 140px -80px rgba(8, 8, 7, 0.7);
   animation: fade-up 620ms var(--ease-out) 60ms both;
 }
 
@@ -377,9 +393,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
-  padding: 9px 3px 7px;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 10px 4px 9px;
+  border-radius: 10px;
   border: 1px solid var(--sf-line-soft);
   background: #fdfdfc;
   transition: background 140ms var(--ease), border-color 140ms var(--ease), transform 140ms var(--ease), box-shadow 140ms var(--ease);
@@ -399,13 +415,14 @@
 }
 
 .sf-identity-mark {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
-  background: #f4f3ef;
-  color: #6f6b61;
+  background: #f3f2ee;
+  color: #4d4a43;
+  box-shadow: inset 0 0 0 1px rgba(22, 22, 20, 0.05);
   transition: background 140ms var(--ease), color 140ms var(--ease);
 }
 
@@ -424,12 +441,12 @@
 }
 
 .sf-identity-label {
-  font-family: var(--font-mono);
-  font-size: 7.5px;
-  line-height: 1.3;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: #928e84;
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: #6a665e;
   text-align: center;
   max-width: 100%;
   overflow: hidden;
@@ -444,17 +461,18 @@
 /* under the card -------------------------------------------------------- */
 .sf-new {
   font-size: 12px;
-  color: var(--sf-ink-soft);
+  color: var(--sf-on-photo-soft);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
   animation: fade-in 620ms var(--ease-out) 200ms both;
 }
 
 .sf-new button {
   font-size: 12px;
   font-weight: 500;
-  color: var(--sf-ink);
-  border-bottom: 1px solid var(--sf-ink);
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.75);
   padding-bottom: 1px;
-  transition: opacity 140ms var(--ease);
+  transition: opacity 140ms var(--ease), border-color 140ms var(--ease);
 }
 
 .sf-new button:hover {
@@ -466,32 +484,39 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   padding-top: 14px;
-  border-top: 1px solid #e7e4dc;
-  font-size: 8.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #a29e94;
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  color: var(--sf-on-photo-soft);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
 }
 
 .sf-foot span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
 }
 
 .sf-foot i {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #bcb8ae;
+  background: #7fa40f;
+  box-shadow: 0 0 0 3px rgba(127, 164, 15, 0.22);
   display: inline-block;
 }
 
-.sf-foot i.live {
-  background: #7fa40f;
-  box-shadow: 0 0 0 3px rgba(127, 164, 15, 0.14);
+.sf-foot i.idle {
+  background: #bcb8ae;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+.sf-foot-meta {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .sf-foot-spacer {
@@ -501,28 +526,25 @@
 .sf-foot-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: #6f6b62;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
   transition: color 140ms var(--ease);
 }
 
 .sf-foot-link:hover {
-  color: var(--sf-ink);
+  color: #fff;
 }
 
 /* ------------------------------------------------------------------- photo */
-.sf-photo {
-  position: relative;
-  margin: 0;
-  overflow: hidden;
-  background: #d7d9d8;
-}
-
 .sf-photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 42%;
+  object-position: 50% 46%;
   animation: photo-settle 1.2s var(--ease-out) both;
 }
 
@@ -531,72 +553,21 @@
   to { opacity: 1; }
 }
 
-/* blends the photograph into the page, like a printed spread */
+/* Two scrims: one from the top-left so the wordmark stays legible on a bright sky, one from
+   the bottom for the footer. The middle stays untouched — it is the campus. */
 .sf-photo-veil {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(241, 240, 236, 0.96) 0%, rgba(241, 240, 236, 0.34) 5%, rgba(241, 240, 236, 0) 14%),
-    linear-gradient(0deg, rgba(8, 10, 12, 0.74) 0%, rgba(8, 10, 12, 0.44) 12%, rgba(8, 10, 12, 0) 32%);
-}
-
-.sf-photo figcaption {
-  position: absolute;
-  z-index: 3;
-  left: 34px;
-  bottom: 30px;
-  right: 34px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-  gap: 9px;
-  color: #fff;
-  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45);
-  animation: fade-in 900ms var(--ease-out) 300ms both;
-}
-
-.sf-photo-coord {
-  font-size: 8.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.sf-photo-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.sf-photo-copy b {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 24px;
-  letter-spacing: -0.012em;
-}
-
-.sf-photo-copy span {
-  font-size: 11.5px;
-  line-height: 1.5;
-  max-width: 34ch;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.sf-photo-rule {
-  width: 34px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.45);
+    linear-gradient(118deg, rgba(10, 12, 12, 0.55) 0%, rgba(10, 12, 12, 0.2) 26%, rgba(10, 12, 12, 0) 46%),
+    linear-gradient(0deg, rgba(9, 10, 11, 0.55) 0%, rgba(9, 10, 11, 0.24) 12%, rgba(9, 10, 11, 0) 26%),
+    radial-gradient(80% 60% at 50% 48%, rgba(9, 10, 11, 0.16), rgba(9, 10, 11, 0) 70%);
 }
 
 /* ---------------------------------------------------------------- responsive */
 @media (max-width: 1120px) {
-  .signin {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 46%);
-  }
-
   .sf-side {
     padding: 26px 30px 20px 34px;
   }
@@ -604,35 +575,26 @@
 
 @media (max-width: 940px) {
   .signin {
-    height: auto;
-    display: flex;
-    flex-direction: column-reverse;
-    overflow: visible;
+    overflow: auto;
   }
 
   .sf-photo {
-    height: 42vh;
-    min-height: 260px;
-    flex: none;
+    position: fixed;
   }
 
   .sf-photo img {
-    object-position: 62% 38%;
+    object-position: 58% 54%;
   }
 
-  .sf-photo figcaption {
-    left: 20px;
-    bottom: 18px;
-    right: 20px;
-  }
-
-  .sf-photo-copy b {
-    font-size: 18px;
+  /* a single column needs a heavier veil: the card is the only thing in front now */
+  .sf-photo-veil {
+    background:
+      linear-gradient(180deg, rgba(9, 10, 11, 0.5) 0%, rgba(9, 10, 11, 0.28) 40%, rgba(9, 10, 11, 0.45) 100%),
+      linear-gradient(118deg, rgba(10, 12, 12, 0.4) 0%, rgba(10, 12, 12, 0) 60%);
   }
 
   .sf-side {
     padding: 22px 20px 18px;
-    min-height: 58vh;
   }
 
   .sf-stage {
@@ -644,19 +606,13 @@
   }
 
   .sf-card h1 {
-    font-size: 29px;
+    font-size: 31px;
   }
 }
 
 @media (max-width: 520px) {
-  .sf-photo {
-    height: 30vh;
-    min-height: 190px;
-  }
-
   .sf-card {
     width: 100%;
-    box-shadow: 0 1px 2px rgba(25, 25, 23, 0.05);
   }
 
   .sf-foot {
@@ -673,9 +629,9 @@
   }
 }
 
-@media (max-height: 760px) and (min-width: 941px) {
+@media (max-height: 780px) and (min-width: 941px) {
   .sf-stage {
-    padding: 14px 0 12px;
+    padding: 12px 0 10px;
   }
 
   .sf-card {
@@ -683,7 +639,7 @@
   }
 
   .sf-card h1 {
-    font-size: 28px;
+    font-size: 29px;
   }
 
   .sf-card form {
@@ -696,7 +652,7 @@
   }
 
   .sf-identity {
-    padding: 7px 4px 6px;
+    padding: 8px 4px 7px;
   }
 }
 
