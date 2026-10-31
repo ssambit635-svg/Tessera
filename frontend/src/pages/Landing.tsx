@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
@@ -25,10 +25,88 @@ const NAV_LINKS = [
   { href: "#assistant", label: "Assistant" },
 ];
 
+/**
+ * The hero art, shared by the fold and the proof panel: three film-grain ribbon fields
+ * that flow on their own and lean toward the pointer.
+ */
+function Beams() {
+  return (
+    <div className="rk-beams" aria-hidden="true">
+      <span className="rk-beam-a" />
+      <span className="rk-beam-b" />
+      <span className="rk-beam-c" />
+      <span className="rk-beam-mask" />
+      <span className="rk-grain" />
+    </div>
+  );
+}
+
+/**
+ * The claim under "The proof" lights up word by word as it scrolls into view — the same
+ * reading gesture as the reference, done with one rAF loop and a CSS variable per word.
+ */
+function ScrollStatement({ lead, tail }: { lead: string; tail: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const words = Array.from(node.querySelectorAll<HTMLElement>("[data-word]"));
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      words.forEach((word) => word.style.setProperty("--o", "0.62"));
+      return;
+    }
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const rect = node.getBoundingClientRect();
+      const viewport = window.innerHeight || 800;
+      // starts when the claim is two-thirds up the screen, done by the time it is centred
+      const start = viewport * 1.0;
+      const end = viewport * 0.52;
+      const progress = Math.min(1, Math.max(0, (start - rect.top) / Math.max(1, start - end)));
+      const span = words.length + 8;
+      words.forEach((word, index) => {
+        const lead_in = (progress * span - index) / 8;
+        word.style.setProperty("--o", Math.min(1, Math.max(0.16, lead_in)).toFixed(3));
+      });
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+    paint();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  const words = (text: string) =>
+    text
+      .split(" ")
+      .map((word, index) => [
+        <span key={`${word}-${index}`} className="rk-word" data-word>
+          {word}
+        </span>,
+        " ",
+      ]);
+
+  return (
+    <h2 className="rk-statement" ref={ref}>
+      <b>{words(lead)}</b> <span>{words(tail)}</span>
+    </h2>
+  );
+}
+
 export default function Landing() {
   const { data, source } = useWorkspace();
   const navigate = useNavigate();
   const [navSolid, setNavSolid] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
 
   /* One rAF-throttled scroll handler: the nav only gains weight once the visitor leaves the
      fold. Nothing else listens to scroll. */
@@ -51,7 +129,51 @@ export default function Landing() {
     };
   }, []);
 
+  /* The ribbon field leans toward the pointer while it is over the stage — one variable on
+     the wrapper, no per-frame layout, and nothing at all for reduced motion. */
+  useEffect(() => {
+    const node = stageRef.current;
+    if (!node) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    let nextX = 0;
+    let nextY = 0;
+    const flush = () => {
+      frame = 0;
+      node.style.setProperty("--drift-x", nextX.toFixed(3));
+      node.style.setProperty("--drift-y", nextY.toFixed(3));
+    };
+    const onMove = (event: PointerEvent) => {
+      const rect = node.getBoundingClientRect();
+      nextX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+      nextY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+      if (!frame) frame = requestAnimationFrame(flush);
+    };
+    const onLeave = () => {
+      nextX = 0;
+      nextY = 0;
+      if (!frame) frame = requestAnimationFrame(flush);
+    };
+    node.addEventListener("pointermove", onMove);
+    node.addEventListener("pointerleave", onLeave);
+    return () => {
+      node.removeEventListener("pointermove", onMove);
+      node.removeEventListener("pointerleave", onLeave);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+
   const go = (to: string) => navigate(`/login?next=${encodeURIComponent(to)}`);
+
+  const perDay = useMemo(
+    () =>
+      data.calendar.days.slice(0, 5).map((day) => ({
+        day,
+        count: data.sessions.filter((session) => session.day === day).length,
+      })),
+    [data],
+  );
+  const busiestDay = Math.max(1, ...perDay.map((entry) => entry.count));
 
   const numbers = {
     sessions: data.dashboard.counts.sessions,
@@ -96,14 +218,8 @@ export default function Landing() {
       </header>
 
       {/* ------------------------------------------------------------ hero */}
-      <div className="rk-stage">
-        <div className="rk-beams" aria-hidden="true">
-          <span className="rk-beam-a" />
-          <span className="rk-beam-b" />
-          <span className="rk-beam-c" />
-          <span className="rk-beam-mask" />
-          <span className="rk-grain" />
-        </div>
+      <div className="rk-stage" ref={stageRef}>
+        <Beams />
 
         <section className="rk-hero">
           <p className="rk-eyebrow">Tech Zephyr 4.0 · Team Voltryx</p>
@@ -210,13 +326,10 @@ export default function Landing() {
             <div>
               <span className="rk-kicker">02 — The proof</span>
 
-              <h2 className="rk-statement">
-                <b>Nothing here was typed by hand.</b>{" "}
-                <span>
-                  The week is solved, the exams seated and every request answered before the page
-                  loads — you are reading the workspace, not a promise about it.
-                </span>
-              </h2>
+              <ScrollStatement
+                lead="Nothing here was typed by hand."
+                tail="Every session, paper and request below was placed by the solver before this page loaded — you are reading the workspace itself."
+              />
 
               <div className="rk-product">
                 <span className="rk-product-name">
@@ -230,30 +343,40 @@ export default function Landing() {
             </div>
 
             <div className="rk-stage-card">
-              <div className="rk-beams" aria-hidden="true">
-                <span className="rk-beam-a" />
-                <span className="rk-beam-b" />
-                <span className="rk-beam-c" />
-                <span className="rk-beam-mask" />
-                <span className="rk-grain" />
-              </div>
+              <Beams />
 
               <div className="rk-ledger">
                 <div className="rk-ledger-head">
-                  <b>Week 7 · signed off</b>
+                  <b>Week 7 · Spectra ’27</b>
                   <span className="rk-ledger-tag">
-                    <Icon name="check" size={10} /> validated
+                    <Icon name="check" size={10} /> signed off
                   </span>
                 </div>
+
+                <div className="rk-meter" aria-hidden="true">
+                  {perDay.map(({ day, count }) => (
+                    <div key={day} className="rk-meter-day">
+                      <b>{count}</b>
+                      <span className="rk-meter-track">
+                        <span
+                          className="rk-meter-bar"
+                          style={{ height: `${Math.round((count / busiestDay) * 100)}%` }}
+                        />
+                      </span>
+                      <i>{day.slice(0, 3).toUpperCase()}</i>
+                    </div>
+                  ))}
+                </div>
+
                 {[
-                  [String(numbers.hard), "hard violations", "timetable + bookings + exams"],
+                  [String(numbers.sessions), "teaching sessions placed", `${numbers.rooms} rooms · ${numbers.faculty} faculty`],
                   [String(numbers.exams), "midsem papers seated", "every cohort fits its hall"],
                   [
-                    `${numbers.bookings.score}/${numbers.bookings.max}`,
-                    "booking score",
+                    String(data.bookings.count),
+                    "venue requests decided",
                     "22 approved · 1 alternative · 2 rejected",
                   ],
-                  ["0", "priority inversions", "the institute's order wins every tie"],
+                  [`${numbers.bookings.score}/${numbers.bookings.max}`, "booking score", "zero priority inversions"],
                 ].map(([value, label, note]) => (
                   <div key={label} className="rk-ledger-row">
                     <span>
@@ -263,8 +386,9 @@ export default function Landing() {
                     <b>{value}</b>
                   </div>
                 ))}
+
                 <div className="rk-ledger-foot">
-                  <Icon name="shield" size={11} /> second-admin approval on every repair
+                  <Icon name="shield" size={11} /> {numbers.hard} hard conflicts · second-admin approval on every repair
                 </div>
               </div>
             </div>
