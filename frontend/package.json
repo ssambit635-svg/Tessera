@@ -1,6 +1,9 @@
 {
   "name": "tessera-frontend",
   "private": true,
+  "engines": {
+    "node": ">=22.15"
+  },
   "version": "1.0.0",
   "description": "TESSERA \u2014 intelligent campus scheduling & resource management. Frontend only.",
   "type": "module",
