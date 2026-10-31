@@ -6,10 +6,12 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session
 
 from .auth import demo_accounts, seed_users
@@ -65,8 +67,19 @@ def health():
     }
 
 
-@app.get("/", tags=["meta"])
+WEB_DIR = Path(__file__).resolve().parent / "web"
+
+app.mount("/ui", StaticFiles(directory=str(WEB_DIR)), name="ui")
+
+
+@app.get("/", include_in_schema=False)
 def index():
+    """The app itself. The machine-readable summary lives at /api/info."""
+    return FileResponse(WEB_DIR / "index.html", media_type="text/html")
+
+
+@app.get("/api/info", tags=["meta"])
+def info():
     return {
         "name": "Tessera",
         "team": settings.team,

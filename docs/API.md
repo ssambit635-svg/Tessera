@@ -1,6 +1,9 @@
 # Tessera API — the whole backend, end to end
 
-Base URL locally: `http://localhost:8000` · interactive docs: `/docs` · health: `/health`
+Base URL locally: `http://localhost:8000` · **the app: `/`** · interactive docs: `/docs` · health: `/health`
+
+`/` serves the single-page UI (`api/app/web/`), `/ui/app.js` and `/ui/app.css` its assets, and
+`/api/info` the JSON summary. There is no separate frontend build and no CDN.
 
 Everything below is implemented and covered by `api/tests/test_api.py` (22 tests, real
 dataset, real exports, no mocks). Validity is decided by `api/app/core/constraints.py`;
