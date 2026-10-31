@@ -77,6 +77,8 @@ Two ways to use it: run the API, or regenerate the exports from scratch.
 
 ### 1. The API (this is what the app and the judges use)
 
+**macOS / Linux**
+
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r api/requirements.txt
@@ -88,6 +90,23 @@ uvicorn app.main:app --reload --port 8000
 #  http://localhost:8000/health liveness
 #  demo logins: POST /api/auth/demo-login/admin  (or /faculty, /club, /department_coordinator)
 ```
+
+**Windows (PowerShell 5.1)** - no `&&`, no `source`, and the venv lives in `.venv\Scripts`:
+
+```powershell
+python -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass   # only if activation is blocked
+.\.venv\Scripts\Activate.ps1
+pip install -r api\requirements.txt
+Copy-Item .env.example .env                                   # or: powershell -ExecutionPolicy Bypass -File tools\setup_env.ps1
+notepad .env                                                  # defaults work; add GROQ_API_KEY later
+
+cd api
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+`python3` does not exist on Windows - use `python`. If `pip install` is slow, OR-Tools is the
+big one; the rest install in seconds.
 
 The app boots from the committed `exports/schedule.json`, so it is usable immediately;
 regenerating the timetable is an explicit admin action, not a page-load cost.
