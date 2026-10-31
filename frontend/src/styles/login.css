@@ -1,0 +1,561 @@
+/* ============================================================================
+   Sign in — one sided, exactly like the reference.
+
+   A pale column on the left holding a single white card; the campus fills the right
+   half of the screen, full height, bleeding to the edges. Nothing else on the page.
+   ========================================================================== */
+
+.signin {
+  --sf-page: #eceeef;
+  --sf-card: #ffffff;
+  --sf-ink: #1a1d24;
+  --sf-ink-soft: #5b5f68;
+  --sf-muted: #9195a0;
+  --sf-line: #dcdde1;
+  --sf-accent: #3a4351;
+
+  height: 100vh;
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 48%) minmax(0, 1fr);
+  background: var(--sf-page);
+  color: var(--sf-ink);
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ form side */
+.sf-side {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 26px 40px 20px 46px;
+}
+
+.sf-brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  animation: fade-up 520ms var(--ease-out) both;
+}
+
+.sf-mark {
+  display: grid;
+  place-items: center;
+  color: #15171c;
+}
+
+.sf-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 1;
+}
+
+.sf-wordmark b {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: #15171c;
+}
+
+.sf-wordmark i {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8e929c;
+}
+
+/* stage ----------------------------------------------------------------- */
+.sf-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.sf-card {
+  width: min(408px, 100%);
+  padding: 30px 34px 26px;
+  border-radius: 12px;
+  background: var(--sf-card);
+  box-shadow:
+    0 1px 2px rgba(20, 22, 26, 0.06),
+    0 18px 40px -28px rgba(20, 22, 26, 0.5);
+  animation: fade-up 620ms var(--ease-out) 60ms both;
+}
+
+.sf-card h1 {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--sf-ink);
+}
+
+.sf-sub {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--sf-ink-soft);
+}
+
+/* an existing session --------------------------------------------------- */
+.sf-session {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border-radius: 8px;
+  border: 1px solid #e3ecc4;
+  background: #f8fbe9;
+}
+
+.sf-session-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.sf-session-copy b {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sf-session-copy span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--sf-muted);
+}
+
+.sf-continue {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--sf-accent);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+/* form ----------------------------------------------------------------- */
+.sf-card form {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sf-field > span:first-child {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--sf-ink-soft);
+}
+
+.sf-input-wrap {
+  position: relative;
+  display: block;
+}
+
+.sf-field input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--sf-line);
+  background: #fff;
+  font-size: 13px;
+  color: var(--sf-ink);
+  transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
+}
+
+.sf-field input::placeholder {
+  color: #9ea3ae;
+}
+
+.sf-field input:hover {
+  border-color: #c9cbd1;
+}
+
+.sf-field input:focus {
+  outline: none;
+  border-color: #9aa0ac;
+  box-shadow: 0 0 0 3px rgba(62, 67, 78, 0.07);
+}
+
+.sf-input-wrap input {
+  padding-right: 40px;
+}
+
+.sf-reveal {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  color: #a6aab3;
+  transition: color 140ms var(--ease), background 140ms var(--ease);
+}
+
+.sf-reveal:hover {
+  color: var(--sf-ink);
+  background: #f4f4f6;
+}
+
+.sf-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+.sf-link {
+  font-size: 12.5px;
+  color: var(--sf-ink-soft);
+  transition: color 140ms var(--ease);
+}
+
+.sf-link:hover {
+  color: var(--sf-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sf-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  border: 1px solid #f0cfc7;
+  background: #fdf3f0;
+  color: #8f2f1b;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.sf-error svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.sf-submit {
+  margin-top: 2px;
+  height: 46px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: var(--sf-accent);
+  color: #fbfbfc;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: background 140ms var(--ease), transform 140ms var(--ease);
+}
+
+.sf-submit:hover:not(:disabled) {
+  background: #333842;
+}
+
+.sf-submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.sf-submit:disabled {
+  opacity: 0.85;
+  cursor: progress;
+}
+
+.sf-submit .tile-spinner {
+  color: #fbfbfc;
+}
+
+.sf-submit .tile-spinner .tile-spinner-ring {
+  border-color: rgba(255, 255, 255, 0.22);
+  border-top-color: #fbfbfc;
+}
+
+/* identities ------------------------------------------------------------ */
+.sf-divider {
+  position: relative;
+  margin: 20px 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #eceef1;
+}
+
+.sf-divider span {
+  position: relative;
+  padding: 0 10px;
+  background: var(--sf-card);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a3a7b0;
+}
+
+.sf-identities {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sf-identity {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 3px 9px;
+  border-radius: 8px;
+  border: 1px solid #eceef1;
+  background: #fdfdfd;
+  transition: background 140ms var(--ease), border-color 140ms var(--ease),
+    box-shadow 140ms var(--ease), transform 140ms var(--ease);
+}
+
+.sf-identity:hover:not(:disabled),
+.sf-identity:focus-visible {
+  background: #fff;
+  border-color: #d3d6db;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -10px rgba(20, 22, 26, 0.55);
+}
+
+.sf-identity:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.sf-identity-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: #f2f3f4;
+  color: #4f5661;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.sf-identity:hover:not(:disabled) .sf-identity-mark {
+  background: var(--sf-accent);
+  color: #fff;
+}
+
+.sf-identity .tile-spinner {
+  color: var(--sf-ink);
+}
+
+.sf-identity .tile-spinner .tile-spinner-ring {
+  border-color: rgba(26, 29, 36, 0.16);
+  border-top-color: var(--sf-ink);
+}
+
+.sf-identity-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b909a;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-identity:hover:not(:disabled) .sf-identity-label {
+  color: var(--sf-ink);
+}
+
+/* under the card -------------------------------------------------------- */
+.sf-new {
+  font-size: 13px;
+  color: var(--sf-ink-soft);
+  animation: fade-in 620ms var(--ease-out) 200ms both;
+}
+
+.sf-new button {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sf-ink);
+  transition: opacity 140ms var(--ease);
+}
+
+.sf-new button:hover {
+  opacity: 0.65;
+}
+
+/* ------------------------------------------------------------------- photo */
+.sf-photo {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: #cdd5dc;
+}
+
+.sf-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 50%;
+  animation: photo-settle 1.2s var(--ease-out) both;
+}
+
+@keyframes photo-settle {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* A soft inner shade on the seam so the photograph reads as continuing rather than
+   pasted next to a panel. Nothing covers the building itself. */
+.sf-photo-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(236, 238, 239, 0.6) 0%, rgba(236, 238, 239, 0.14) 4%, rgba(236, 238, 239, 0) 10%),
+    linear-gradient(0deg, rgba(14, 16, 20, 0.28) 0%, rgba(14, 16, 20, 0) 18%);
+}
+
+/* ---------------------------------------------------------------- responsive */
+@media (max-width: 1080px) {
+  .signin {
+    grid-template-columns: minmax(0, 52%) minmax(0, 1fr);
+  }
+
+  .sf-side {
+    padding: 24px 30px 18px 34px;
+  }
+}
+
+@media (max-width: 880px) {
+  .signin {
+    height: auto;
+    min-height: 100vh;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+    background: #eceeef;
+  }
+
+  /* the photograph becomes the top banner, the card sits on the page below it */
+  .sf-photo {
+    order: -1;
+    height: 30vh;
+    min-height: 190px;
+  }
+
+  .sf-photo img {
+    object-position: 66% 46%;
+  }
+
+  .sf-photo-veil {
+    background: linear-gradient(0deg, rgba(236, 238, 239, 0.92) 0%, rgba(236, 238, 239, 0) 26%);
+  }
+
+  .sf-side {
+    padding: 0 20px 22px;
+    margin-top: -26px;
+  }
+
+  .sf-brand {
+    padding: 14px 4px 18px;
+  }
+
+  .sf-stage {
+    padding: 0 0 16px;
+    gap: 18px;
+  }
+
+  .sf-card {
+    width: min(430px, 100%);
+    padding: 26px 22px 24px;
+  }
+
+}
+
+@media (max-width: 460px) {
+  .sf-card {
+    width: 100%;
+  }
+
+  .sf-identities {
+    justify-content: center;
+  }
+
+}
+
+@media (max-height: 780px) and (min-width: 881px) {
+  .sf-stage {
+    gap: 16px;
+    padding: 10px 0;
+  }
+
+  .sf-card {
+    padding: 24px 28px 22px;
+  }
+
+  .sf-card form {
+    margin-top: 18px;
+    gap: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-brand,
+  .sf-card,
+  .sf-new,
+  .sf-photo img {
+    animation: none !important;
+  }
+}
