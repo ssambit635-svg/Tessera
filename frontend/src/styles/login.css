@@ -651,6 +651,11 @@
   color: var(--ink);
 }
 
+.panel-submit .tile-spinner .tile-spinner-ring {
+  border-color: rgba(17, 17, 18, 0.22);
+  border-top-color: var(--ink);
+}
+
 /* identities ----------------------------------------------------------- */
 .panel-rule {
   margin: 22px 0 14px;

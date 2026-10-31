@@ -10,6 +10,15 @@ import { DAY_LONG, plural } from "../lib/format";
 const DEMO_PASSWORD = "Tessera@2027";
 
 /** One glyph per seat at the table — clearer than derived initials on two admin accounts. */
+/** What each seat can actually do — mirrors the backend's capability map. */
+function identityCapability(role: string): string {
+  if (role === "admin") return "generate, validate, approve, export";
+  if (role === "department_coordinator") return "preview changes, book department rooms";
+  if (role === "faculty") return "own timetable, raise change requests";
+  if (role === "club") return "submit and track venue requests";
+  return "read-only view of the workspace";
+}
+
 function identityIcon(role: string, label: string): string {
   if (/second|approver/i.test(label)) return "check";
   if (role === "admin") return "shield";
@@ -240,7 +249,7 @@ export default function Login() {
                   onChange={(event) => setEmail(event.target.value)}
                   aria-invalid={Boolean(error)}
                   spellCheck={false}
-                  autoFocus
+                  autoFocus={typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches}
                 />
               </div>
             </div>
@@ -317,6 +326,7 @@ export default function Login() {
                     onClick={() => void demo(persona.role, persona.email, persona.label)}
                     disabled={busy !== null}
                     aria-busy={working}
+                    title={`${persona.label} — ${identityCapability(persona.role)}`}
                   >
                     <span className={`identity-mark tone-${tintFor(persona.email)}`}>
                       <Icon name={identityIcon(persona.role, persona.label)} size={15} strokeWidth={1.7} />
