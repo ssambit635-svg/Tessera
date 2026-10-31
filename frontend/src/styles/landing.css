@@ -1,0 +1,1270 @@
+/* ============================================================================
+   /landing — a Raycast-grammar front door for Tessera.
+
+   Everything here is scoped to `.landing` and built on the reference's token
+   set: black stage (#0a0a0b), fg #f4f4f6, muted #9c9c9d, hairline surfaces,
+   16px cards, 4px spacing grid, Inter + Geist Mono. No glows, no blooms, no
+   gradient "AI" haze — the only colour on the page is the film-grain ribbon
+   hero, the same way the reference does it, plus the app's own tile palette.
+   ========================================================================== */
+
+.landing {
+  /* palette — reference tokens, mapped to Tessera names */
+  --rk-bg: #0a0a0b;
+  --rk-bg-raised: #101011;
+  --rk-bg-card: #161617;
+  --rk-bg-hover: #1d1d1f;
+  --rk-fg: #f4f4f6;
+  --rk-fg-soft: #c2c7ca;
+  --rk-muted: #9c9c9d;
+  --rk-faint: #6f7074;
+  --rk-line: rgba(255, 255, 255, 0.09);
+  --rk-line-strong: rgba(255, 255, 255, 0.16);
+  --rk-white: #ffffff;
+  --rk-red: #e23a54;
+  --rk-red-soft: #a3253a;
+  --rk-navy: #16233f;
+
+  /* type */
+  --rk-sans: "Inter Variable", "Inter", "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --rk-mono: "Geist Mono Variable", "Geist Mono", "IBM Plex Mono", ui-monospace, monospace;
+
+  /* shape + motion, straight off the reference */
+  --rk-r-sm: 4px;
+  --rk-r-md: 6px;
+  --rk-r-lg: 8px;
+  --rk-r-xl: 16px;
+  --rk-r-full: 1000px;
+  --rk-ease: 0.2s ease-in-out;
+
+  background: var(--rk-bg);
+  color: var(--rk-fg);
+  font-family: var(--rk-sans);
+  font-feature-settings: "cv05" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.landing ::selection {
+  background: var(--rk-white);
+  color: #0a0a0b;
+}
+
+.landing .mono {
+  font-family: var(--rk-mono);
+  font-size: 0.94em;
+  color: var(--rk-fg-soft);
+}
+
+/* ---------------------------------------------------------------- the stage */
+
+.rk-stage {
+  position: relative;
+  isolation: isolate;
+  background: #000;
+  overflow: hidden;
+}
+
+/* The hero art: diagonal film-grain ribbons, the way the reference paints them.
+   Stripes are perpendicular to a 120deg gradient line, i.e. they run steeply from the
+   lower left to the upper right. Three layers of different period overlap so the eye
+   never finds the repeat. Each layer is a masked wrapper whose ::before carries the
+   gradient; the ::before is what animates, so the mask never drifts and one period of
+   travel is a seamless loop. No blur, no bloom: flat multi-stop gradients + tiled noise. */
+.rk-beams {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  transform: translate3d(calc(var(--drift-x, 0) * 16px), calc(var(--drift-y, 0) * 12px), 0) scale(var(--drift-s, 1));
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+
+.rk-beam-a,
+.rk-beam-b,
+.rk-beam-c {
+  position: absolute;
+  /* oversized so no ribbon is ever cut by the element's own edge */
+  inset: -30% -25%;
+  display: block;
+  overflow: hidden;
+}
+
+.rk-beam-a::before,
+.rk-beam-b::before,
+.rk-beam-c::before {
+  content: "";
+  position: absolute;
+  inset: -70%;
+  display: block;
+  background-repeat: repeat;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.rk-beam-a::before {
+  background-image: repeating-linear-gradient(
+    120deg,
+    #050506 0px,
+    #050506 74px,
+    #0c1526 92px,
+    #16233f 104px,
+    #5a1b2c 122px,
+    #b62a45 138px,
+    #e23a54 152px,
+    #ee4a62 176px,
+    #e23a54 200px,
+    #b02641 220px,
+    #3b172a 238px,
+    #16233f 254px,
+    #0a1120 268px,
+    #050506 284px,
+    #050506 358px
+  );
+  /* one period (358px) along the 120deg axis: 310 right, 179 up */
+  animation-name: rk-flow-a;
+  animation-duration: 96s;
+}
+
+.rk-beam-a {
+  -webkit-mask-image: radial-gradient(150% 125% at 40% 44%, #000 6%, #000 48%, rgba(0, 0, 0, 0.5) 78%, transparent 100%);
+  mask-image: radial-gradient(150% 125% at 40% 44%, #000 6%, #000 48%, rgba(0, 0, 0, 0.5) 78%, transparent 100%);
+}
+
+.rk-beam-b::before {
+  background-image: repeating-linear-gradient(
+    120deg,
+    rgba(5, 5, 6, 0) 0px,
+    rgba(5, 5, 6, 0) 96px,
+    rgba(122, 26, 44, 0.55) 132px,
+    rgba(206, 42, 68, 0.62) 152px,
+    rgba(240, 66, 92, 0.5) 184px,
+    rgba(214, 46, 72, 0.44) 214px,
+    rgba(22, 35, 63, 0.42) 240px,
+    rgba(5, 5, 6, 0) 276px,
+    rgba(5, 5, 6, 0) 604px
+  );
+  /* 604px period: 523 right, 302 up */
+  animation-name: rk-flow-b;
+  animation-duration: 132s;
+}
+
+.rk-beam-b {
+  opacity: 0.62;
+}
+
+.rk-beam-c::before {
+  background-image: repeating-linear-gradient(
+    120deg,
+    rgba(5, 5, 6, 0) 0px,
+    rgba(5, 5, 6, 0) 210px,
+    rgba(255, 130, 148, 0.16) 240px,
+    rgba(255, 176, 186, 0.2) 254px,
+    rgba(150, 40, 62, 0.12) 272px,
+    rgba(5, 5, 6, 0) 300px,
+    rgba(5, 5, 6, 0) 940px
+  );
+  /* 940px period, travelling the other way: -814 left, 470 down */
+  animation-name: rk-flow-c;
+  animation-duration: 168s;
+}
+
+.rk-beam-c {
+  opacity: 0.8;
+}
+
+@keyframes rk-flow-a {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(310px, -179px, 0); }
+}
+
+@keyframes rk-flow-b {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(523px, -302px, 0); }
+}
+
+@keyframes rk-flow-c {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-814px, 470px, 0); }
+}
+
+/* hovering the stage leans the whole field toward the pointer and opens the flow up */
+.rk-stage:hover .rk-beams {
+  --drift-s: 1.02;
+}
+
+.rk-stage:hover .rk-beam-b::before,
+.rk-stage:hover .rk-beam-c::before {
+  animation-duration: 60s;
+}
+
+/* falloff to black at the edges of the art, exactly like the reference */
+.rk-beam-mask {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.12) 26%, rgba(0, 0, 0, 0.05) 58%, rgba(0, 0, 0, 0.62) 90%, #0a0a0b 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.35) 100%);
+  pointer-events: none;
+}
+
+/* film grain: one tiled turbulence bitmap, blended — not a blur, not a glow */
+.rk-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.78;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.72'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------- the nav */
+
+.rk-nav {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(1288px, calc(100% - 48px));
+  height: 68px;
+  padding: 0 12px 0 22px;
+  border-radius: var(--rk-r-xl);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 18, 19, 0.72);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  transition: background var(--rk-ease), border-color var(--rk-ease), box-shadow var(--rk-ease);
+}
+
+.rk-nav.solid {
+  background: rgba(14, 14, 15, 0.92);
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.06) inset, 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.rk-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--rk-fg);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  flex: none;
+}
+
+.rk-brand svg,
+.rk-brand .ld-mark {
+  display: block;
+}
+
+.rk-brand .ld-mark {
+  color: var(--rk-red);
+}
+
+.rk-brand:hover .ld-mark {
+  color: #f4617a;
+}
+
+.rk-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+
+.rk-links a {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--rk-r-md);
+  color: var(--rk-fg-soft);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.rk-links a:hover {
+  color: var(--rk-white);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rk-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.rk-navlink {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--rk-r-md);
+  color: var(--rk-fg-soft);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.rk-navlink:hover {
+  color: var(--rk-white);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* the white pill button, reference's Download button */
+.rk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--rk-r-lg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out,
+    transform 0.1s ease-in-out;
+}
+
+.rk-btn:active {
+  transform: translateY(1px);
+}
+
+.rk-btn.white {
+  background: var(--rk-white);
+  color: #0a0a0b;
+}
+
+.rk-btn.white:hover {
+  background: #e6e6e6;
+}
+
+.rk-btn.outline {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--rk-fg);
+  border-color: var(--rk-line-strong);
+}
+
+.rk-btn.outline:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.rk-btn .rk-keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: -4px;
+  border-radius: var(--rk-r-sm);
+  background: #0a0a0b;
+  color: var(--rk-white);
+}
+
+.rk-btn.sm {
+  height: 40px;
+  padding: 0 15px;
+  font-size: 13.5px;
+}
+
+.rk-btn.lg {
+  height: 48px;
+  padding: 0 22px;
+  font-size: 15px;
+}
+
+.rk-btn:focus-visible,
+.rk-navlink:focus-visible,
+.rk-links a:focus-visible,
+.rk-card:focus-visible,
+.rk-screen:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ the hero */
+
+.rk-hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 150px 24px 130px;
+  text-align: center;
+}
+
+/* a flat scrim, not a glow: keeps the sentence legible where a ribbon runs hot */
+.rk-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 40px -20px 40px;
+  background: radial-gradient(
+    58% 54% at 50% 44%,
+    rgba(0, 0, 0, 0.62) 0%,
+    rgba(0, 0, 0, 0.4) 48%,
+    rgba(0, 0, 0, 0.12) 72%,
+    transparent 88%
+  );
+  pointer-events: none;
+}
+
+.rk-eyebrow {
+  margin: 0 0 26px;
+  font-family: var(--rk-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #d2d4d8;
+}
+
+.rk-title {
+  margin: 0;
+  max-width: 15ch;
+  font-family: var(--rk-sans);
+  font-size: clamp(44px, 6.4vw, 76px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  color: var(--rk-white);
+  text-wrap: balance;
+}
+
+.rk-title span {
+  display: block;
+}
+
+.rk-sub {
+  margin: 24px 0 0;
+  max-width: 54ch;
+  font-size: 18px;
+  line-height: 1.45;
+  letter-spacing: -0.011em;
+  color: #e6e6e6;
+  text-wrap: pretty;
+}
+
+.rk-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.rk-cta-note {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: #b9bbc0;
+}
+
+/* the hero is a statement, not a screenshot: art, one sentence, two doors */
+.rk-hero-bottom {
+  position: relative;
+  height: 96px;
+  margin-top: -96px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--rk-bg) 78%);
+}
+
+/* --------------------------------------------------------------- sections */
+
+.rk-section {
+  position: relative;
+  padding: 132px 24px;
+}
+
+.rk-inner {
+  width: min(1160px, 100%);
+  margin: 0 auto;
+}
+
+.rk-head {
+  max-width: 640px;
+}
+
+.rk-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-family: var(--rk-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rk-faint);
+}
+
+.rk-kicker::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.rk-h2 {
+  margin: 0;
+  font-family: var(--rk-sans);
+  font-size: clamp(30px, 3.6vw, 46px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--rk-white);
+  text-wrap: balance;
+}
+
+.rk-lede {
+  margin: 18px 0 0;
+  max-width: 56ch;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--rk-muted);
+}
+
+.rk-h2 em {
+  font-style: normal;
+  color: var(--rk-muted);
+}
+
+/* three cards */
+.rk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 48px;
+}
+
+.rk-card {
+  display: flex;
+  flex-direction: column;
+  padding: 26px;
+  border-radius: var(--rk-r-xl);
+  border: 1px solid var(--rk-line);
+  background: var(--rk-bg-card);
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.rk-card:hover {
+  background: var(--rk-bg-hover);
+  border-color: var(--rk-line-strong);
+}
+
+.rk-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 20px;
+  border-radius: var(--rk-r-lg);
+  border: 1px solid var(--rk-line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--rk-fg-soft);
+}
+
+.rk-card h3 {
+  margin: 0 0 10px;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--rk-fg);
+}
+
+.rk-card p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--rk-muted);
+}
+
+.rk-stats {
+  display: flex;
+  gap: 28px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--rk-line);
+}
+
+.rk-card p {
+  margin-bottom: 22px;
+}
+
+.rk-stats span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rk-stats b {
+  font-family: var(--rk-mono);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--rk-fg);
+}
+
+.rk-stats i {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--rk-faint);
+}
+
+.rk-card-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 22px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rk-fg-soft);
+}
+
+.rk-card:hover .rk-card-go {
+  color: var(--rk-white);
+}
+
+/* proof — the "what else can it do" section: a statement with its tail faded
+   out, a product label underneath, and one real object floating over ribbon
+   art. Same grammar as the reference; the object here is the signed-off week. */
+.rk-proof {
+  border-top: 1px solid var(--rk-line);
+  border-bottom: 1px solid var(--rk-line);
+  background: var(--rk-bg-raised);
+  padding: 128px 24px;
+}
+
+.rk-proof-split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
+  gap: 88px;
+  align-items: center;
+}
+
+.rk-statement {
+  margin: 0;
+  font-size: clamp(25px, 2.7vw, 34px);
+  line-height: 1.32;
+  letter-spacing: -0.022em;
+  font-weight: 500;
+  text-wrap: pretty;
+}
+
+.rk-word {
+  display: inline-block;
+  opacity: var(--o, 0.16);
+  will-change: opacity;
+}
+
+.rk-statement b .rk-word {
+  color: var(--rk-white);
+}
+
+.rk-statement span .rk-word {
+  color: var(--rk-faint);
+}
+
+.rk-statement b {
+  font-weight: 600;
+  color: var(--rk-white);
+}
+
+.rk-statement span {
+  color: var(--rk-faint);
+}
+
+.rk-product {
+  margin-top: 44px;
+}
+
+.rk-product-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--rk-fg);
+}
+
+.rk-product-name svg,
+.rk-product-name .ld-mark {
+  color: var(--rk-red);
+}
+
+.rk-product-note {
+  margin: 10px 0 0;
+  max-width: 40ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--rk-muted);
+}
+
+.rk-product-note a {
+  color: var(--rk-fg-soft);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease-in-out;
+}
+
+.rk-product-note a:hover {
+  color: var(--rk-white);
+}
+
+/* the ribbon stage the object floats over */
+.rk-stage-card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-height: 560px;
+  padding: 52px 40px;
+  border-radius: var(--rk-r-xl);
+  border: 1px solid var(--rk-line);
+  background: #050506;
+  overflow: hidden;
+}
+
+.rk-stage-card .rk-beams {
+  opacity: 1;
+}
+
+/* inside a small panel the field needs its own falloff, exactly like the reference's
+   feature art: crisp ribbons on top, black at the bottom edge */
+.rk-stage-card .rk-beam-a {
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 52%, rgba(0, 0, 0, 0.3) 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 52%, rgba(0, 0, 0, 0.3) 84%, transparent 100%);
+}
+
+.rk-stage-card .rk-beam-mask {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.18) 0%,
+    rgba(0, 0, 0, 0.04) 32%,
+    rgba(0, 0, 0, 0.28) 72%,
+    rgba(5, 5, 6, 0.8) 100%
+  );
+}
+
+.rk-ledger {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 460px;
+  margin-left: -78px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(17, 17, 18, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 30px 70px -24px rgba(0, 0, 0, 0.92);
+  overflow: hidden;
+}
+
+.rk-ledger-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--rk-line);
+  font-size: 12.5px;
+  color: var(--rk-muted);
+}
+
+.rk-ledger-head b {
+  font-weight: 500;
+  color: var(--rk-fg-soft);
+}
+
+.rk-ledger-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: var(--rk-r-sm);
+  border: 1px solid rgba(89, 212, 153, 0.28);
+  background: rgba(89, 212, 153, 0.08);
+  font-family: var(--rk-mono);
+  font-size: 11px;
+  color: #8fd9b6;
+}
+
+.rk-meter {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rk-meter-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.rk-meter-track {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 54px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rk-meter-bar {
+  width: 15px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #e8465e, #8e2338);
+  min-height: 5px;
+}
+
+.rk-meter-day i {
+  flex: none;
+  font-style: normal;
+  font-family: var(--rk-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--rk-faint);
+  text-align: center;
+  padding-bottom: 0;
+}
+
+.rk-meter-day b {
+  flex: none;
+  font-family: var(--rk-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--rk-fg-soft);
+  text-align: center;
+}
+
+.rk-ledger-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rk-ledger-row:last-of-type {
+  border-bottom: 0;
+}
+
+.rk-ledger-row span {
+  font-size: 13.5px;
+  color: var(--rk-muted);
+}
+
+.rk-ledger-row em {
+  display: block;
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--rk-faint);
+}
+
+.rk-ledger-row b {
+  flex: none;
+  font-family: var(--rk-mono);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--rk-white);
+  font-variant-numeric: tabular-nums;
+}
+
+.rk-ledger-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 18px;
+  border-top: 1px solid var(--rk-line);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 11.5px;
+  color: var(--rk-faint);
+}
+
+/* screens */
+.rk-screens {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 48px;
+}
+
+.rk-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  border-radius: var(--rk-r-xl);
+  border: 1px solid var(--rk-line);
+  background: var(--rk-bg-card);
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.rk-screen:hover {
+  background: var(--rk-bg-hover);
+  border-color: var(--rk-line-strong);
+}
+
+.rk-screen-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.rk-screen-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--rk-r-lg);
+  border: 1px solid var(--rk-line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--rk-fg-soft);
+}
+
+.rk-screen-go {
+  color: var(--rk-faint);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.rk-screen:hover .rk-screen-go {
+  opacity: 1;
+  color: var(--rk-white);
+}
+
+.rk-screen b {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--rk-fg);
+}
+
+.rk-screen p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--rk-muted);
+}
+
+/* assistant split */
+.rk-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 64px;
+  align-items: center;
+}
+
+.rk-bullets {
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rk-bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--rk-muted);
+}
+
+.rk-bullets svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--rk-fg-soft);
+}
+
+.rk-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: center;
+  padding: 22px;
+  border-radius: var(--rk-r-xl);
+  border: 1px solid var(--rk-line);
+  background: var(--rk-bg-card);
+}
+
+.rk-bubble {
+  border-radius: var(--rk-r-lg);
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.rk-bubble.user {
+  align-self: flex-end;
+  max-width: 92%;
+  background: #232325;
+  border: 1px solid var(--rk-line);
+  color: var(--rk-fg);
+}
+
+.rk-bubble.ai {
+  background: #0e0e0f;
+  border: 1px solid var(--rk-line);
+  color: var(--rk-fg-soft);
+}
+
+.rk-bubble.ai p {
+  margin: 8px 0 0;
+}
+
+.rk-bubble.ai b {
+  color: var(--rk-white);
+  font-weight: 600;
+}
+
+.rk-ai-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--rk-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--rk-muted);
+}
+
+.rk-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.rk-tags span {
+  padding: 3px 8px;
+  border-radius: var(--rk-r-sm);
+  border: 1px solid var(--rk-line);
+  background: rgba(255, 255, 255, 0.03);
+  font-family: var(--rk-mono);
+  font-size: 11px;
+  color: var(--rk-muted);
+}
+
+/* close */
+.rk-close {
+  position: relative;
+  padding: 140px 24px 0;
+  text-align: center;
+  border-top: 1px solid var(--rk-line);
+  background: var(--rk-bg);
+}
+
+.rk-close h2 {
+  margin: 22px 0 0;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: var(--rk-white);
+}
+
+.rk-close p {
+  max-width: 46ch;
+  margin: 16px auto 0;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--rk-muted);
+}
+
+.rk-close .rk-cta {
+  margin-top: 30px;
+}
+
+.rk-close-mark {
+  display: inline-flex;
+  color: var(--rk-red);
+}
+
+.rk-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(1160px, 100%);
+  margin: 96px auto 0;
+  padding: 26px 0 40px;
+  border-top: 1px solid var(--rk-line);
+  font-size: 12.5px;
+  color: var(--rk-faint);
+}
+
+.rk-footer-links {
+  display: flex;
+  gap: 18px;
+}
+
+.rk-footer-links a {
+  color: var(--rk-muted);
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.rk-footer-links a:hover {
+  color: var(--rk-white);
+}
+
+/* --------------------------------------------------------------- responsive */
+
+@media (max-width: 1024px) {
+  .rk-links {
+    gap: 0;
+  }
+  .rk-links a {
+    padding: 0 9px;
+    font-size: 13.5px;
+  }
+  .rk-cards,
+  .rk-screens {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rk-split,
+  .rk-proof-split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+@media (max-width: 860px) {
+  .rk-nav {
+    top: 14px;
+    width: calc(100% - 28px);
+    height: 60px;
+    padding: 0 10px 0 16px;
+  }
+  .rk-links {
+    display: none;
+  }
+  .rk-nav-actions {
+    margin-left: auto;
+  }
+  .rk-hero {
+    min-height: 92svh;
+    padding: 130px 20px 110px;
+  }
+  .rk-section {
+    padding: 96px 20px;
+  }
+  .rk-proof {
+    padding: 84px 20px;
+  }
+  .rk-stage-card {
+    min-height: 380px;
+    padding: 26px 18px;
+  }
+  .rk-ledger {
+    margin-left: 0;
+    max-width: none;
+  }
+  .rk-close {
+    padding: 96px 20px 0;
+  }
+  .rk-footer {
+    margin-top: 64px;
+  }
+}
+
+@media (max-width: 620px) {
+  .rk-title span {
+    display: inline;
+  }
+  .rk-title {
+    font-size: clamp(38px, 10.5vw, 52px);
+    letter-spacing: -0.03em;
+  }
+  .rk-title span {
+  display: block;
+}
+
+.rk-sub {
+    font-size: 16px;
+  }
+  .rk-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  .rk-cta {
+    width: 100%;
+    flex-direction: column;
+  }
+  .rk-cta .rk-btn {
+    width: 100%;
+  }
+  .rk-cards,
+  .rk-screens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rk-nav-actions .rk-navlink {
+    display: none;
+  }
+  .rk-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing * {
+    transition-duration: 0.001s !important;
+    animation: none !important;
+  }
+  .rk-beam-a::before,
+  .rk-beam-b::before,
+  .rk-beam-c::before {
+    animation: none !important;
+  }
+  .rk-word {
+    opacity: 1 !important;
+  }
+}

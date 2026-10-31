@@ -12,12 +12,16 @@ import "@fontsource/ibm-plex-mono/latin-500.css";
 import "@fontsource/instrument-serif/latin-400.css";
 import "@fontsource/instrument-serif/latin-400-italic.css";
 
+import "@fontsource-variable/inter/wght.css";
+import "@fontsource-variable/geist-mono/wght.css";
+
 import "./styles/base.css";
 import "./styles/shell.css";
 import "./styles/ui.css";
 import "./styles/board.css";
 import "./styles/pages.css";
 import "./styles/login.css";
+import "./styles/landing.css";
 
 import App from "./App";
 

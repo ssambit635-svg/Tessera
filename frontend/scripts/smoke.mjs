@@ -112,6 +112,7 @@ async function waitForMount(maxMs) {
     await wait(150);
     if (window.document.querySelector(".app-frame")) return "app";
     if (window.document.querySelector(".signin")) return "login";
+    if (window.document.querySelector(".rk-hero")) return "landing";
   }
   return null;
 }
@@ -120,16 +121,28 @@ const mounted = await waitForMount(LIVE ? 12000 : 6000);
 if (process.argv.includes("--dump")) {
   console.log("--- first paint text ---\n" + text().slice(0, 1600) + "\n---");
 }
-if (!mounted) errors.push("neither the sign-in spread nor the shell mounted");
+if (!mounted) errors.push("nothing mounted: not the landing page, the sign-in spread or the shell");
 
-if (process.argv.includes("--dump") && mounted === "login") {
+if (process.argv.includes("--dump") && mounted === "landing") {
   console.log("--- first visit ---\n" + text() + "\n---");
 }
 
-// A first visit must land on the sign-in spread, not straight in the workspace.
-if (mounted !== "login") errors.push("a first visit did not open the sign-in page");
-if (mounted === "login") {
-  if (!/campus scheduling/i.test(text())) errors.push("the sign-in page is missing its title");
+// A first visit opens the public landing page, which offers the way in.
+if (mounted !== "landing") errors.push("a first visit did not open the landing page");
+if (mounted === "landing") {
+  if (!/your week,\s*solved/i.test(text())) errors.push("the landing page is missing its headline");
+  if (window.document.querySelectorAll(".rk-ledger-row").length < 4)
+    errors.push("the proof ledger is not reading the workspace");
+  if (!/189/.test(text())) errors.push("the landing page is not reading real dataset numbers");
+  const signIn = [...window.document.querySelectorAll(".rk-hero .rk-cta a")].find((a) =>
+    /sign in/i.test(a.textContent || ""),
+  );
+  if (!signIn) errors.push("the landing hero has no sign-in button");
+  if (signIn) {
+    click(signIn);
+    const landed = await waitForMount(LIVE ? 12000 : 6000);
+    if (landed !== "login") errors.push(`landing sign-in went to ${landed ?? "nothing"} instead of the sign-in page`);
+  }
   if (!window.document.querySelector(".sf-new button")) errors.push("no demo entry point on the sign-in page");
   click(window.document.querySelector(".sf-new button"));
   const entered = await waitForApp(LIVE ? 12000 : 5000);
@@ -139,6 +152,7 @@ if (mounted === "login") {
 const routes = [
   "/",
   "/overview",
+  "/landing",
   "/mosaic",
   "/ripple",
   "/approvals",

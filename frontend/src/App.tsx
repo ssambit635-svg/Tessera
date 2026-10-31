@@ -3,6 +3,7 @@ import { WorkspaceProvider, useWorkspace } from "./lib/workspace";
 import { UiProvider } from "./lib/ui";
 import { AppShell } from "./components/AppShell";
 import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import { TileMark, TileSpinner } from "./components/TileMark";
 import Overview from "./pages/Overview";
 import Mosaic from "./pages/Mosaic";
@@ -56,8 +57,10 @@ function RequireAuth() {
   const { authState } = useWorkspace();
   const location = useLocation();
   if (authState === "signed-out") {
+    // The public front door answers first; it carries the sign-in button and the pitch.
     const next = `${location.pathname}${location.search}`;
-    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+    const target = location.pathname === "/" ? "/landing" : `/login?next=${encodeURIComponent(next)}`;
+    return <Navigate to={target} replace />;
   }
   return <AppShell />;
 }
@@ -68,6 +71,7 @@ function Gate() {
   return (
     <Routes>
       <Route path="login" element={<Login />} />
+      <Route path="landing" element={<Landing />} />
       <Route element={<RequireAuth />}>
         {/* The calendar board is the front door: it is the screen the reference describes. */}
         <Route index element={<Navigate to="/mosaic" replace />} />
