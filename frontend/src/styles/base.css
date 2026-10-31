@@ -1,0 +1,387 @@
+/* ============================================================================
+   TESSERA — design tokens, type system and base layer
+   Warm architectural neutrals + functional colour. Colour always means the same thing.
+   ========================================================================== */
+
+:root {
+  /* --- surfaces ---------------------------------------------------------- */
+  --void: #111112;
+  --void-soft: #171718;
+  --ink: #191a1c;
+  --ink-2: #212225;
+  --ink-3: #2b2c30;
+  --paper: #f1eee6;
+  --paper-2: #eae5d9;
+  --ivory: #f8f6f0;
+  --card: #fffdf8;
+  --card-soft: #fbf9f3;
+
+  /* --- type -------------------------------------------------------------- */
+  --text: #232322;
+  --text-soft: #57534b;
+  --muted: #8b867b;
+  --muted-2: #a8a296;
+  --text-inverse: #f4f1e8;
+  --text-inverse-soft: #b9b5ab;
+
+  /* --- lines ------------------------------------------------------------- */
+  --line: rgba(25, 26, 28, 0.09);
+  --line-2: rgba(25, 26, 28, 0.16);
+  --line-3: rgba(25, 26, 28, 0.28);
+  --line-inverse: rgba(244, 241, 232, 0.11);
+  --line-inverse-2: rgba(244, 241, 232, 0.22);
+
+  /* --- functional colour ------------------------------------------------- */
+  --lime: #d4f05a;
+  --lime-ink: #38460a;
+  --violet: #a985e8;
+  --violet-ink: #35205f;
+  --lavender: #cfc2f5;
+  --coral: #f16b55;
+  --coral-ink: #5d1a0d;
+  --sky: #8ec9e9;
+  --sky-ink: #0e3a50;
+  --sage: #bfe2d1;
+  --sage-ink: #103d2c;
+  --sand: #efe0c4;
+  --sand-ink: #47381a;
+
+  /* --- tints (calendar tiles / strips) ----------------------------------- */
+  --tint-lime: #e8f4b4;
+  --tint-violet: #e7dffb;
+  --tint-sky: #d9ecf7;
+  --tint-sage: #dbeee3;
+  --tint-sand: #f4e9cd;
+  --tint-coral: #fbdcd5;
+  --tint-neutral: #edeae1;
+
+  /* --- radii ------------------------------------------------------------- */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+  --r-2xl: 34px;
+  --r-pill: 999px;
+
+  /* --- elevation --------------------------------------------------------- */
+  --shadow-1: 0 1px 2px rgba(22, 22, 24, 0.05);
+  --shadow-2: 0 2px 4px rgba(22, 22, 24, 0.04), 0 12px 26px -18px rgba(22, 22, 24, 0.36);
+  --shadow-3: 0 2px 8px rgba(22, 22, 24, 0.06), 0 26px 60px -30px rgba(22, 22, 24, 0.5);
+  --shadow-float: 0 1px 2px rgba(22, 22, 24, 0.08), 0 30px 70px -34px rgba(22, 22, 24, 0.55);
+
+  /* --- motion ------------------------------------------------------------ */
+  --ease: cubic-bezier(0.2, 0.8, 0.25, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-1: 140ms;
+  --dur-2: 240ms;
+  --dur-3: 480ms;
+
+  /* --- layout ------------------------------------------------------------ */
+  --rail-w: 292px;
+  --rail-w-collapsed: 84px;
+  --topbar-h: 70px;
+  --gutter: 12px;
+
+  /* --- type families ----------------------------------------------------- */
+  --font-display: "Space Grotesk", "Sora", system-ui, sans-serif;
+  --font-body: "Geist", "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-serif: "Instrument Serif", "Cormorant Garamond", Georgia, serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01" 1, "cv05" 1;
+}
+
+::selection {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+svg {
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --------------------------------------------------------------- type helpers */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.eyebrow-inverse {
+  color: var(--text-inverse-soft);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.soft {
+  color: var(--text-soft);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------- layout utils */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.gap-2 { gap: 2px; }
+.gap-4 { gap: 4px; }
+.gap-6 { gap: 6px; }
+.gap-8 { gap: 8px; }
+.gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-20 { gap: 20px; }
+.gap-24 { gap: 24px; }
+.gap-32 { gap: 32px; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------- scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(25, 26, 28, 0.22) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(25, 26, 28, 0.18);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(25, 26, 28, 0.3);
+  background-clip: content-box;
+}
+
+.rail-scroll {
+  scrollbar-color: rgba(244, 241, 232, 0.2) transparent;
+}
+
+.rail-scroll::-webkit-scrollbar-thumb {
+  background: rgba(244, 241, 232, 0.18);
+  background-clip: content-box;
+}
+
+/* --------------------------------------------------------------- animation */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tile-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tile-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes ring-spread {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+@keyframes dash-run {
+  to { stroke-dashoffset: -32; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -240px 0; }
+  100% { background-position: calc(240px + 100%) 0; }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
