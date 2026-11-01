@@ -308,6 +308,8 @@ export default function Intelligence() {
     }, 520);
   };
 
+  const empty = messages.length === 1 && !thinking;
+
   return (
     <div className="ai-page">
       <div className="ai-shell">
@@ -321,8 +323,29 @@ export default function Intelligence() {
           </span>
         </header>
 
-        <div className="ai-thread" ref={scroller}>
-          {messages.map((message) => (
+        <div className={`ai-thread ${empty ? "is-empty" : ""}`} ref={scroller}>
+          {empty ? (
+            <div className="ai-empty">
+              <span className="ai-empty-mark">
+                <TileMark size={30} />
+              </span>
+              <h1>Ask the workspace</h1>
+              <p>
+                Every session, room, faculty hour and venue request is already indexed. Ask in plain
+                language — the answer is computed from the dataset, not guessed.
+              </p>
+              <div className="ai-empty-prompts">
+                {QUICK_PROMPTS.slice(0, 4).map((prompt) => (
+                  <button key={prompt} onClick={() => void send(prompt)}>
+                    <span>{prompt}</span>
+                    <Icon name="arrowUpRight" size={13} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {(empty ? [] : messages).map((message) => (
             <div key={message.id} className={`ai-turn ${message.role}`}>
               {message.role === "ai" ? (
                 <span className="ai-avatar">
@@ -373,13 +396,15 @@ export default function Intelligence() {
         </div>
 
         <div className="ai-dock">
-          <div className="ai-quick">
-            {QUICK_PROMPTS.map((prompt) => (
-              <button key={prompt} onClick={() => void send(prompt)}>
-                {prompt}
-              </button>
-            ))}
-          </div>
+          {empty ? null : (
+            <div className="ai-quick">
+              {QUICK_PROMPTS.map((prompt) => (
+                <button key={prompt} onClick={() => void send(prompt)}>
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form
             className="ai-compose"
