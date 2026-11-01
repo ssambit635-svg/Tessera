@@ -7,7 +7,7 @@ from sqlmodel import Session
 
 from ..auth import current_user
 from ..core.dataset import CAT_WEIGHT
-from ..db import User, audit, get_session
+from ..db import User, audit, get_session, lock_writes
 from ..services import manual, state
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
@@ -111,6 +111,7 @@ def check_manual(body: ManualEventIn, user: User = Depends(current_user),
 @router.post("/manual")
 def create_manual(body: ManualEventIn, user: User = Depends(current_user),
                   session: Session = Depends(get_session)):
+    lock_writes(session)
     ds, schedule = _manual_context()
     result = manual.schedule_event(session, ds, schedule, body.model_dump(),
                                    {"email": user.email, "role": user.role})
@@ -122,6 +123,10 @@ def create_manual(body: ManualEventIn, user: User = Depends(current_user),
 @router.delete("/manual/{event_id}")
 def cancel_manual(event_id: str, user: User = Depends(current_user),
                   session: Session = Depends(get_session)):
+    lock_writes(session)
+    event = session.get(manual.AdhocEvent, event_id)
+    if event is not None and user.role != "admin" and event.requester != user.email:
+        raise HTTPException(403, "only the requester or an admin may cancel this event")
     if not manual.cancel(session, event_id, user.email):
         raise HTTPException(404, f"unknown or already cancelled event {event_id}")
     return {"ok": True, "cancelled": event_id}

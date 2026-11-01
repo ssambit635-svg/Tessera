@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from ..auth import current_user
+from ..core.exam_staff import invigilation_errors
 from ..services import state
 
 router = APIRouter(prefix="/api/exams", tags=["exams"])
@@ -26,6 +27,7 @@ def exams(day: str | None = None, session_id: str | None = None,
             "day": (placement or {}).get("day"),
             "session": (placement or {}).get("session"),
             "rooms": (placement or {}).get("rooms", []),
+            "invigilators": (placement or {}).get("invigilators", []),
             "seats": sum(ds.exam_seats(r) for r in (placement or {}).get("rooms", [])),
         }
         if day and row["day"] != day:
@@ -35,6 +37,8 @@ def exams(day: str | None = None, session_id: str | None = None,
         rows.append(row)
     return {
         "exam_week": ds.exam_week,
+        "staffing_assumption": "One available invigilator per room; weekly unavailability is conservatively applied to exam week.",
+        "operational_errors": invigilation_errors(ds, list(placed.values())),
         "count": len(rows),
         "unscheduled": [r["exam_id"] for r in rows if r["day"] is None],
         "exams": rows,

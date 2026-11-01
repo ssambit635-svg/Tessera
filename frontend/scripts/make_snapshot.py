@@ -174,6 +174,8 @@ def build(api: str | None) -> dict:
             "day": e["day"],
             "slot": e["session"],
             "rooms": e["rooms"],
+            "seats": sum(rooms[r]["capacity"] // 2 for r in e["rooms"] if r in rooms),
+            "invigilators": e.get("invigilators", []),
         })
 
     return {
@@ -185,7 +187,7 @@ def build(api: str | None) -> dict:
         "calendar": {
             "days": week["days"],
             "periods": [{"id": p["id"], "start": p["start"], "end": p["end"],
-                         "teaching": p.get("teaching", True)} for p in week["periods"]],
+                         "teaching": p.get("teaching", False)} for p in ds["calendar"]["periods"]],
             "lunchAfterPeriod": week["lunch_after_period"],
             "lunch": summary["calendar"].get("lunch"),
             "labStartPeriods": summary["calendar"].get("lab_start_periods", []),

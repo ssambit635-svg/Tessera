@@ -174,6 +174,8 @@ def test_preview_then_second_admin_applies(client):
     assert report["hard_violation_count"] == 0
     assert report["stability"]["sessions_moved"] == p["moves"]
     assert client.get("/api/disruption/current", headers=admin).json()["has_repaired_timetable"] is True
+    # Other tests start from the original demo, not this now-active repair.
+    assert client.post("/api/admin/reset", headers=admin).status_code == 200
 
 
 def test_refused_change_explains_itself(client):
@@ -432,9 +434,9 @@ def test_faculty_change_request_becomes_a_checked_proposal(client):
 
 
 def test_move_request_is_checked_before_any_solve(client):
-    headers, _ = login(client, "faculty")
+    headers, user = login(client, "faculty")
     week = client.get("/api/timetable/week", headers=headers).json()["entries"]
-    session = week[0]["session_id"]
+    session = next(row["session_id"] for row in week if row["faculty_id"] == user["user"]["faculty_id"])
 
     bad_day = client.post("/api/disruption/move", headers=headers,
                           json={"session_id": session, "day": "SAT", "start_period": 3})

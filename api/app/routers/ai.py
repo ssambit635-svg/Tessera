@@ -27,7 +27,8 @@ class ParseIn(BaseModel):
 def parse_request(body: ParseIn, user: User = Depends(current_user)):
     """Free text (English or Hinglish) -> editable booking draft with confidence + checks."""
     ds = state.dataset()
-    role = body.role or user.role
+    # The authenticated role, not a model/client-supplied field, determines the cap.
+    role = user.role
     result = parse(body.text, ds, role=role, allow_llm=body.allow_llm)
     return {
         "draft": result.draft.model_dump(),
@@ -64,15 +65,24 @@ def change_request(body: ChangeIn,
     even a valid repair stays `pending` until a different admin approves it.
     """
     ds = state.dataset()
+    if user.role == "faculty" and body.faculty_id and body.faculty_id != user.faculty_id:
+        raise HTTPException(403, "faculty may only request changes for their own account")
     faculty_id = body.faculty_id or user.faculty_id
     if not faculty_id:
         raise HTTPException(422, "no faculty_id on this account - pass ?faculty_id=... "
                                  "or sign in as a faculty user")
-    if faculty_id not in ds.faculty and user.role == "faculty":
-        raise HTTPException(403, f"{faculty_id} is not a faculty member in this dataset")
+    if faculty_id not in ds.faculty:
+        raise HTTPException(422, f"{faculty_id} is not a faculty member in this dataset")
+    if user.role == "department_coordinator" and ds.faculty[faculty_id].get("department") != user.department:
+        raise HTTPException(403, "coordinators may only request changes in their own department")
 
     parsed = change_ai.parse_change(body.text, ds, faculty_id,
                                     tomorrow=_tomorrow(ds), today=_today_name(ds))
+    if user.role == "faculty" and parsed.get("intent") == "move_session":
+        target_id = (parsed.get("target") or {}).get("session_id")
+        target = ds.sessions.get(target_id)
+        if target and target.get("faculty_id") != user.faculty_id:
+            raise HTTPException(403, "faculty may only request changes to their own sessions")
     # `parsed["source"]` says who read the sentence (rule reader or the model); the
     # engine below still decides whether the change is legal.
     base = {"parsed": parsed, "summary": change_ai.summarise(parsed),

@@ -27,6 +27,11 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utcnow)
 
 
+class RevokedToken(SQLModel, table=True):
+    token_hash: str = Field(primary_key=True)
+    expires_at: int = Field(index=True)
+
+
 class AppState(SQLModel, table=True):
     """One row per named blob of application state (schedule, schedule_after, meta)."""
     key: str = Field(primary_key=True)
@@ -109,6 +114,13 @@ def init_db() -> None:
     from .services import manual, persistence  # noqa: F401
 
     SQLModel.metadata.create_all(get_engine())
+
+
+def lock_writes(session: Session) -> None:
+    """Serialize SQLite read-check-write operations across workers, not just threads."""
+    connection = session.connection()
+    if connection.dialect.name == "sqlite":
+        connection.exec_driver_sql("BEGIN IMMEDIATE")
 
 
 def get_session():

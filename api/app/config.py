@@ -85,6 +85,7 @@ class Settings:
     jwt_secret: str = field(default_factory=lambda: _env("JWT_SECRET", "tessera-dev-secret-please-change-in-production-32b"))
     jwt_ttl_hours: int = field(default_factory=lambda: _env_int("JWT_TTL_HOURS", 12))
 
+    demo_login_enabled: bool = field(default_factory=lambda: _env_bool("DEMO_LOGIN_ENABLED", True))
     demo_password: str = field(default_factory=lambda: _env("DEMO_PASSWORD", "Tessera@2027"))
     admin_email: str = field(default_factory=lambda: _env("ADMIN_EMAIL", "admin@cit.edu"))
     dean_email: str = field(default_factory=lambda: _env("DEAN_EMAIL", "dean@cit.edu"))

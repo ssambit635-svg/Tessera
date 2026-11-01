@@ -9,8 +9,11 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from ..auth import current_user, require_roles
-from ..db import Proposal, User, audit, get_session
-from ..services import state
+from ..core.disruption import apply_changes
+from ..core.exam_staff import invigilation_errors
+from ..core.constraints import validate
+from ..db import Proposal, User, audit, get_session, lock_writes
+from ..services import manual, state
 
 router = APIRouter(prefix="/api/disruption", tags=["disruption"])
 
@@ -41,6 +44,11 @@ def move_request(body: MoveIn,
     ds = state.dataset()
     if body.session_id not in ds.sessions:
         raise HTTPException(404, f"unknown session {body.session_id}")
+    if user.role == "faculty" and ds.sessions[body.session_id].get("faculty_id") != user.faculty_id:
+        raise HTTPException(403, "faculty may only request changes to their own sessions")
+    if user.role == "department_coordinator" and ds.faculty.get(
+            ds.sessions[body.session_id].get("faculty_id"), {}).get("department") != user.department:
+        raise HTTPException(403, "coordinators may only request changes to their own department")
     if body.day not in ds.days:
         raise HTTPException(422, f"{body.day} is not a teaching day ({', '.join(ds.days)})")
     result = state.preview_move(body.session_id, body.day, body.start_period,
@@ -98,6 +106,23 @@ def preview(body: PreviewIn, user: User = Depends(require_roles("admin", "depart
     """Compute the repair. Nothing is applied - the diff waits for a second admin."""
     if not body.changes:
         raise HTTPException(400, "no changes supplied")
+    if user.role == "department_coordinator":
+        ds = state.dataset()
+        # Department coordinators can propose their department's sessions, but cannot
+        # impose campus-wide room closures or modify other departments' staff.
+        for change in body.changes:
+            kind = change.get("type")
+            if kind == "remove_session":
+                item = ds.sessions.get(change.get("session_id"), {})
+                fid = item.get("faculty_id")
+            elif kind == "add_session":
+                fid = (change.get("session") or {}).get("faculty_id")
+            elif kind == "faculty_unavailable":
+                fid = change.get("faculty_id")
+            else:
+                raise HTTPException(403, "this change requires an admin")
+            if ds.faculty.get(fid, {}).get("department") != user.department:
+                raise HTTPException(403, "coordinators may only change their own department")
     try:
         result = state.preview_disruption(body.changes, time_limit=body.time_limit)
     except ValueError as exc:
@@ -140,6 +165,7 @@ def preview(body: PreviewIn, user: User = Depends(require_roles("admin", "depart
 @router.post("/{proposal_id}/apply")
 def apply(proposal_id: str, user: User = Depends(require_roles("admin")),
           session: Session = Depends(get_session)):
+    lock_writes(session)
     proposal = session.get(Proposal, proposal_id)
     if proposal is None:
         raise HTTPException(404, f"unknown proposal {proposal_id}")
@@ -153,8 +179,24 @@ def apply(proposal_id: str, user: User = Depends(require_roles("admin")),
     schedule = result.get("proposed_schedule")
     if not schedule:
         raise HTTPException(409, "this proposal has no valid schedule to apply")
+    ds = state.dataset()
+    current = state.current_schedule()
+    if result.get("base_fingerprint") != state.state_fingerprint(ds, current):
+        raise HTTPException(409, "the timetable or dataset changed since this proposal; preview it again")
+    try:
+        ds_after, _ = apply_changes(ds, json.loads(proposal.changes_json))
+        report = validate(ds_after, schedule, baseline=current)
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(409, f"proposal can no longer be applied: {exc}") from exc
+    if report["hard_violation_count"] or invigilation_errors(ds_after, schedule.get("exams", [])):
+        raise HTTPException(409, "proposal no longer satisfies the scheduling or exam staffing rules")
+    # Bookings made after preview must not be displaced by the approved repair.
+    events = manual.list_events(session, include_cancelled=False)
+    conflicts = manual.conflicting_events(ds_after, schedule, events)
+    if conflicts:
+        raise HTTPException(409, f"proposal conflicts with confirmed event {conflicts[0][0]}; preview it again")
     written = state.apply_preview(
-        session, schedule, user.email,
+        session, schedule, user.email, dataset_after=ds_after,
         meta={"source": "disruption repair",
               "hard_violations": (result.get("report") or {}).get("hard_violation_count", 0),
               "soft_total": (result.get("report") or {}).get("soft_total", 0),
@@ -222,10 +264,9 @@ def proposal_detail(proposal_id: str, user: User = Depends(current_user),
 @router.get("/current")
 def current_after(user: User = Depends(current_user)):
     """The repaired timetable currently in force (if any)."""
-    snap = state.current(session) if False else None
     from ..db import AppState, get_engine
     from sqlmodel import Session as _S
     with _S(get_engine()) as s:
-        after = AppState.get(s, "schedule_after")
+        after = AppState.get(s, state.ACTIVE_KEY)
     return {"has_repaired_timetable": bool(after),
             "sessions": len((after or {}).get("sessions", []))}

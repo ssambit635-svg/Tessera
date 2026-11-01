@@ -76,7 +76,7 @@ export default function Reports() {
         <div className="kpi">
           <span className="kpi-label"><Icon name="activity" size={12} /> Mean utilisation</span>
           <span className="kpi-value">{percent(totalUtil)}</span>
-          <span className="kpi-foot">across {data.dashboard.utilisation.length} bookable rooms</span>
+          <span className="kpi-foot">teaching periods, after maintenance · {data.dashboard.utilisation.length} rooms</span>
         </div>
       </div>
 
@@ -85,7 +85,7 @@ export default function Reports() {
           <div className="panel-head">
             <div>
               <div className="eyebrow">Space utilisation</div>
-              <h3 style={{ marginTop: 3 }}>Busiest rooms this week</h3>
+              <h3 style={{ marginTop: 3 }}>Spectra-week teaching periods</h3>
             </div>
             <span className="chip outline" style={{ marginLeft: "auto" }}>top 10</span>
           </div>

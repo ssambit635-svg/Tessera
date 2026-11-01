@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import hashlib
+import time
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
+from sqlalchemy import delete
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
-from ..auth import (capabilities_for, create_token, current_user, demo_accounts,
+from ..auth import (_bearer, capabilities_for, create_token, current_user, decode_token, demo_accounts,
                     seed_users, verify_password)
-from ..db import User, get_session
+from ..config import get_settings
+from ..db import RevokedToken, User, get_session
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -42,6 +47,8 @@ def demo_login(role: str, email: str | None = None, session: Session = Depends(g
     "nobody approves their own request" can be demonstrated; pass ?email=dean@cit.edu to
     sign in as the second one.
     """
+    if not get_settings().demo_login_enabled:
+        raise HTTPException(403, "demo login is disabled")
     matches = [a for a in demo_accounts() if a["role"] == role]
     if not matches:
         raise HTTPException(404, f"no demo account for role {role!r}")
@@ -66,3 +73,15 @@ def me(user: User = Depends(current_user)):
                      "department": user.department, "faculty_id": user.faculty_id,
                      "group_id": user.group_id},
             "capabilities": capabilities_for(user.role)}
+
+
+@router.post("/logout")
+def logout(user: User = Depends(current_user),
+           creds: HTTPAuthorizationCredentials = Depends(_bearer),
+           session: Session = Depends(get_session)):
+    payload = decode_token(creds.credentials)
+    session.exec(delete(RevokedToken).where(RevokedToken.expires_at <= int(time.time())))
+    session.add(RevokedToken(token_hash=hashlib.sha256(creds.credentials.encode("utf-8")).hexdigest(),
+                             expires_at=int(payload["exp"])))
+    session.commit()
+    return {"ok": True}

@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import os
+import uuid
 from datetime import timedelta
 from typing import Iterable
 
@@ -19,7 +20,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session, select
 
 from .config import get_settings
-from .db import User, get_session, utcnow
+from .db import RevokedToken, User, get_session, utcnow
 
 ROLES = ("admin", "department_coordinator", "faculty", "club")
 ALGORITHM = "HS256"
@@ -49,6 +50,7 @@ def create_token(user: User) -> str:
     s = get_settings()
     payload = {
         "sub": str(user.id),
+        "jti": uuid.uuid4().hex,
         "email": user.email,
         "role": user.role,
         "name": user.name,
@@ -75,7 +77,14 @@ def current_user(
     if creds is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "missing bearer token")
     payload = decode_token(creds.credentials)
-    user = session.get(User, int(payload["sub"]))
+    token_hash = hashlib.sha256(creds.credentials.encode("utf-8")).hexdigest()
+    if session.get(RevokedToken, token_hash):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "session has been signed out")
+    try:
+        user_id = int(payload["sub"])
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid session token") from exc
+    user = session.get(User, user_id)
     if user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "user no longer exists")
     return user

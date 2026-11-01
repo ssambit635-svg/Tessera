@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-31T16:18:37+00:00",
+ "generatedAt": "2026-11-01T15:25:57+00:00",
  "datasetId": "cit-public-v1",
  "institute": "Chilika Institute of Technology (fictional)",
  "team": "Voltryx",
@@ -83,25 +83,25 @@
     "id": 10,
     "start": "18:00",
     "end": "19:00",
-    "teaching": true
+    "teaching": false
    },
    {
     "id": 11,
     "start": "19:00",
     "end": "20:00",
-    "teaching": true
+    "teaching": false
    },
    {
     "id": 12,
     "start": "20:00",
     "end": "21:00",
-    "teaching": true
+    "teaching": false
    },
    {
     "id": 13,
     "start": "21:00",
     "end": "22:00",
-    "teaching": true
+    "teaching": false
    }
   ],
   "lunchAfterPeriod": 5,
@@ -21853,12 +21853,32 @@
    ],
    "size": 360,
    "durationHours": 2,
-   "day": "THU",
-   "slot": "PM",
+   "day": "MON",
+   "slot": "AM",
    "rooms": [
     "AUD",
-    "LH-1",
-    "LH-2"
+    "CR-103",
+    "CR-202",
+    "CR-204"
+   ],
+   "seats": 365,
+   "invigilators": [
+    {
+     "room_id": "AUD",
+     "faculty_id": "F14"
+    },
+    {
+     "room_id": "CR-103",
+     "faculty_id": "F15"
+    },
+    {
+     "room_id": "CR-202",
+     "faculty_id": "F24"
+    },
+    {
+     "room_id": "CR-204",
+     "faculty_id": "F35"
+    }
    ]
   },
   {
@@ -21883,12 +21903,52 @@
    ],
    "size": 360,
    "durationHours": 2,
-   "day": "WED",
+   "day": "TUE",
    "slot": "PM",
    "rooms": [
-    "AUD",
-    "LH-1",
+    "CR-104",
+    "CR-105",
+    "CR-201",
+    "CR-202",
+    "CR-203",
+    "CR-204",
+    "CR-205",
     "LH-2"
+   ],
+   "seats": 365,
+   "invigilators": [
+    {
+     "room_id": "CR-104",
+     "faculty_id": "F14"
+    },
+    {
+     "room_id": "CR-105",
+     "faculty_id": "F18"
+    },
+    {
+     "room_id": "CR-201",
+     "faculty_id": "F10"
+    },
+    {
+     "room_id": "CR-202",
+     "faculty_id": "F28"
+    },
+    {
+     "room_id": "CR-203",
+     "faculty_id": "F31"
+    },
+    {
+     "room_id": "CR-204",
+     "faculty_id": "F01"
+    },
+    {
+     "room_id": "CR-205",
+     "faculty_id": "F16"
+    },
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F03"
+    }
    ]
   },
   {
@@ -21913,12 +21973,42 @@
    ],
    "size": 360,
    "durationHours": 2,
-   "day": "TUE",
+   "day": "WED",
    "slot": "PM",
    "rooms": [
-    "AUD",
+    "CR-101",
+    "CR-104",
+    "CR-105",
+    "CR-201",
     "LH-1",
     "LH-2"
+   ],
+   "seats": 365,
+   "invigilators": [
+    {
+     "room_id": "CR-101",
+     "faculty_id": "F40"
+    },
+    {
+     "room_id": "CR-104",
+     "faculty_id": "F22"
+    },
+    {
+     "room_id": "CR-105",
+     "faculty_id": "F23"
+    },
+    {
+     "room_id": "CR-201",
+     "faculty_id": "F39"
+    },
+    {
+     "room_id": "LH-1",
+     "faculty_id": "F36"
+    },
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F10"
+    }
    ]
   },
   {
@@ -21943,18 +22033,27 @@
    ],
    "size": 360,
    "durationHours": 2,
-   "day": "MON",
-   "slot": "AM",
+   "day": "SAT",
+   "slot": "PM",
    "rooms": [
-    "CR-101",
-    "CR-102",
-    "CR-103",
-    "CR-104",
-    "CR-105",
-    "CR-201",
-    "CR-202",
-    "CR-203",
-    "CR-204"
+    "AUD",
+    "LH-1",
+    "LH-2"
+   ],
+   "seats": 450,
+   "invigilators": [
+    {
+     "room_id": "AUD",
+     "faculty_id": "F01"
+    },
+    {
+     "room_id": "LH-1",
+     "faculty_id": "F37"
+    },
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F02"
+    }
    ]
   },
   {
@@ -21973,11 +22072,22 @@
    ],
    "size": 80,
    "durationHours": 2,
-   "day": "FRI",
-   "slot": "AM",
+   "day": "WED",
+   "slot": "PM",
    "rooms": [
-    "LH-5",
-    "LH-6"
+    "SH-1",
+    "SH-2"
+   ],
+   "seats": 125,
+   "invigilators": [
+    {
+     "room_id": "SH-1",
+     "faculty_id": "F19"
+    },
+    {
+     "room_id": "SH-2",
+     "faculty_id": "F24"
+    }
    ]
   },
   {
@@ -21996,11 +22106,22 @@
    ],
    "size": 80,
    "durationHours": 2,
-   "day": "THU",
+   "day": "FRI",
    "slot": "AM",
    "rooms": [
-    "CR-204",
-    "SH-1"
+    "CR-101",
+    "CR-102"
+   ],
+   "seats": 90,
+   "invigilators": [
+    {
+     "room_id": "CR-101",
+     "faculty_id": "F28"
+    },
+    {
+     "room_id": "CR-102",
+     "faculty_id": "F31"
+    }
    ]
   },
   {
@@ -22019,11 +22140,22 @@
    ],
    "size": 80,
    "durationHours": 2,
-   "day": "WED",
-   "slot": "AM",
+   "day": "TUE",
+   "slot": "PM",
    "rooms": [
-    "CR-204",
-    "SH-1"
+    "SH-1",
+    "SH-2"
+   ],
+   "seats": 125,
+   "invigilators": [
+    {
+     "room_id": "SH-1",
+     "faculty_id": "F26"
+    },
+    {
+     "room_id": "SH-2",
+     "faculty_id": "F08"
+    }
    ]
   },
   {
@@ -22042,11 +22174,22 @@
    ],
    "size": 80,
    "durationHours": 2,
-   "day": "TUE",
-   "slot": "AM",
+   "day": "MON",
+   "slot": "PM",
    "rooms": [
-    "CR-204",
+    "CR-205",
     "SH-1"
+   ],
+   "seats": 105,
+   "invigilators": [
+    {
+     "room_id": "CR-205",
+     "faculty_id": "F36"
+    },
+    {
+     "room_id": "SH-1",
+     "faculty_id": "F13"
+    }
    ]
   },
   {
@@ -22068,8 +22211,19 @@
    "day": "FRI",
    "slot": "AM",
    "rooms": [
-    "LH-3",
-    "LH-4"
+    "LH-5",
+    "LH-6"
+   ],
+   "seats": 120,
+   "invigilators": [
+    {
+     "room_id": "LH-5",
+     "faculty_id": "F25"
+    },
+    {
+     "room_id": "LH-6",
+     "faculty_id": "F22"
+    }
    ]
   },
   {
@@ -22088,11 +22242,17 @@
    ],
    "size": 70,
    "durationHours": 2,
-   "day": "THU",
-   "slot": "AM",
+   "day": "MON",
+   "slot": "PM",
    "rooms": [
-    "CR-202",
-    "CR-203"
+    "LH-2"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F27"
+    }
    ]
   },
   {
@@ -22112,10 +22272,16 @@
    "size": 70,
    "durationHours": 2,
    "day": "WED",
-   "slot": "AM",
+   "slot": "PM",
    "rooms": [
-    "CR-202",
-    "CR-203"
+    "AUD"
+   ],
+   "seats": 250,
+   "invigilators": [
+    {
+     "room_id": "AUD",
+     "faculty_id": "F30"
+    }
    ]
   },
   {
@@ -22137,8 +22303,14 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "CR-202",
-    "CR-203"
+    "SH-1"
+   ],
+   "seats": 75,
+   "invigilators": [
+    {
+     "room_id": "SH-1",
+     "faculty_id": "F02"
+    }
    ]
   },
   {
@@ -22157,10 +22329,22 @@
    ],
    "size": 60,
    "durationHours": 2,
-   "day": "FRI",
+   "day": "MON",
    "slot": "AM",
    "rooms": [
-    "LH-2"
+    "CR-205",
+    "SH-2"
+   ],
+   "seats": 80,
+   "invigilators": [
+    {
+     "room_id": "CR-205",
+     "faculty_id": "F25"
+    },
+    {
+     "room_id": "SH-2",
+     "faculty_id": "F06"
+    }
    ]
   },
   {
@@ -22179,11 +22363,17 @@
    ],
    "size": 60,
    "durationHours": 2,
-   "day": "THU",
+   "day": "FRI",
    "slot": "AM",
    "rooms": [
-    "CR-105",
-    "CR-201"
+    "LH-3"
+   ],
+   "seats": 60,
+   "invigilators": [
+    {
+     "room_id": "LH-3",
+     "faculty_id": "F17"
+    }
    ]
   },
   {
@@ -22205,8 +22395,19 @@
    "day": "WED",
    "slot": "AM",
    "rooms": [
-    "CR-105",
-    "CR-201"
+    "CR-202",
+    "CR-203"
+   ],
+   "seats": 80,
+   "invigilators": [
+    {
+     "room_id": "CR-202",
+     "faculty_id": "F23"
+    },
+    {
+     "room_id": "CR-203",
+     "faculty_id": "F35"
+    }
    ]
   },
   {
@@ -22228,8 +22429,19 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "CR-105",
-    "CR-201"
+    "CR-202",
+    "CR-203"
+   ],
+   "seats": 80,
+   "invigilators": [
+    {
+     "room_id": "CR-202",
+     "faculty_id": "F27"
+    },
+    {
+     "room_id": "CR-203",
+     "faculty_id": "F32"
+    }
    ]
   },
   {
@@ -22248,10 +22460,17 @@
    ],
    "size": 60,
    "durationHours": 2,
-   "day": "FRI",
+   "day": "WED",
    "slot": "AM",
    "rooms": [
-    "LH-1"
+    "SH-1"
+   ],
+   "seats": 75,
+   "invigilators": [
+    {
+     "room_id": "SH-1",
+     "faculty_id": "F17"
+    }
    ]
   },
   {
@@ -22270,11 +22489,17 @@
    ],
    "size": 60,
    "durationHours": 2,
-   "day": "THU",
+   "day": "FRI",
    "slot": "AM",
    "rooms": [
-    "CR-103",
-    "CR-104"
+    "LH-2"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F12"
+    }
    ]
   },
   {
@@ -22293,11 +22518,17 @@
    ],
    "size": 60,
    "durationHours": 2,
-   "day": "WED",
+   "day": "MON",
    "slot": "AM",
    "rooms": [
-    "CR-103",
-    "CR-104"
+    "SH-1"
+   ],
+   "seats": 75,
+   "invigilators": [
+    {
+     "room_id": "SH-1",
+     "faculty_id": "F20"
+    }
    ]
   },
   {
@@ -22319,8 +22550,19 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "CR-103",
-    "CR-104"
+    "CR-105",
+    "CR-201"
+   ],
+   "seats": 80,
+   "invigilators": [
+    {
+     "room_id": "CR-105",
+     "faculty_id": "F11"
+    },
+    {
+     "room_id": "CR-201",
+     "faculty_id": "F34"
+    }
    ]
   },
   {
@@ -22342,7 +22584,14 @@
    "day": "FRI",
    "slot": "AM",
    "rooms": [
-    "AUD"
+    "LH-1"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-1",
+     "faculty_id": "F38"
+    }
    ]
   },
   {
@@ -22361,11 +22610,17 @@
    ],
    "size": 50,
    "durationHours": 2,
-   "day": "THU",
+   "day": "WED",
    "slot": "AM",
    "rooms": [
-    "CR-101",
-    "CR-102"
+    "SH-2"
+   ],
+   "seats": 50,
+   "invigilators": [
+    {
+     "room_id": "SH-2",
+     "faculty_id": "F03"
+    }
    ]
   },
   {
@@ -22384,11 +22639,17 @@
    ],
    "size": 50,
    "durationHours": 2,
-   "day": "WED",
+   "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "CR-101",
-    "CR-102"
+    "SH-2"
+   ],
+   "seats": 50,
+   "invigilators": [
+    {
+     "room_id": "SH-2",
+     "faculty_id": "F12"
+    }
    ]
   },
   {
@@ -22407,11 +22668,17 @@
    ],
    "size": 50,
    "durationHours": 2,
-   "day": "TUE",
-   "slot": "AM",
+   "day": "MON",
+   "slot": "PM",
    "rooms": [
-    "CR-101",
-    "CR-102"
+    "SH-2"
+   ],
+   "seats": 50,
+   "invigilators": [
+    {
+     "room_id": "SH-2",
+     "faculty_id": "F29"
+    }
    ]
   },
   {
@@ -22438,14 +22705,27 @@
    ],
    "size": 320,
    "durationHours": 2,
-   "day": "MON",
+   "day": "THU",
    "slot": "AM",
    "rooms": [
-    "LH-2",
-    "LH-3",
-    "LH-4",
-    "LH-5",
-    "LH-6"
+    "AUD",
+    "CR-205",
+    "LH-5"
+   ],
+   "seats": 340,
+   "invigilators": [
+    {
+     "room_id": "AUD",
+     "faculty_id": "F13"
+    },
+    {
+     "room_id": "CR-205",
+     "faculty_id": "F04"
+    },
+    {
+     "room_id": "LH-5",
+     "faculty_id": "F21"
+    }
    ]
   },
   {
@@ -22467,8 +22747,19 @@
    "day": "THU",
    "slot": "AM",
    "rooms": [
-    "LH-5",
-    "LH-6"
+    "CR-102",
+    "CR-103"
+   ],
+   "seats": 85,
+   "invigilators": [
+    {
+     "room_id": "CR-102",
+     "faculty_id": "F33"
+    },
+    {
+     "room_id": "CR-103",
+     "faculty_id": "F29"
+    }
    ]
   },
   {
@@ -22490,8 +22781,19 @@
    "day": "WED",
    "slot": "AM",
    "rooms": [
-    "LH-5",
-    "LH-6"
+    "CR-101",
+    "CR-102"
+   ],
+   "seats": 90,
+   "invigilators": [
+    {
+     "room_id": "CR-101",
+     "faculty_id": "F11"
+    },
+    {
+     "room_id": "CR-102",
+     "faculty_id": "F32"
+    }
    ]
   },
   {
@@ -22513,8 +22815,19 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "LH-5",
-    "LH-6"
+    "CR-101",
+    "CR-102"
+   ],
+   "seats": 90,
+   "invigilators": [
+    {
+     "room_id": "CR-101",
+     "faculty_id": "F09"
+    },
+    {
+     "room_id": "CR-102",
+     "faculty_id": "F07"
+    }
    ]
   },
   {
@@ -22536,8 +22849,19 @@
    "day": "THU",
    "slot": "AM",
    "rooms": [
-    "LH-3",
-    "LH-4"
+    "CR-101",
+    "LH-6"
+   ],
+   "seats": 105,
+   "invigilators": [
+    {
+     "room_id": "CR-101",
+     "faculty_id": "F18"
+    },
+    {
+     "room_id": "LH-6",
+     "faculty_id": "F08"
+    }
    ]
   },
   {
@@ -22559,8 +22883,19 @@
    "day": "WED",
    "slot": "AM",
    "rooms": [
-    "LH-3",
-    "LH-4"
+    "LH-5",
+    "LH-6"
+   ],
+   "seats": 120,
+   "invigilators": [
+    {
+     "room_id": "LH-5",
+     "faculty_id": "F06"
+    },
+    {
+     "room_id": "LH-6",
+     "faculty_id": "F16"
+    }
    ]
   },
   {
@@ -22582,8 +22917,19 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "LH-3",
-    "LH-4"
+    "LH-5",
+    "LH-6"
+   ],
+   "seats": 120,
+   "invigilators": [
+    {
+     "room_id": "LH-5",
+     "faculty_id": "F04"
+    },
+    {
+     "room_id": "LH-6",
+     "faculty_id": "F15"
+    }
    ]
   },
   {
@@ -22605,7 +22951,14 @@
    "day": "THU",
    "slot": "AM",
    "rooms": [
-    "LH-2"
+    "LH-3"
+   ],
+   "seats": 60,
+   "invigilators": [
+    {
+     "room_id": "LH-3",
+     "faculty_id": "F19"
+    }
    ]
   },
   {
@@ -22627,7 +22980,14 @@
    "day": "WED",
    "slot": "AM",
    "rooms": [
-    "LH-2"
+    "LH-3"
+   ],
+   "seats": 60,
+   "invigilators": [
+    {
+     "room_id": "LH-3",
+     "faculty_id": "F33"
+    }
    ]
   },
   {
@@ -22649,7 +23009,14 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "LH-2"
+    "LH-3"
+   ],
+   "seats": 60,
+   "invigilators": [
+    {
+     "room_id": "LH-3",
+     "faculty_id": "F20"
+    }
    ]
   },
   {
@@ -22671,7 +23038,14 @@
    "day": "THU",
    "slot": "AM",
    "rooms": [
-    "LH-1"
+    "LH-2"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F26"
+    }
    ]
   },
   {
@@ -22693,7 +23067,14 @@
    "day": "WED",
    "slot": "AM",
    "rooms": [
-    "LH-1"
+    "LH-2"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F07"
+    }
    ]
   },
   {
@@ -22715,7 +23096,14 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "LH-1"
+    "LH-2"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F05"
+    }
    ]
   },
   {
@@ -22737,7 +23125,14 @@
    "day": "THU",
    "slot": "AM",
    "rooms": [
-    "AUD"
+    "LH-1"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-1",
+     "faculty_id": "F40"
+    }
    ]
   },
   {
@@ -22759,7 +23154,14 @@
    "day": "WED",
    "slot": "AM",
    "rooms": [
-    "AUD"
+    "LH-1"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-1",
+     "faculty_id": "F38"
+    }
    ]
   },
   {
@@ -22781,7 +23183,14 @@
    "day": "TUE",
    "slot": "AM",
    "rooms": [
-    "AUD"
+    "LH-1"
+   ],
+   "seats": 100,
+   "invigilators": [
+    {
+     "room_id": "LH-1",
+     "faculty_id": "F39"
+    }
    ]
   },
   {
@@ -22815,8 +23224,34 @@
    "day": "MON",
    "slot": "AM",
    "rooms": [
-    "AUD",
-    "LH-1"
+    "LH-2",
+    "LH-3",
+    "LH-4",
+    "LH-5",
+    "LH-6"
+   ],
+   "seats": 340,
+   "invigilators": [
+    {
+     "room_id": "LH-2",
+     "faculty_id": "F21"
+    },
+    {
+     "room_id": "LH-3",
+     "faculty_id": "F34"
+    },
+    {
+     "room_id": "LH-4",
+     "faculty_id": "F30"
+    },
+    {
+     "room_id": "LH-5",
+     "faculty_id": "F05"
+    },
+    {
+     "room_id": "LH-6",
+     "faculty_id": "F09"
+    }
    ]
   }
  ],
@@ -22850,162 +23285,216 @@
     "room_id": "MECH-WS",
     "sessions": 7,
     "hours": 21,
+    "occupied_periods": 21,
+    "available_periods": 45,
     "utilisation": 0.467
    },
    {
     "room_id": "CS-LAB-2",
     "sessions": 6,
     "hours": 18,
+    "occupied_periods": 18,
+    "available_periods": 45,
     "utilisation": 0.4
    },
    {
     "room_id": "LH-4",
     "sessions": 12,
     "hours": 12,
-    "utilisation": 0.267
+    "occupied_periods": 12,
+    "available_periods": 36,
+    "utilisation": 0.333
    },
    {
     "room_id": "LH-5",
     "sessions": 12,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    },
    {
     "room_id": "CR-101",
     "sessions": 12,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    },
    {
     "room_id": "CR-201",
     "sessions": 12,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    },
    {
     "room_id": "CR-203",
     "sessions": 12,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    },
    {
     "room_id": "ELEC-LAB-2",
     "sessions": 4,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    },
    {
     "room_id": "PHY-LAB",
     "sessions": 4,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
+    "utilisation": 0.267
+   },
+   {
+    "room_id": "CIVIL-LAB",
+    "sessions": 3,
+    "hours": 9,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    },
    {
     "room_id": "LH-2",
     "sessions": 11,
     "hours": 11,
+    "occupied_periods": 11,
+    "available_periods": 45,
     "utilisation": 0.244
    },
    {
     "room_id": "LH-6",
     "sessions": 11,
     "hours": 11,
+    "occupied_periods": 11,
+    "available_periods": 45,
     "utilisation": 0.244
    },
    {
     "room_id": "CR-102",
     "sessions": 11,
     "hours": 11,
+    "occupied_periods": 11,
+    "available_periods": 45,
+    "utilisation": 0.244
+   },
+   {
+    "room_id": "CR-103",
+    "sessions": 10,
+    "hours": 10,
+    "occupied_periods": 10,
+    "available_periods": 41,
     "utilisation": 0.244
    },
    {
     "room_id": "CR-205",
     "sessions": 11,
     "hours": 11,
+    "occupied_periods": 11,
+    "available_periods": 45,
     "utilisation": 0.244
    },
    {
-    "room_id": "LH-3",
-    "sessions": 10,
-    "hours": 10,
-    "utilisation": 0.222
-   },
-   {
-    "room_id": "CR-103",
-    "sessions": 10,
-    "hours": 10,
-    "utilisation": 0.222
+    "room_id": "SH-1",
+    "sessions": 0,
+    "hours": 0,
+    "occupied_periods": 11,
+    "available_periods": 45,
+    "utilisation": 0.244
    },
    {
     "room_id": "LH-1",
     "sessions": 9,
     "hours": 9,
-    "utilisation": 0.2
+    "occupied_periods": 10,
+    "available_periods": 45,
+    "utilisation": 0.222
    },
    {
-    "room_id": "CIVIL-LAB",
-    "sessions": 3,
-    "hours": 9,
+    "room_id": "LH-3",
+    "sessions": 10,
+    "hours": 10,
+    "occupied_periods": 10,
+    "available_periods": 45,
+    "utilisation": 0.222
+   },
+   {
+    "room_id": "OAT",
+    "sessions": 0,
+    "hours": 0,
+    "occupied_periods": 9,
+    "available_periods": 45,
     "utilisation": 0.2
    },
    {
     "room_id": "CR-104",
     "sessions": 8,
     "hours": 8,
+    "occupied_periods": 8,
+    "available_periods": 45,
     "utilisation": 0.178
    },
    {
     "room_id": "CR-105",
     "sessions": 8,
     "hours": 8,
+    "occupied_periods": 8,
+    "available_periods": 45,
     "utilisation": 0.178
+   },
+   {
+    "room_id": "AUD",
+    "sessions": 1,
+    "hours": 1,
+    "occupied_periods": 7,
+    "available_periods": 45,
+    "utilisation": 0.156
    },
    {
     "room_id": "CR-204",
     "sessions": 7,
     "hours": 7,
+    "occupied_periods": 7,
+    "available_periods": 45,
     "utilisation": 0.156
    },
    {
     "room_id": "ELEC-LAB-1",
     "sessions": 2,
     "hours": 6,
+    "occupied_periods": 6,
+    "available_periods": 45,
     "utilisation": 0.133
    },
    {
     "room_id": "CR-202",
     "sessions": 5,
     "hours": 5,
+    "occupied_periods": 5,
+    "available_periods": 45,
     "utilisation": 0.111
    },
    {
     "room_id": "CS-LAB-1",
     "sessions": 1,
     "hours": 3,
-    "utilisation": 0.067
-   },
-   {
-    "room_id": "AUD",
-    "sessions": 1,
-    "hours": 1,
-    "utilisation": 0.022
-   },
-   {
-    "room_id": "SH-1",
-    "sessions": 0,
-    "hours": 0,
-    "utilisation": 0.0
+    "occupied_periods": 5,
+    "available_periods": 45,
+    "utilisation": 0.111
    },
    {
     "room_id": "SH-2",
     "sessions": 0,
     "hours": 0,
-    "utilisation": 0.0
-   },
-   {
-    "room_id": "OAT",
-    "sessions": 0,
-    "hours": 0,
+    "occupied_periods": 0,
+    "available_periods": 45,
     "utilisation": 0.0
    }
   ],
@@ -23014,18 +23503,24 @@
     "room_id": "LH-4",
     "sessions": 12,
     "hours": 12,
-    "utilisation": 0.267
+    "occupied_periods": 12,
+    "available_periods": 36,
+    "utilisation": 0.333
    },
    {
     "room_id": "LH-5",
     "sessions": 12,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    },
    {
     "room_id": "CR-101",
     "sessions": 12,
     "hours": 12,
+    "occupied_periods": 12,
+    "available_periods": 45,
     "utilisation": 0.267
    }
   ],

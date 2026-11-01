@@ -47,7 +47,7 @@ Guarantees:
 
 | Tool | Used for | Parts of the repo |
 | --- | --- | --- |
-| Arena.ai **Agent Mode** (coding agent) | pair-programming the whole backend: dataset loader, validity kernel, CP-SAT timetable generator, booking engine, exam scheduler, tests, CI, docs | `api/app/core/*`, `api/tests/*`, `tools/*`, `.github/workflows/ci.yml`, `docs/*` |
+| Arena.ai **Agent Mode** (coding agent) | pair-programming and testing: scheduling, exam invigilation, booking, authentication, UI and documentation | `api/app/*`, `api/tests/*`, `frontend/*`, `tools/*`, `.github/workflows/ci.yml`, `docs/*` |
 | (add any editor assistants used by the team, e.g. Copilot / Cursor / ChatGPT, and which files they touched) | | |
 
 All AI-generated code is reviewed, run and tested by the team; the numbers in the README

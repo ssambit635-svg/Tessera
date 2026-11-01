@@ -78,8 +78,9 @@ def occupancy(ds: Dataset, schedule: dict, events: list[AdhocEvent]) -> dict[tup
     return busy
 
 
-def group_busy(ds: Dataset, schedule: dict, day: str, start: int, end: int) -> dict[str, str]:
-    """group -> session id, for groups already in class in that slot."""
+def group_busy(ds: Dataset, schedule: dict, day: str, start: int, end: int,
+               events: list[AdhocEvent] | None = None) -> dict[str, str]:
+    """Groups already committed to classes, scored bookings or confirmed events."""
     out = {}
     for row in schedule.get("sessions") or []:
         if row["day"] != day:
@@ -92,6 +93,19 @@ def group_busy(ds: Dataset, schedule: dict, day: str, start: int, end: int) -> d
             continue
         for g in sess["groups"]:
             out[g] = row["session_id"]
+    for booking in (schedule.get("fest_week") or {}).get("bookings", []):
+        if booking.get("status") not in ("approved", "alternative_offered") or booking.get("day") != day:
+            continue
+        if (booking.get("end_period") or 0) < start or (booking.get("start_period") or 0) > end:
+            continue
+        request = ds.requests.get(booking.get("request_id"), {})
+        for group in request.get("mandatory_for_groups") or []:
+            out[group] = booking.get("request_id", "booking")
+    for event in events or []:
+        if event.status == "confirmed" and event.day == day and event.start_period <= end and event.end_period >= start:
+            for group in event.groups.split(","):
+                if group:
+                    out[group] = event.id
     return out
 
 
@@ -118,6 +132,7 @@ def evaluate(ds: Dataset, schedule: dict, events: list[AdhocEvent], req: dict) -
         "room_types": list(req.get("room_types") or []),
         "windows": list(req.get("windows") or []),
         "mandatory_for_groups": list(req.get("mandatory_for_groups") or []),
+        "room_id": (req.get("room_id") or "").strip(),
     }
     missing = [k for k in ("attendance", "duration_periods", "windows") if not req.get(k)]
     if missing:
@@ -126,6 +141,20 @@ def evaluate(ds: Dataset, schedule: dict, events: list[AdhocEvent], req: dict) -
     if req["attendance"] <= 0:
         return {"ok": False, "reason": "attendance must be a positive number",
                 "conflicts": [], "candidates": []}
+
+    periods = {p["id"] for p in ds.periods}
+    for window in req["windows"]:
+        if not isinstance(window, dict):
+            return {"ok": False, "reason": "invalid booking window", "conflicts": [], "candidates": []}
+        first, last = window.get("from_period"), window.get("to_period")
+        if (type(first) is not int or type(last) is not int or first > last
+                or first not in periods or last not in periods
+                or any(p not in periods for p in range(first, last + 1))):
+            return {"ok": False, "reason": "booking window contains invalid periods",
+                    "conflicts": ["Choose a valid start and end period from the calendar."], "candidates": []}
+    if req["room_id"] and req["room_id"] not in ds.rooms:
+        return {"ok": False, "reason": f"unknown requested room {req['room_id']}",
+                "conflicts": [f"{req['room_id']} is not a room in this dataset"], "candidates": []}
 
     known_types = sorted({r["type"] for r in ds.rooms.values()})
     if not req["room_types"]:
@@ -140,7 +169,8 @@ def evaluate(ds: Dataset, schedule: dict, events: list[AdhocEvent], req: dict) -
 
     biggest = max((r["capacity"] for r in ds.rooms.values()), default=0)
     req["room_types"] = [t for t in req["room_types"] if t in known_types]
-    usable = [r for r in ds.rooms.values() if booking_room_ok(ds, req, r)]
+    usable = [r for r in ds.rooms.values() if booking_room_ok(ds, req, r)
+              and (not req["room_id"] or r["id"] == req["room_id"])]
     if req["attendance"] > biggest:
         return {"ok": False, "conflicts": [f"no room seats {req['attendance']}; the largest holds {biggest}"],
                 "reason": f"no venue seats {req['attendance']} people - reject with this reason",
@@ -173,9 +203,9 @@ def evaluate(ds: Dataset, schedule: dict, events: list[AdhocEvent], req: dict) -
                     continue
                 problems = _clash(ds, req, busy, day, start, end, room["id"])
                 if mandatory:
-                    hit = [g for g in mandatory if g in group_busy(ds, schedule, day, start, end)]
+                    hit = [g for g in mandatory if g in group_busy(ds, schedule, day, start, end, events)]
                     if hit:
-                        problems.append(f"{', '.join(hit)} already have a class on {day} "
+                        problems.append(f"{', '.join(hit)} already have a class or mandatory event on {day} "
                                         f"P{start}-P{end}; a mandatory event may not clash")
                 if problems:
                     conflicts.extend(problems)
@@ -214,12 +244,6 @@ def schedule_event(session: Session, ds: Dataset, schedule: dict, req: dict,
     if not result["ok"]:
         return {"created": None, "check": result}
     pick = result["candidates"][0]
-    requested_room = (req.get("room_id") or "").strip()
-    if requested_room:
-        for c in result["candidates"]:
-            if c["room_id"] == requested_room:
-                pick = c
-                break
     role_cap = ds.role_cap.get(actor["role"], "club_event")
     requested_category = req.get("category") or role_cap
     order = ds.priority_order
@@ -263,3 +287,22 @@ def cancel(session: Session, event_id: str, actor: str) -> bool:
     session.commit()
     audit(session, actor, "user", "cancel_event", f"{event_id} cancelled")
     return True
+
+
+def conflicting_events(ds: Dataset, schedule: dict, events: list[AdhocEvent]) -> list[tuple[str, str]]:
+    """Return confirmed events that a proposed timetable would invalidate."""
+    conflicts = []
+    for event in events:
+        if event.status != "confirmed":
+            continue
+        check = evaluate(ds, schedule, [e for e in events if e.id != event.id], {
+            "attendance": event.attendance,
+            "duration_periods": event.end_period - event.start_period + 1,
+            "windows": [{"day": event.day, "from_period": event.start_period, "to_period": event.end_period}],
+            "needs": event.needs.split(",") if event.needs else [],
+            "mandatory_for_groups": event.groups.split(",") if event.groups else [],
+            "room_id": event.room_id,
+        })
+        if not check["ok"]:
+            conflicts.append((event.id, check["reason"]))
+    return conflicts
