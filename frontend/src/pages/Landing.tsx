@@ -4,6 +4,7 @@ import { useWorkspace } from "../lib/workspace";
 import { API_BASE } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
+import { GlassStripes } from "../components/GlassStripes";
 import { plural } from "../lib/format";
 
 /* ============================================================================
@@ -29,22 +30,6 @@ const NAV_LINKS = [
   { href: "#screens", label: "Screens", icon: "grid" },
   { href: "#assistant", label: "Assistant", icon: "sparkles" },
 ];
-
-/**
- * The hero art, shared by the fold and the proof panel: three film-grain ribbon fields
- * that flow on their own and lean toward the pointer.
- */
-function Beams() {
-  return (
-    <div className="rk-beams" aria-hidden="true">
-      <span className="rk-beam-a" />
-      <span className="rk-beam-b" />
-      <span className="rk-beam-c" />
-      <span className="rk-beam-mask" />
-      <span className="rk-grain" />
-    </div>
-  );
-}
 
 /**
  * The claim under "The proof" lights up word by word as it scrolls into view — the same
@@ -112,7 +97,6 @@ export default function Landing() {
   const navigate = useNavigate();
   const [navSolid, setNavSolid] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
 
   /* One rAF-throttled scroll handler: the nav only gains weight once the visitor leaves the
      fold. Nothing else listens to scroll. */
@@ -133,60 +117,6 @@ export default function Landing() {
       window.removeEventListener("resize", onScroll);
       if (frame) cancelAnimationFrame(frame);
     };
-  }, []);
-
-  /* The ribbon field leans toward the pointer while it is over the stage — one variable on
-     the wrapper, no per-frame layout, and nothing at all for reduced motion. */
-  useEffect(() => {
-    const node = stageRef.current;
-    if (!node) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    let frame = 0;
-    let nextX = 0;
-    let nextY = 0;
-    const flush = () => {
-      frame = 0;
-      node.style.setProperty("--drift-x", nextX.toFixed(3));
-      node.style.setProperty("--drift-y", nextY.toFixed(3));
-    };
-    const onMove = (event: PointerEvent) => {
-      const rect = node.getBoundingClientRect();
-      nextX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
-      nextY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
-      if (!frame) frame = requestAnimationFrame(flush);
-    };
-    const onLeave = () => {
-      nextX = 0;
-      nextY = 0;
-      if (!frame) frame = requestAnimationFrame(flush);
-    };
-    node.addEventListener("pointermove", onMove);
-    node.addEventListener("pointerleave", onLeave);
-    return () => {
-      node.removeEventListener("pointermove", onMove);
-      node.removeEventListener("pointerleave", onLeave);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  /* Which section is on screen. The nav mirrors it: one tab is always open, the rest sit as
-     icons, the way the reference component behaves. */
-  useEffect(() => {
-    const sections = NAV_LINKS.map((link) => document.querySelector(link.href)).filter(
-      (node): node is Element => Boolean(node),
-    );
-    if (!sections.length || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActiveTab(`#${visible.target.id}`);
-      },
-      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 1] },
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
   }, []);
 
   const go = (to: string) => navigate(`/login?next=${encodeURIComponent(to)}`);
@@ -254,8 +184,8 @@ export default function Landing() {
       </header>
 
       {/* ------------------------------------------------------------ hero */}
-      <div className="rk-stage" ref={stageRef}>
-        <Beams />
+      <div className="rk-stage">
+        <GlassStripes stripeCount={18} angle={34} pointerStrength={0.4} />
 
         <section className="rk-hero">
           <p className="rk-eyebrow">Tech Zephyr 4.0 · Team Voltryx</p>
@@ -379,7 +309,15 @@ export default function Landing() {
             </div>
 
             <div className="rk-stage-card">
-              <Beams />
+              <GlassStripes
+                stripeCount={12}
+                angle={34}
+                interactive={false}
+                quality="low"
+                restX={-70}
+                restY={-40}
+                className="glass-panel"
+              />
 
               <div className="rk-ledger">
                 <div className="rk-ledger-head">

@@ -61,165 +61,8 @@
 .rk-stage {
   position: relative;
   isolation: isolate;
-  background: #000;
+  background: var(--rk-bg);
   overflow: hidden;
-}
-
-/* The hero art: diagonal film-grain ribbons, the way the reference paints them.
-   Stripes are perpendicular to a 120deg gradient line, i.e. they run steeply from the
-   lower left to the upper right. Three layers of different period overlap so the eye
-   never finds the repeat. Each layer is a masked wrapper whose ::before carries the
-   gradient; the ::before is what animates, so the mask never drifts and one period of
-   travel is a seamless loop. No blur, no bloom: flat multi-stop gradients + tiled noise. */
-.rk-beams {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-  transform: translate3d(calc(var(--drift-x, 0) * 16px), calc(var(--drift-y, 0) * 12px), 0) scale(var(--drift-s, 1));
-  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: transform;
-}
-
-.rk-beam-a,
-.rk-beam-b,
-.rk-beam-c {
-  position: absolute;
-  /* oversized so no ribbon is ever cut by the element's own edge */
-  inset: -30% -25%;
-  display: block;
-  overflow: hidden;
-}
-
-.rk-beam-a::before,
-.rk-beam-b::before,
-.rk-beam-c::before {
-  content: "";
-  position: absolute;
-  inset: -70%;
-  display: block;
-  background-repeat: repeat;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-}
-
-.rk-beam-a::before {
-  background-image: repeating-linear-gradient(
-    120deg,
-    #050506 0px,
-    #050506 74px,
-    #0c1526 92px,
-    #16233f 104px,
-    #5a1b2c 122px,
-    #b62a45 138px,
-    #e23a54 152px,
-    #ee4a62 176px,
-    #e23a54 200px,
-    #b02641 220px,
-    #3b172a 238px,
-    #16233f 254px,
-    #0a1120 268px,
-    #050506 284px,
-    #050506 358px
-  );
-  /* one period (358px) along the 120deg axis: 310 right, 179 up */
-  animation-name: rk-flow-a;
-  animation-duration: 96s;
-}
-
-.rk-beam-a {
-  -webkit-mask-image: radial-gradient(150% 125% at 40% 44%, #000 6%, #000 48%, rgba(0, 0, 0, 0.5) 78%, transparent 100%);
-  mask-image: radial-gradient(150% 125% at 40% 44%, #000 6%, #000 48%, rgba(0, 0, 0, 0.5) 78%, transparent 100%);
-}
-
-.rk-beam-b::before {
-  background-image: repeating-linear-gradient(
-    120deg,
-    rgba(5, 5, 6, 0) 0px,
-    rgba(5, 5, 6, 0) 96px,
-    rgba(122, 26, 44, 0.55) 132px,
-    rgba(206, 42, 68, 0.62) 152px,
-    rgba(240, 66, 92, 0.5) 184px,
-    rgba(214, 46, 72, 0.44) 214px,
-    rgba(22, 35, 63, 0.42) 240px,
-    rgba(5, 5, 6, 0) 276px,
-    rgba(5, 5, 6, 0) 604px
-  );
-  /* 604px period: 523 right, 302 up */
-  animation-name: rk-flow-b;
-  animation-duration: 132s;
-}
-
-.rk-beam-b {
-  opacity: 0.62;
-}
-
-.rk-beam-c::before {
-  background-image: repeating-linear-gradient(
-    120deg,
-    rgba(5, 5, 6, 0) 0px,
-    rgba(5, 5, 6, 0) 210px,
-    rgba(255, 130, 148, 0.16) 240px,
-    rgba(255, 176, 186, 0.2) 254px,
-    rgba(150, 40, 62, 0.12) 272px,
-    rgba(5, 5, 6, 0) 300px,
-    rgba(5, 5, 6, 0) 940px
-  );
-  /* 940px period, travelling the other way: -814 left, 470 down */
-  animation-name: rk-flow-c;
-  animation-duration: 168s;
-}
-
-.rk-beam-c {
-  opacity: 0.8;
-}
-
-@keyframes rk-flow-a {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(310px, -179px, 0); }
-}
-
-@keyframes rk-flow-b {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(523px, -302px, 0); }
-}
-
-@keyframes rk-flow-c {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-814px, 470px, 0); }
-}
-
-/* hovering the stage leans the whole field toward the pointer and opens the flow up */
-.rk-stage:hover .rk-beams {
-  --drift-s: 1.02;
-}
-
-.rk-stage:hover .rk-beam-b::before,
-.rk-stage:hover .rk-beam-c::before {
-  animation-duration: 60s;
-}
-
-/* falloff to black at the edges of the art, exactly like the reference */
-.rk-beam-mask {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, #0a0a0b 0%, rgba(0, 0, 0, 0.86) 7%, rgba(0, 0, 0, 0.3) 22%, rgba(0, 0, 0, 0.04) 46%, rgba(0, 0, 0, 0.34) 78%, rgba(0, 0, 0, 0.82) 94%, #0a0a0b 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, transparent 16%, transparent 84%, rgba(0, 0, 0, 0.4) 100%);
-  pointer-events: none;
-}
-
-/* film grain: one tiled turbulence bitmap, blended — not a blur, not a glow */
-.rk-grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.78;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.72'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-  pointer-events: none;
 }
 
 /* ------------------------------------------------------------------- the nav */
@@ -467,11 +310,11 @@
   z-index: -1;
   inset: 40px -20px 40px;
   background: radial-gradient(
-    58% 54% at 50% 44%,
-    rgba(0, 0, 0, 0.62) 0%,
-    rgba(0, 0, 0, 0.4) 48%,
-    rgba(0, 0, 0, 0.12) 72%,
-    transparent 88%
+    60% 56% at 50% 46%,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.3) 46%,
+    rgba(0, 0, 0, 0.08) 74%,
+    transparent 90%
   );
   pointer-events: none;
 }
@@ -794,24 +637,23 @@
   overflow: hidden;
 }
 
-.rk-stage-card .rk-beams {
+/* inside the proof panel the glass is scenery: a little calmer, and its light sits
+   where the card does not so the numbers stay the brightest thing in frame */
+.rk-stage-card .glass-stripes {
   opacity: 1;
 }
 
-/* inside a small panel the field needs its own falloff, exactly like the reference's
-   feature art: crisp ribbons on top, black at the bottom edge */
-.rk-stage-card .rk-beam-a {
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 52%, rgba(0, 0, 0, 0.3) 84%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 52%, rgba(0, 0, 0, 0.3) 84%, transparent 100%);
-}
-
-.rk-stage-card .rk-beam-mask {
+.rk-stage-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.18) 0%,
-    rgba(0, 0, 0, 0.04) 32%,
-    rgba(0, 0, 0, 0.28) 72%,
-    rgba(5, 5, 6, 0.8) 100%
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.04) 30%,
+    rgba(0, 0, 0, 0.34) 76%,
+    rgba(1, 1, 1, 0.82) 100%
   );
 }
 
@@ -1293,11 +1135,6 @@
 @media (prefers-reduced-motion: reduce) {
   .landing * {
     transition-duration: 0.001s !important;
-    animation: none !important;
-  }
-  .rk-beam-a::before,
-  .rk-beam-b::before,
-  .rk-beam-c::before {
     animation: none !important;
   }
   .rk-word {
