@@ -12,6 +12,7 @@ import {
   ApiError,
   applyProposal,
   demoLogin,
+  signOutToken,
   warmApiInBackground,
   loadWorkspace,
   requestMove,
@@ -307,6 +308,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(() => {
+    const token = sessionRef.current?.token;
+    if (token) void signOutToken(token).catch(() => {
+      // Client state is still cleared; without the API the token expires normally.
+    });
     sessionRef.current = null;
     storePersona(null);
     setAuthState("signed-out");

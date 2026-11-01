@@ -37,7 +37,9 @@ Every account is seeded on first boot and works on the live link.
 
 One-click login: `POST /api/auth/demo-login/{role}` (append `?email=dean@cit.edu` for the second
 admin). The login screen renders every demo seat as a button, so a judge never types a password —
-but still receives a real signed JWT.
+but still receives a real signed JWT. This is a **demo-only** feature: set
+`DEMO_LOGIN_ENABLED=false` and replace demo passwords for non-demo deployments. Sign-out
+revokes the presented token when the API is reachable.
 
 **Reset to a clean state:** signed in as admin, open **Operations → "Reset the committed state"**.
 That wipes the uploaded dataset, proposals, audit-trail rows and manual events and reloads the
@@ -52,6 +54,9 @@ committed exports. `POST /api/admin/reset` does the same thing from the API.
    group-periods promised to approved Spectra bookings.
 2. **Midsem exams** — 41 papers on the exam calendar (`AM`/`PM`), multi-room seating at half
    capacity, **0 exam soft penalty**, no group sitting two papers at once.
+   Exam rooms use half capacity and one available invigilator per room. Weekly room/faculty
+   unavailability is conservatively applied to the distinct exam week by clock overlap; the
+   organiser dataset does not specify a staffing ratio or week-specific exceptions.
 3. **Plain-language requests** — an English/Hinglish sentence becomes a structured booking form
    that the user reviews and edits before submitting. Assumptions (like "kal" → tomorrow,
    "2 ghante" → 2 periods) are shown on the form, not hidden.
@@ -91,7 +96,7 @@ unmodified):
 | Moves vs. the lower bound | **equal** to the number of sessions the change actually breaks |
 | Change that breaks nothing | **0 moves**, ~2 s |
 | Impossible change (e.g. only physics lab closed all week) | **refused, not exported** — with the conflicting sessions named |
-| Backend tests | **98 passing** (`cd api && python -m pytest tests -q`) |
+| Backend tests | **115 passing** (`cd api && python -m pytest tests -q`) |
 
 **Why soft = 3, not 0.** The only unavoidable penalty in this dataset: F08 is a visiting professor
 available Tue/Thu only but teaches three CS204 lectures, so exactly one repeat costs 3 points.
@@ -210,7 +215,7 @@ frontend/          the app: public landing, sign-in, and the signed-in workspace
 api/app/core/      dataset, constraint kernel, solver, bookings, exams, repair, export, pipeline
 api/app/routers/   HTTP surface (30+ endpoints, documented in docs/API.md)
 api/app/ai/        provider abstraction, Hinglish parser, budget guard, prompts loader
-api/tests/         98 tests: kernel vs validator, exports, repair properties, AI contracts, API
+api/tests/         kernel vs validator, exports, repair properties, AI contracts, API
 exports/           schedule.json + schedule_after.json, both written by the app
 vendor/            the organisers' validator, dataset and samples — unmodified, read-only
 prompts/           every prompt the product sends, versioned with the code
@@ -375,8 +380,13 @@ from another team, no dependency on the organisers' files being writable.
   on two days. We keep the 3 and explain it rather than hide a hard violation to look perfect.
 * **The solver takes ~35–45 s** on the free instance. Generation is an explicit admin action with a
   progress state; the app never blocks a page load on it.
-* **Two periods (P10–P13) are event-only** and the dataset's own booking BR-17 asks for P14, so that
+* **Four periods (P10–P13) are event-only** and the dataset's own booking BR-17 asks for P14, so that
   request can only ever be an alternative. That is a dataset ceiling, not a bug.
+* **Manual event priority:** scored dataset decisions follow the official priority order;
+  newly confirmed manual events are protected, but there is not yet a priority queue or an
+  admin-approved preemption flow for competing new manual requests.
+* **Exam-week assumptions:** weekly maintenance and faculty unavailability are treated as
+  applying to exam week, with one invigilator per room. Confirm this with organisers.
 * **Single-tenant by design.** One institution, one dataset at a time; loading a new dataset replaces
   the active one (after validation) instead of versioning several side by side.
 * **The AI assistant is grounded, not general.** It answers from this dataset's sessions, rooms,

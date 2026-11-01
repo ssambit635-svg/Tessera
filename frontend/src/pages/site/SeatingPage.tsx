@@ -3,6 +3,7 @@ import { useWorkspace } from "../../lib/workspace";
 import { SiteFooter, SiteHeader, SiteIntro } from "../../components/SiteChrome";
 import { Icon } from "../../components/Icon";
 import { DAY_LONG } from "../../lib/format";
+import type { DayCode } from "../../lib/types";
 
 /* ============================================================================
    /seating — the midsem plan.
@@ -17,7 +18,7 @@ export default function SeatingPage() {
   const { data } = useWorkspace();
   const [selected, setSelected] = useState<string | null>(null);
 
-  const days = data.calendar.days;
+  const days = (data.calendar.examWeek?.days ?? data.calendar.days) as DayCode[];
   const slots = useMemo(
     () => [...new Set(data.exams.map((exam) => exam.slot))].sort(),
     [data.exams],
@@ -42,7 +43,7 @@ export default function SeatingPage() {
   }, [data.exams]);
 
   const capacityOf = (ids: string[]) =>
-    ids.reduce((sum, id) => sum + (data.rooms.find((room) => room.id === id)?.capacity ?? 0), 0);
+    ids.reduce((sum, id) => sum + Math.floor((data.rooms.find((room) => room.id === id)?.capacity ?? 0) / 2), 0);
 
   const totalStudents = data.exams.reduce((sum, exam) => sum + exam.size, 0);
   const seatsOffered = data.exams.reduce((sum, exam) => sum + (exam.seats ?? capacityOf(exam.rooms)), 0);
@@ -68,7 +69,7 @@ export default function SeatingPage() {
         <SiteIntro
           kicker="The seating plan · midsem examinations"
           title={`${data.exams.length} papers. ${totalStudents.toLocaleString("en-IN")} candidates. No hall over its limit.`}
-          lede="Every paper is placed by the same solver that owns the weekly timetable, so an exam can never land on a maintenance cell or steal a hall that a lecture needs. Pick a slot to read the papers in it."
+          lede="Exams use a separate week, half-capacity seating and declared maintenance restrictions. Pick a slot to read the papers in it."
         />
 
         <div className="site-kpis">

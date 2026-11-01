@@ -15,6 +15,7 @@ from .dataset import Dataset
 from .disruption import apply_changes, load_disruption
 from .repair import repair_or_refuse
 from .exams import solve_exams
+from .exam_staff import prepare_exam_schedule
 from .export import build_schedule, write_schedule
 from .solver import solve
 
@@ -53,6 +54,8 @@ def generate(ds: Dataset, time_limit: float = 120.0, workers: int = 1, seed: int
     log["timetable"] = {k: tt[k] for k in ("status", "objective", "wall_time", "scheduled", "expected")}
 
     exams = solve_exams(ds)
+    if len(exams["exams"]) != len(ds.exams):
+        raise RuntimeError(f"exam scheduler failed: {exams.get('reason') or exams['status']}")
     if not quiet:
         print(f"[3/3] exams: {exams['status']} {len(exams['exams'])}/{len(ds.exams)} obj={exams['objective']}")
     log["exams"] = {k: exams[k] for k in ("status", "objective")}
@@ -88,13 +91,19 @@ def generate_after(ds: Dataset, baseline_schedule: dict, changes: list[dict],
                 print(f"  suggestion: {s}")
         return None, ds_after, log
 
+    exams, exam_error = prepare_exam_schedule(ds_after, baseline_schedule.get("exams", []))
+    if exams is None:
+        log["explanation"] = {"suggestions": [exam_error]}
+        if not quiet:
+            print(f"[repair] REFUSED - {exam_error}")
+        return None, ds_after, log
     schedule = {
         "team": baseline_schedule.get("team", team),
         "dataset_id": ds_after.dataset_id,
         "sessions": [{"session_id": sid, "day": day, "start_period": p, "room_id": room}
                      for sid, (day, p, room) in sorted(result["assignment"].items())],
         "fest_week": baseline_schedule.get("fest_week", {"bookings": [], "session_overrides": []}),
-        "exams": baseline_schedule.get("exams", []),
+        "exams": exams,
     }
     report = validate(ds_after, schedule, baseline=baseline_schedule)
     log["report"] = report
@@ -122,6 +131,7 @@ def main(argv=None):
     ap.add_argument("--after", default=None, help="also write the repaired schedule after a disruption")
     ap.add_argument("--disruption", default=None, help="change file to apply")
     ap.add_argument("--baseline", default=None, help="use this schedule.json instead of generating one")
+    ap.add_argument("--refresh-exams", action="store_true", help="reschedule exams in the supplied baseline")
     ap.add_argument("--repair-time-limit", type=float, default=60.0)
     a = ap.parse_args(argv)
 
@@ -129,6 +139,12 @@ def main(argv=None):
     if a.baseline:
         with open(a.baseline, encoding="utf-8") as f:
             schedule = json.load(f)
+        if a.refresh_exams:
+            exams = solve_exams(ds)
+            if len(exams["exams"]) != len(ds.exams):
+                raise RuntimeError(f"exam scheduler failed: {exams.get('reason') or exams['status']}")
+            schedule["exams"] = exams["exams"]
+            write_schedule(schedule, a.out)
         log = {"report": validate(ds, schedule)}
     else:
         schedule, log = generate(ds, a.time_limit, a.workers, a.seed, a.team)

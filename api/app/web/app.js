@@ -86,6 +86,7 @@ async function login(role, email) {
 }
 
 function logout() {
+  if (store.token) void api("/api/auth/logout", { method: "POST" }).catch(() => {});
   store.token = ""; store.user = null;
   localStorage.removeItem("tessera_token");
   localStorage.removeItem("tessera_user");

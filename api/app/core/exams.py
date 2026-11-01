@@ -12,6 +12,7 @@ from collections import defaultdict
 from ortools.sat.python import cp_model
 
 from .dataset import Dataset
+from .exam_staff import assign_invigilators, faculty_available, room_available, slot_minutes
 
 
 def solve_exams(ds: Dataset, time_limit: float = 60.0, seed: int = 20270131) -> dict:
@@ -37,6 +38,8 @@ def solve_exams(ds: Dataset, time_limit: float = 60.0, seed: int = 20270131) -> 
             for slot in slots:
                 v = m.NewBoolVar("")
                 a[(eid, day, slot)] = v
+                if e["duration_hours"] * 60 > slot_minutes(ds, slot):
+                    m.Add(v == 0)
                 vs.append(v)
                 slot_vars[(day, slot)].append(v)
                 for g in e["groups"]:
@@ -45,6 +48,8 @@ def solve_exams(ds: Dataset, time_limit: float = 60.0, seed: int = 20270131) -> 
                     bv = m.NewBoolVar("")
                     b[(eid, r, day, slot)] = bv
                     m.Add(bv <= v)
+                    if not room_available(ds, r, day, slot):
+                        m.Add(bv == 0)
                     room_slot_vars[(r, day, slot)].append(bv)
                 m.Add(sum(b[(eid, r, day, slot)] * seats[r] for r in rooms) >= e["size"] * v)
         m.Add(sum(vs) == 1)
@@ -53,6 +58,17 @@ def solve_exams(ds: Dataset, time_limit: float = 60.0, seed: int = 20270131) -> 
         m.Add(sum(vs) <= 1)
     for k, vs in group_slot_vars.items():
         m.Add(sum(vs) <= 1)
+
+    # One invigilator per occupied room; accessibility can further restrict who can
+    # supervise a non-accessible room. The full assignment is checked after solving.
+    for day in days:
+        for slot in slots:
+            available = [f for f in ds.faculty if faculty_available(ds, f, day, slot)]
+            usable_rooms = [b[(e["id"], r, day, slot)] for e in ds.exams for r in rooms]
+            m.Add(sum(usable_rooms) <= len(available))
+            non_accessible = [b[(e["id"], r, day, slot)] for e in ds.exams for r in rooms
+                              if not ds.rooms[r].get("accessible")]
+            m.Add(sum(non_accessible) <= sum(not ds.faculty[f].get("needs_accessible") for f in available))
 
     cost: list = []
     # 5 points per extra exam a group sits on the same day
@@ -86,4 +102,10 @@ def solve_exams(ds: Dataset, time_limit: float = 60.0, seed: int = 20270131) -> 
                         used = [r for r in rooms if solver.Value(b[(eid, r, day, slot)])]
                         out.append({"exam_id": eid, "day": day, "session": slot,
                                     "rooms": sorted(used)})
-    return {"status": solver.StatusName(st), "exams": out, "objective": int(solver.ObjectiveValue())}
+    if out:
+        assigned, error = assign_invigilators(ds, out)
+        if assigned is None:
+            return {"status": "INFEASIBLE", "exams": [], "objective": None, "reason": error}
+        out = assigned
+    return {"status": solver.StatusName(st), "exams": out,
+            "objective": int(solver.ObjectiveValue()) if out else None}

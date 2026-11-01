@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { DAY_LONG, plural } from "../lib/format";
+import type { DayCode } from "../lib/types";
 
 /** Slot labels come from the dataset's own exam clock, never from a guess. */
 function slotLabel(data: ReturnType<typeof useWorkspace>["data"], slot: string) {
@@ -15,7 +16,7 @@ export default function Exams() {
   const [day, setDay] = useState<string>("ALL");
 
   const exams = data.exams;
-  const days = data.calendar.days;
+  const days = (data.calendar.examWeek?.days ?? data.calendar.days) as DayCode[];
   const roomName = (id: string) => data.rooms.find((r) => r.id === id)?.name ?? id;
   const roomCapacity = (id: string) => data.rooms.find((r) => r.id === id)?.capacity ?? 0;
 
@@ -30,7 +31,7 @@ export default function Exams() {
 
   const unscheduled = exams.filter((exam) => exam.slot === "unscheduled" || exam.rooms.length === 0);
   const seats = (exam: typeof exams[number]) =>
-    exam.seats ?? exam.rooms.reduce((sum, id) => sum + roomCapacity(id), 0);
+    exam.seats ?? exam.rooms.reduce((sum, id) => sum + Math.floor(roomCapacity(id) / 2), 0);
   const tight = exams.filter((exam) => seats(exam) > 0 && seats(exam) < exam.size);
   const totalSeats = exams.reduce((sum, exam) => sum + seats(exam), 0);
   const totalNeed = exams.reduce((sum, exam) => sum + exam.size, 0);
@@ -54,9 +55,9 @@ export default function Exams() {
             {exams.length} exams, no class left homeless.
           </h2>
           <p>
-            Every midsem paper is placed in a hall that outranks its cohort size, and the exam block
-            is a hard constraint the weekly timetable may not touch. Seats are counted here, not
-            assumed.
+            Exam week is separate from the teaching timetable. Each room contributes half its
+            normal capacity, with one available invigilator per room. Weekly unavailability is
+            conservatively applied to exam week.
           </p>
         </div>
         <div className="row gap-8" style={{ flexShrink: 0 }}>
@@ -73,7 +74,7 @@ export default function Exams() {
 
       <div className="exam-strip">
         <div className="es-cell">
-          <b>{exams.length}</b>
+          <b>{exams.length - unscheduled.length}</b>
           <span>papers scheduled</span>
         </div>
         <div className="es-cell">
@@ -104,7 +105,7 @@ export default function Exams() {
               <span>{plural(group.exams.length, "paper")}</span>
             </div>
             <div className="ed-slots">
-              {["AM", "PM", "EVE"].map((slot) => {
+              {(data.calendar.examWeek?.sessions.map((s) => s.id) ?? ["AM", "PM"]).map((slot) => {
                 const slotExams = group.exams.filter((exam) => exam.slot === slot);
                 if (!slotExams.length) return null;
                 return (
@@ -145,6 +146,7 @@ export default function Exams() {
                 <th style={{ width: 64 }}>Day</th>
                 <th style={{ width: 84 }}>Slot</th>
                 <th>Halls</th>
+                <th>Invigilators</th>
                 <th style={{ width: 118 }}>Seats vs cohort</th>
               </tr>
             </thead>
@@ -166,7 +168,7 @@ export default function Exams() {
                       <div className="hall-pills">
                         {exam.rooms.length ? (
                           exam.rooms.map((id) => (
-                            <span key={id} className="hall-pill" title={`${roomName(id)} · seats ${roomCapacity(id)}`}>
+                            <span key={id} className="hall-pill" title={`${roomName(id)} · exam seats ${Math.floor(roomCapacity(id) / 2)}`}>
                               {id}
                             </span>
                           ))
@@ -176,6 +178,11 @@ export default function Exams() {
                           </span>
                         )}
                       </div>
+                    </td>
+                    <td className="mono">
+                      {exam.invigilators?.length
+                        ? exam.invigilators.map((item) => `${item.room_id}: ${item.faculty_id}`).join(", ")
+                        : "Not assigned in this snapshot"}
                     </td>
                     <td>
                       <div className="seat-meter" title={ok ? "Enough seats" : "Short of seats"}>

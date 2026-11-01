@@ -1368,75 +1368,205 @@
   "exams": [
     {
       "exam_id": "EX-MA101",
-      "day": "THU",
-      "session": "PM",
+      "day": "WED",
+      "session": "AM",
       "rooms": [
         "AUD",
-        "LH-1",
-        "LH-2"
+        "CR-202",
+        "CR-203",
+        "CR-204"
+      ],
+      "invigilators": [
+        {
+          "room_id": "AUD",
+          "faculty_id": "F36"
+        },
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F15"
+        },
+        {
+          "room_id": "CR-203",
+          "faculty_id": "F21"
+        },
+        {
+          "room_id": "CR-204",
+          "faculty_id": "F18"
+        }
       ]
     },
     {
       "exam_id": "EX-PH101",
-      "day": "WED",
+      "day": "FRI",
       "session": "PM",
       "rooms": [
-        "AUD",
+        "CR-101",
         "LH-1",
-        "LH-2"
+        "LH-2",
+        "LH-3",
+        "LH-5"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-101",
+          "faculty_id": "F02"
+        },
+        {
+          "room_id": "LH-1",
+          "faculty_id": "F06"
+        },
+        {
+          "room_id": "LH-2",
+          "faculty_id": "F28"
+        },
+        {
+          "room_id": "LH-3",
+          "faculty_id": "F05"
+        },
+        {
+          "room_id": "LH-5",
+          "faculty_id": "F36"
+        }
       ]
     },
     {
       "exam_id": "EX-CS101",
-      "day": "TUE",
+      "day": "THU",
       "session": "PM",
       "rooms": [
-        "AUD",
-        "LH-1",
-        "LH-2"
+        "CR-101",
+        "CR-104",
+        "CR-105",
+        "CR-203",
+        "CR-205",
+        "LH-5",
+        "LH-6",
+        "SH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-101",
+          "faculty_id": "F07"
+        },
+        {
+          "room_id": "CR-104",
+          "faculty_id": "F21"
+        },
+        {
+          "room_id": "CR-105",
+          "faculty_id": "F08"
+        },
+        {
+          "room_id": "CR-203",
+          "faculty_id": "F20"
+        },
+        {
+          "room_id": "CR-205",
+          "faculty_id": "F05"
+        },
+        {
+          "room_id": "LH-5",
+          "faculty_id": "F01"
+        },
+        {
+          "room_id": "LH-6",
+          "faculty_id": "F09"
+        },
+        {
+          "room_id": "SH-2",
+          "faculty_id": "F17"
+        }
       ]
     },
     {
       "exam_id": "EX-HS101",
-      "day": "MON",
-      "session": "AM",
+      "day": "SAT",
+      "session": "PM",
       "rooms": [
-        "CR-101",
-        "CR-102",
-        "CR-103",
-        "CR-104",
         "CR-105",
         "CR-201",
-        "CR-202",
         "CR-203",
-        "CR-204"
+        "CR-204",
+        "CR-205",
+        "LH-2",
+        "SH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-105",
+          "faculty_id": "F18"
+        },
+        {
+          "room_id": "CR-201",
+          "faculty_id": "F11"
+        },
+        {
+          "room_id": "CR-203",
+          "faculty_id": "F04"
+        },
+        {
+          "room_id": "CR-204",
+          "faculty_id": "F06"
+        },
+        {
+          "room_id": "CR-205",
+          "faculty_id": "F39"
+        },
+        {
+          "room_id": "LH-2",
+          "faculty_id": "F28"
+        },
+        {
+          "room_id": "SH-1",
+          "faculty_id": "F17"
+        }
       ]
     },
     {
       "exam_id": "EX-CS201",
-      "day": "FRI",
+      "day": "SAT",
       "session": "AM",
       "rooms": [
-        "LH-5",
-        "LH-6"
+        "CR-202",
+        "SH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F07"
+        },
+        {
+          "room_id": "SH-1",
+          "faculty_id": "F37"
+        }
       ]
     },
     {
       "exam_id": "EX-CS202",
-      "day": "THU",
+      "day": "FRI",
       "session": "AM",
       "rooms": [
-        "CR-204",
-        "SH-1"
+        "LH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-2",
+          "faculty_id": "F29"
+        }
       ]
     },
     {
       "exam_id": "EX-CS203",
-      "day": "WED",
+      "day": "THU",
       "session": "AM",
       "rooms": [
-        "CR-204",
-        "SH-1"
+        "LH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-1",
+          "faculty_id": "F21"
+        }
       ]
     },
     {
@@ -1445,43 +1575,78 @@
       "session": "AM",
       "rooms": [
         "CR-204",
-        "SH-1"
+        "SH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-204",
+          "faculty_id": "F24"
+        },
+        {
+          "room_id": "SH-2",
+          "faculty_id": "F34"
+        }
       ]
     },
     {
       "exam_id": "EX-EC201",
-      "day": "FRI",
+      "day": "TUE",
       "session": "AM",
       "rooms": [
-        "LH-3",
-        "LH-4"
+        "SH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "SH-1",
+          "faculty_id": "F33"
+        }
       ]
     },
     {
       "exam_id": "EX-EC202",
       "day": "THU",
-      "session": "AM",
+      "session": "PM",
       "rooms": [
-        "CR-202",
-        "CR-203"
+        "AUD"
+      ],
+      "invigilators": [
+        {
+          "room_id": "AUD",
+          "faculty_id": "F35"
+        }
       ]
     },
     {
       "exam_id": "EX-EC203",
-      "day": "WED",
-      "session": "AM",
+      "day": "SAT",
+      "session": "PM",
       "rooms": [
-        "CR-202",
-        "CR-203"
+        "CR-101",
+        "CR-103"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-101",
+          "faculty_id": "F37"
+        },
+        {
+          "room_id": "CR-103",
+          "faculty_id": "F15"
+        }
       ]
     },
     {
       "exam_id": "EX-EC204",
-      "day": "TUE",
+      "day": "FRI",
       "session": "AM",
       "rooms": [
-        "CR-202",
-        "CR-203"
+        "SH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "SH-1",
+          "faculty_id": "F33"
+        }
       ]
     },
     {
@@ -1489,104 +1654,202 @@
       "day": "FRI",
       "session": "AM",
       "rooms": [
-        "LH-2"
+        "CR-202",
+        "CR-204"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F23"
+        },
+        {
+          "room_id": "CR-204",
+          "faculty_id": "F14"
+        }
       ]
     },
     {
       "exam_id": "EX-EE202",
-      "day": "THU",
-      "session": "AM",
+      "day": "SAT",
+      "session": "PM",
       "rooms": [
-        "CR-105",
-        "CR-201"
+        "CR-202",
+        "SH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F32"
+        },
+        {
+          "room_id": "SH-2",
+          "faculty_id": "F35"
+        }
       ]
     },
     {
       "exam_id": "EX-EE203",
-      "day": "WED",
+      "day": "THU",
       "session": "AM",
       "rooms": [
-        "CR-105",
-        "CR-201"
+        "CR-103",
+        "CR-105"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-103",
+          "faculty_id": "F06"
+        },
+        {
+          "room_id": "CR-105",
+          "faculty_id": "F35"
+        }
       ]
     },
     {
       "exam_id": "EX-EE204",
       "day": "TUE",
-      "session": "AM",
+      "session": "PM",
       "rooms": [
-        "CR-105",
-        "CR-201"
+        "CR-203",
+        "CR-204"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-203",
+          "faculty_id": "F40"
+        },
+        {
+          "room_id": "CR-204",
+          "faculty_id": "F08"
+        }
       ]
     },
     {
       "exam_id": "EX-ME201",
-      "day": "FRI",
+      "day": "THU",
       "session": "AM",
       "rooms": [
-        "LH-1"
+        "LH-6"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-6",
+          "faculty_id": "F01"
+        }
       ]
     },
     {
       "exam_id": "EX-ME202",
-      "day": "THU",
+      "day": "TUE",
       "session": "AM",
       "rooms": [
         "CR-103",
-        "CR-104"
+        "CR-203"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-103",
+          "faculty_id": "F25"
+        },
+        {
+          "room_id": "CR-203",
+          "faculty_id": "F13"
+        }
       ]
     },
     {
       "exam_id": "EX-ME203",
-      "day": "WED",
-      "session": "AM",
+      "day": "FRI",
+      "session": "PM",
       "rooms": [
-        "CR-103",
-        "CR-104"
+        "LH-6"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-6",
+          "faculty_id": "F40"
+        }
       ]
     },
     {
       "exam_id": "EX-ME204",
-      "day": "TUE",
-      "session": "AM",
+      "day": "WED",
+      "session": "PM",
       "rooms": [
-        "CR-103",
-        "CR-104"
+        "CR-101",
+        "CR-103"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-101",
+          "faculty_id": "F33"
+        },
+        {
+          "room_id": "CR-103",
+          "faculty_id": "F13"
+        }
       ]
     },
     {
       "exam_id": "EX-CE201",
-      "day": "FRI",
-      "session": "AM",
+      "day": "WED",
+      "session": "PM",
       "rooms": [
-        "AUD"
+        "LH-4"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-4",
+          "faculty_id": "F30"
+        }
       ]
     },
     {
       "exam_id": "EX-CE202",
-      "day": "THU",
+      "day": "TUE",
       "session": "AM",
       "rooms": [
-        "CR-101",
-        "CR-102"
+        "CR-201",
+        "CR-202"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-201",
+          "faculty_id": "F27"
+        },
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F23"
+        }
       ]
     },
     {
       "exam_id": "EX-CE203",
-      "day": "WED",
+      "day": "THU",
       "session": "AM",
       "rooms": [
-        "CR-101",
-        "CR-102"
+        "SH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "SH-2",
+          "faculty_id": "F08"
+        }
       ]
     },
     {
       "exam_id": "EX-CE204",
-      "day": "TUE",
-      "session": "AM",
+      "day": "FRI",
+      "session": "PM",
       "rooms": [
-        "CR-101",
-        "CR-102"
+        "LH-4"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-4",
+          "faculty_id": "F19"
+        }
       ]
     },
     {
@@ -1594,47 +1857,89 @@
       "day": "MON",
       "session": "AM",
       "rooms": [
-        "LH-2",
-        "LH-3",
-        "LH-4",
-        "LH-5",
-        "LH-6"
+        "AUD",
+        "CR-202",
+        "CR-204"
+      ],
+      "invigilators": [
+        {
+          "room_id": "AUD",
+          "faculty_id": "F03"
+        },
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F20"
+        },
+        {
+          "room_id": "CR-204",
+          "faculty_id": "F27"
+        }
       ]
     },
     {
       "exam_id": "EX-CS301",
-      "day": "THU",
+      "day": "WED",
       "session": "AM",
       "rooms": [
-        "LH-5",
-        "LH-6"
+        "CR-101",
+        "CR-201"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-101",
+          "faculty_id": "F26"
+        },
+        {
+          "room_id": "CR-201",
+          "faculty_id": "F13"
+        }
       ]
     },
     {
       "exam_id": "EX-CS302",
-      "day": "WED",
-      "session": "AM",
+      "day": "TUE",
+      "session": "PM",
       "rooms": [
-        "LH-5",
-        "LH-6"
+        "SH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "SH-1",
+          "faculty_id": "F22"
+        }
       ]
     },
     {
       "exam_id": "EX-CS303",
-      "day": "TUE",
+      "day": "FRI",
       "session": "AM",
       "rooms": [
-        "LH-5",
-        "LH-6"
+        "AUD"
+      ],
+      "invigilators": [
+        {
+          "room_id": "AUD",
+          "faculty_id": "F16"
+        }
       ]
     },
     {
       "exam_id": "EX-EC301",
-      "day": "THU",
-      "session": "AM",
+      "day": "FRI",
+      "session": "PM",
       "rooms": [
-        "LH-3",
-        "LH-4"
+        "CR-104",
+        "CR-202"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-104",
+          "faculty_id": "F39"
+        },
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F10"
+        }
       ]
     },
     {
@@ -1642,17 +1947,37 @@
       "day": "WED",
       "session": "AM",
       "rooms": [
-        "LH-3",
-        "LH-4"
+        "LH-5",
+        "LH-6"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-5",
+          "faculty_id": "F11"
+        },
+        {
+          "room_id": "LH-6",
+          "faculty_id": "F16"
+        }
       ]
     },
     {
       "exam_id": "EX-EC303",
       "day": "TUE",
-      "session": "AM",
+      "session": "PM",
       "rooms": [
-        "LH-3",
-        "LH-4"
+        "CR-101",
+        "CR-105"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-101",
+          "faculty_id": "F04"
+        },
+        {
+          "room_id": "CR-105",
+          "faculty_id": "F09"
+        }
       ]
     },
     {
@@ -1660,7 +1985,18 @@
       "day": "THU",
       "session": "AM",
       "rooms": [
-        "LH-2"
+        "CR-104",
+        "CR-205"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-104",
+          "faculty_id": "F03"
+        },
+        {
+          "room_id": "CR-205",
+          "faculty_id": "F18"
+        }
       ]
     },
     {
@@ -1668,7 +2004,13 @@
       "day": "WED",
       "session": "AM",
       "rooms": [
-        "LH-2"
+        "LH-3"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-3",
+          "faculty_id": "F19"
+        }
       ]
     },
     {
@@ -1676,7 +2018,13 @@
       "day": "TUE",
       "session": "AM",
       "rooms": [
-        "LH-2"
+        "LH-3"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-3",
+          "faculty_id": "F11"
+        }
       ]
     },
     {
@@ -1684,7 +2032,13 @@
       "day": "THU",
       "session": "AM",
       "rooms": [
-        "LH-1"
+        "LH-3"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-3",
+          "faculty_id": "F40"
+        }
       ]
     },
     {
@@ -1692,7 +2046,13 @@
       "day": "WED",
       "session": "AM",
       "rooms": [
-        "LH-1"
+        "LH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-2",
+          "faculty_id": "F02"
+        }
       ]
     },
     {
@@ -1700,7 +2060,13 @@
       "day": "TUE",
       "session": "AM",
       "rooms": [
-        "LH-1"
+        "LH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-2",
+          "faculty_id": "F17"
+        }
       ]
     },
     {
@@ -1708,7 +2074,13 @@
       "day": "THU",
       "session": "AM",
       "rooms": [
-        "AUD"
+        "CR-201"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-201",
+          "faculty_id": "F39"
+        }
       ]
     },
     {
@@ -1716,7 +2088,13 @@
       "day": "WED",
       "session": "AM",
       "rooms": [
-        "AUD"
+        "LH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-1",
+          "faculty_id": "F38"
+        }
       ]
     },
     {
@@ -1724,16 +2102,52 @@
       "day": "TUE",
       "session": "AM",
       "rooms": [
-        "AUD"
+        "LH-1"
+      ],
+      "invigilators": [
+        {
+          "room_id": "LH-1",
+          "faculty_id": "F20"
+        }
       ]
     },
     {
       "exam_id": "EX-OE-BASKET",
       "day": "MON",
-      "session": "AM",
+      "session": "PM",
       "rooms": [
-        "AUD",
-        "LH-1"
+        "CR-104",
+        "CR-202",
+        "CR-204",
+        "LH-1",
+        "LH-6",
+        "SH-2"
+      ],
+      "invigilators": [
+        {
+          "room_id": "CR-104",
+          "faculty_id": "F38"
+        },
+        {
+          "room_id": "CR-202",
+          "faculty_id": "F28"
+        },
+        {
+          "room_id": "CR-204",
+          "faculty_id": "F25"
+        },
+        {
+          "room_id": "LH-1",
+          "faculty_id": "F24"
+        },
+        {
+          "room_id": "LH-6",
+          "faculty_id": "F27"
+        },
+        {
+          "room_id": "SH-2",
+          "faculty_id": "F09"
+        }
       ]
     }
   ]

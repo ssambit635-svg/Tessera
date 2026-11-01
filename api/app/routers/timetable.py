@@ -8,8 +8,9 @@ from ..auth import current_user, require_admin
 from ..config import get_settings
 from ..core.constraints import check_exams, check_timetable, soft_score, to_assign
 from ..core.dataset import Dataset
-from ..db import User, audit, get_session
-from ..services import state
+from ..core.exam_staff import invigilation_errors
+from ..db import User, audit, get_session, lock_writes
+from ..services import manual, state
 
 router = APIRouter(prefix="/api/timetable", tags=["timetable"])
 
@@ -78,6 +79,15 @@ def generate(body: GenerateIn | None = None, admin: User = Depends(require_admin
                                 workers=body.workers, seed=body.seed)
     except RuntimeError as exc:
         raise HTTPException(500, str(exc)) from exc
+    lock_writes(session)
+    ds = state.dataset()
+    if result["base_fingerprint"] != state.state_fingerprint(ds, state.current_schedule()):
+        raise HTTPException(409, "timetable changed during generation; please generate again")
+    conflicts = manual.conflicting_events(ds, result["schedule"], manual.list_events(session, include_cancelled=False))
+    if conflicts:
+        raise HTTPException(409, f"generation conflicts with confirmed event {conflicts[0][0]}; please generate again")
+    if result["report"]["hard_violation_count"] or invigilation_errors(ds, result["schedule"].get("exams", [])):
+        raise HTTPException(409, "generation produced an invalid schedule; previous timetable kept")
     state.save_baseline(session, result["schedule"], result["meta"], admin.email)
     state.write_exports(session)
     report = result["report"]
@@ -103,6 +113,7 @@ def validate_now(user: User = Depends(current_user)):
     hard = check_timetable(ds, assign)
     soft, soft_total = soft_score(ds, assign)
     exam_hard, exam_soft = check_exams(ds, schedule.get("exams") or [])
+    operational = invigilation_errors(ds, schedule.get("exams") or [])
     return {
         "dataset_id": ds.dataset_id,
         "hard_violations": len(hard) + len(exam_hard),
@@ -111,6 +122,8 @@ def validate_now(user: User = Depends(current_user)):
         "soft_total": soft_total,
         "soft_penalties": soft,
         "exam_soft_penalty": exam_soft,
+        "exam_operational_errors": operational,
+        "exam_operational_ready": not operational and len(schedule.get("exams") or []) == len(ds.exams),
         "duplicates": dup,
         "scheduled": sum(1 for sid in ds.sessions if sid in assign),
         "expected": len(ds.sessions),

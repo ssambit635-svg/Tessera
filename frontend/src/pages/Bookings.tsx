@@ -20,6 +20,7 @@ interface DisplayDraft {
   room_types: string[];
   requested_room: string | null;
   requested_category: string | null;
+  mandatory_for_groups: string[];
   confidence: Record<string, number>;
   assumptions: { field: string; value: unknown; why: string }[];
   follow_up: string | null;
@@ -415,6 +416,7 @@ function NaturalLanguageBooking({
         };
         setDraft({
           ...result.draft,
+          mandatory_for_groups: result.draft.mandatory_for_groups ?? [],
           confidence: result.confidence,
           assumptions: result.assumptions,
           follow_up: result.follow_up,
@@ -426,11 +428,11 @@ function NaturalLanguageBooking({
         notify({ tone: "ai", title: "Interpreted by the API", detail: "Draft returned by /api/ai/parse." });
       } else {
         const local = localParse(text, data);
-        setDraft({ ...local, source: local.source });
+        setDraft({ ...local, mandatory_for_groups: [], source: local.source });
       }
     } catch (error) {
       const local = localParse(text, data);
-      setDraft({ ...local, source: `${local.source} — API parse failed (${error instanceof Error ? error.message : "error"})` });
+      setDraft({ ...local, mandatory_for_groups: [], source: `${local.source} — API parse failed (${error instanceof Error ? error.message : "error"})` });
       notify({ tone: "warn", title: "Using the local interpreter", detail: "The API could not parse this text; the draft below was built in the browser." });
     } finally {
       setParsing(false);
@@ -453,13 +455,18 @@ function NaturalLanguageBooking({
     }).slice(0, 5);
   }, [data, draft, primaryWindow?.day, primaryWindow?.from_period, primaryWindow?.to_period]);
 
-  const payload = draft
+  const validDraft = Boolean(draft && draft.attendance && draft.attendance > 0 &&
+    draft.duration_periods && draft.duration_periods >= 1 && draft.duration_periods <= 4 &&
+    draft.windows.length && draft.windows.every((window) => window.day && window.from_period <= window.to_period &&
+      window.to_period - window.from_period + 1 >= (draft.duration_periods ?? 0)));
+  const payload = draft && validDraft
     ? {
         title: draft.title ?? "Untitled request",
-        attendance: draft.attendance ?? 30,
-        duration_periods: draft.duration_periods ?? 2,
+        attendance: draft.attendance,
+        duration_periods: draft.duration_periods,
         windows: draft.windows,
         needs: draft.needs,
+        mandatory_for_groups: draft.mandatory_for_groups,
         room_types: draft.room_types,
         room_id: draft.requested_room ?? undefined,
         category: draft.requested_category ?? "club_event",
@@ -598,9 +605,9 @@ function NaturalLanguageBooking({
                         className="input mono-input"
                         type="number"
                         min={1}
-                        max={6}
-                        value={draft.duration_periods ?? 1}
-                        onChange={(event) => updateDraft({ duration_periods: Number(event.target.value) || 1 })}
+                        max={4}
+                        value={draft.duration_periods ?? ""}
+                        onChange={(event) => updateDraft({ duration_periods: Number(event.target.value) || null })}
                       />
                     </div>
                   </div>
@@ -666,6 +673,29 @@ function NaturalLanguageBooking({
                     </div>
                   ) : null}
 
+                  {!primaryWindow ? (
+                    <div className="callout sand">
+                      <span>A day and time window are required.</span>
+                      <button className="btn sm" onClick={() => updateDraft({ windows: [{
+                        day: data.calendar.days[0], from_period: data.calendar.periods[0].id,
+                        to_period: data.calendar.periods[0].id,
+                      }] })}>Add a window</button>
+                    </div>
+                  ) : null}
+                  <div className="field">
+                    <span className="field-label">Mandatory student groups</span>
+                    <div className="row gap-6 wrap">
+                      {data.groups.map((group) => (
+                        <button key={group.id} className={`chip ${draft.mandatory_for_groups.includes(group.id) ? "sky" : "outline"}`}
+                          aria-pressed={draft.mandatory_for_groups.includes(group.id)}
+                          onClick={() => updateDraft({ mandatory_for_groups: draft.mandatory_for_groups.includes(group.id)
+                            ? draft.mandatory_for_groups.filter((id) => id !== group.id)
+                            : [...draft.mandatory_for_groups, group.id] })}>
+                          {group.id}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="field">
                     <span className="field-label">Equipment requirements</span>
                     <div className="row gap-6 wrap">
@@ -755,11 +785,15 @@ function NaturalLanguageBooking({
                   ) : null}
 
                   {checked ? (
-                    <div className="callout sage" style={{ fontSize: 11, marginTop: 10 }}>
+                    <div className={`callout ${checked.ok === false ? "coral" : "sage"}`} style={{ fontSize: 11, marginTop: 10 }}>
                       <Icon name="shield" size={13} />
                       <span>
                         <b>{source.mode === "live" && !checked.simulated ? "API dry run." : "Simulated dry run."}</b>{" "}
-                        {String((checked as { note?: string }).note ?? "")}
+                        {String(checked.reason ?? checked.note ?? "")}
+                        {Array.isArray(checked.conflicts) && checked.conflicts.length ? ` ${checked.conflicts.join("; ")}` : ""}
+                        {Array.isArray(checked.candidates) && checked.candidates.length ?
+                          ` Available: ${checked.candidates.map((item: { room_id: string; day: string; start_period: number }) =>
+                            `${item.room_id} ${item.day} P${item.start_period}`).join(", ")}` : ""}
                         {checked.slot ? (
                           <>
                             {" "}
@@ -816,10 +850,11 @@ function NaturalLanguageBooking({
             </span>
           )}
           <span className="spacer" />
-          <button className="btn sm" onClick={() => void dryRun()} disabled={!draft}>
+          {draft && !validDraft ? <span className="mono">Enter attendance, duration and a fitting time window.</span> : null}
+          <button className="btn sm" onClick={() => void dryRun()} disabled={!validDraft}>
             <Icon name="shield" size={13} /> Dry run
           </button>
-          <button className="btn sm primary" onClick={() => void commit()} disabled={!draft}>
+          <button className="btn sm primary" onClick={() => void commit()} disabled={!validDraft}>
             <Icon name="check" size={13} /> {source.mode === "live" && confirmedWrite ? "Create event" : "Submit request"}
           </button>
         </div>

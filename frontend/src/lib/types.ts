@@ -189,6 +189,7 @@ export interface ExamEntry {
   slot: string;
   rooms: string[];
   seats?: number;
+  invigilators?: { room_id: string; faculty_id: string }[];
 }
 
 export interface UtilisationRow {

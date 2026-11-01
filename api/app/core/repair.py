@@ -45,6 +45,14 @@ def reservations_from_schedule(ds: Dataset, schedule: dict) -> tuple[set[tuple],
             reserved_rooms.add((room, day, p))
             for g in req.get("mandatory_for_groups", []):
                 blocked_groups.add((g, day, p))
+    # Manual events are an internal solver input, never written into scored exports.
+    for event in schedule.get("_manual_events", []):
+        if event.get("status") != "confirmed":
+            continue
+        for p in range(event["start_period"], event["end_period"] + 1):
+            reserved_rooms.add((event["room_id"], event["day"], p))
+            for group in event.get("groups", []):
+                blocked_groups.add((group, event["day"], p))
     return reserved_rooms, blocked_groups
 
 

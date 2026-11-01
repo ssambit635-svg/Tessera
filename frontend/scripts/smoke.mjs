@@ -286,6 +286,25 @@ await interaction("natural-language booking opens", async () => {
   return window.document.querySelector("#nl-text") ? "" : "modal did not open";
 });
 
+await interaction("booking requires missing details and exposes mandatory groups", async () => {
+  const field = window.document.querySelector("#nl-text");
+  if (!field) return "booking form did not stay open";
+  Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set.call(field, "Need a room for a club meeting");
+  field.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await wait(120);
+  const interpret = [...window.document.querySelectorAll(".modal button")].find((el) => /interpret request/i.test(el.textContent));
+  if (!click(interpret)) return "interpret control missing";
+  await wait(LIVE ? 1800 : 300);
+  const attendance = window.document.querySelector("#nl-cap");
+  if (!attendance || attendance.value !== "") return "missing attendance was not left empty";
+  const submit = [...window.document.querySelectorAll(".modal-foot button")].find((el) => /submit request|create event/i.test(el.textContent));
+  if (!submit?.disabled) return "incomplete booking is not blocked";
+  const group = [...window.document.querySelectorAll(".nl-form button")].find((el) => el.textContent.trim() === "Y1-A");
+  if (!group || !click(group)) return "mandatory group control missing";
+  await wait(100);
+  return group.getAttribute("aria-pressed") === "true" ? "" : "mandatory group was not selected";
+});
+
 await interaction("drag-and-reflow proposes a validated move", async () => {
   await ensureSignedIn();
   await go("/mosaic");

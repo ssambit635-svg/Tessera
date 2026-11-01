@@ -139,7 +139,10 @@ async function request<T>(
       body && typeof body === "object" && "detail" in (body as Record<string, unknown>)
         ? (body as Record<string, unknown>).detail
         : body;
-    throw new ApiError(response.status, typeof detail === "string" ? detail : `Request failed (${response.status})`, detail);
+    const explanation = typeof detail === "string" ? detail
+      : detail && typeof detail === "object" && "reason" in detail && typeof detail.reason === "string"
+        ? detail.reason : `Request failed (${response.status})`;
+    throw new ApiError(response.status, explanation, detail);
   }
   return body as T;
 }
@@ -188,6 +191,10 @@ export async function loginWithPassword(email: string, password: string): Promis
     null,
     { coldStart: true, timeoutMs: 20_000 },
   );
+}
+
+export async function signOutToken(token: string): Promise<void> {
+  await request("/api/auth/logout", { method: "POST" }, token);
 }
 
 export async function demoLogin(role: string, email?: string): Promise<LoginResult> {
@@ -253,6 +260,7 @@ interface ExamRow {
   session: string | null;
   rooms: string[];
   seats: number;
+  invigilators?: { room_id: string; faculty_id: string }[];
 }
 
 function normaliseExam(row: ExamRow): Workspace["exams"][number] {
@@ -268,6 +276,7 @@ function normaliseExam(row: ExamRow): Workspace["exams"][number] {
     slot: row.session ?? "unscheduled",
     rooms: row.rooms,
     seats: row.seats,
+    invigilators: row.invigilators ?? [],
   };
 }
 
