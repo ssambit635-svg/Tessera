@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useWorkspace } from "../lib/workspace";
 import { API_BASE } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
 import { GlassStripes } from "../components/GlassStripes";
+import { Magnetic } from "../components/Magnetic";
+import { TextReveal } from "../components/TextReveal";
 import { plural } from "../lib/format";
 
 /* ============================================================================
@@ -30,67 +32,6 @@ const NAV_LINKS = [
   { href: "#screens", label: "Screens", icon: "grid" },
   { href: "#assistant", label: "Assistant", icon: "sparkles" },
 ];
-
-/**
- * The claim under "The proof" lights up word by word as it scrolls into view — the same
- * reading gesture as the reference, done with one rAF loop and a CSS variable per word.
- */
-function ScrollStatement({ lead, tail }: { lead: string; tail: string }) {
-  const ref = useRef<HTMLParagraphElement>(null);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    const words = Array.from(node.querySelectorAll<HTMLElement>("[data-word]"));
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      words.forEach((word) => word.style.setProperty("--o", "0.62"));
-      return;
-    }
-    let frame = 0;
-    const paint = () => {
-      frame = 0;
-      const rect = node.getBoundingClientRect();
-      const viewport = window.innerHeight || 800;
-      // starts when the claim is two-thirds up the screen, done by the time it is centred
-      const start = viewport * 1.0;
-      const end = viewport * 0.52;
-      const progress = Math.min(1, Math.max(0, (start - rect.top) / Math.max(1, start - end)));
-      const span = words.length + 8;
-      words.forEach((word, index) => {
-        const lead_in = (progress * span - index) / 8;
-        word.style.setProperty("--o", Math.min(1, Math.max(0.16, lead_in)).toFixed(3));
-      });
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(paint);
-    };
-    paint();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  const words = (text: string) =>
-    text
-      .split(" ")
-      .map((word, index) => [
-        <span key={`${word}-${index}`} className="rk-word" data-word>
-          {word}
-        </span>,
-        " ",
-      ]);
-
-  return (
-    <h2 className="rk-statement" ref={ref}>
-      <b>{words(lead)}</b> <span>{words(tail)}</span>
-    </h2>
-  );
-}
 
 export default function Landing() {
   const { data, source } = useWorkspace();
@@ -147,7 +88,7 @@ export default function Landing() {
       <header className={`rk-nav ${navSolid ? "solid" : ""}`}>
         <Link to="/landing" className="rk-brand" aria-label="Tessera home">
           <span className="ld-mark">
-            <TileMark size={22} accent={false} />
+            <TileMark size={26} accent={false} />
           </span>
           Tessera
         </Link>
@@ -162,7 +103,7 @@ export default function Landing() {
               aria-current={activeTab === link.href ? "true" : undefined}
               onClick={() => setActiveTab(link.href)}
             >
-              <Icon name={link.icon} size={15} />
+              <Icon name={link.icon} size={20} />
               <span className="rk-tab-label">
                 <span>{link.label}</span>
               </span>
@@ -174,12 +115,14 @@ export default function Landing() {
           <Link className="rk-navlink" to="/login">
             Log in
           </Link>
-          <Link className="rk-btn white sm" to="/login">
-            <span className="rk-keycap">
-              <Icon name="arrowRight" size={12} />
-            </span>
-            Sign in
-          </Link>
+          <Magnetic>
+            <Link className="rk-btn white sm" to="/login">
+              <span className="rk-keycap">
+                <Icon name="arrowRight" size={12} />
+              </span>
+              Sign in
+            </Link>
+          </Magnetic>
         </div>
       </header>
 
@@ -197,12 +140,14 @@ export default function Landing() {
           <p className="rk-sub">{numbers.sessions} sessions. {numbers.exams} exams. Zero clashes.</p>
 
           <div className="rk-cta">
-            <Link className="rk-btn white lg" to="/login">
-              <span className="rk-keycap">
-                <Icon name="arrowRight" size={13} />
-              </span>
-              Sign in to Tessera
-            </Link>
+            <Magnetic strength={0.14}>
+              <Link className="rk-btn white lg" to="/login">
+                <span className="rk-keycap">
+                  <Icon name="arrowRight" size={13} />
+                </span>
+                Sign in to Tessera
+              </Link>
+            </Magnetic>
             <button className="rk-btn outline lg" onClick={() => go("/mosaic")}>
               See the live board
             </button>
@@ -222,11 +167,17 @@ export default function Landing() {
         <div className="rk-inner">
           <div className="rk-head">
             <span className="rk-kicker">01 — The product</span>
-            <h2 className="rk-h2">Three decisions the campus makes every week.</h2>
-            <p className="rk-lede">
-              Tessera is not a calendar. It is the authority that decides what goes where — and keeps
-              a record of why.
-            </p>
+            <TextReveal
+              as="h2"
+              className="rk-h2"
+              dim={0.13}
+              text="Three decisions the campus makes every week."
+            />
+            <TextReveal
+              className="rk-lede"
+              dim={0.24}
+              text="Tessera is not a calendar. It is the authority that decides what goes where — and keeps a record of why."
+            />
           </div>
 
           <div className="rk-cards">
@@ -267,7 +218,7 @@ export default function Landing() {
                   <Icon name={card.icon} size={16} />
                 </span>
                 <h3>{card.title}</h3>
-                <p>{card.body}</p>
+                <TextReveal className="rk-card-body" dim={0.26} text={card.body} />
                 <div className="rk-stats">
                   {card.stats.map(([label, value]) => (
                     <span key={label}>
@@ -292,10 +243,19 @@ export default function Landing() {
             <div>
               <span className="rk-kicker">02 — The proof</span>
 
-              <ScrollStatement
-                lead="Nothing here was typed by hand."
-                tail="Every session, paper and request below was placed by the solver before this page loaded — you are reading the workspace itself."
-              />
+              <div className="rk-statement-block">
+                <TextReveal
+                  as="h2"
+                  className="rk-statement"
+                  dim={0.1}
+                  text="Nothing here was typed by hand."
+                />
+                <TextReveal
+                  className="rk-statement-tail"
+                  dim={0.16}
+                  text="Every session, paper and request below was placed by the solver before this page loaded — you are reading the workspace itself."
+                />
+              </div>
 
               <div className="rk-product">
                 <span className="rk-product-name">
@@ -375,8 +335,17 @@ export default function Landing() {
         <div className="rk-inner">
           <div className="rk-head">
             <span className="rk-kicker">03 — The screens</span>
-            <h2 className="rk-h2">Every rule has a page you can stand in front of.</h2>
-            <p className="rk-lede">Sign in with any demo seat — the whole workspace is this one app.</p>
+            <TextReveal
+              as="h2"
+              className="rk-h2"
+              dim={0.13}
+              text="Every rule has a page you can stand in front of."
+            />
+            <TextReveal
+              className="rk-lede"
+              dim={0.24}
+              text="Sign in with any demo seat — the whole workspace is this one app."
+            />
           </div>
 
           <div className="rk-screens">
@@ -398,7 +367,7 @@ export default function Landing() {
                   </span>
                 </span>
                 <b>{title}</b>
-                <p>{body}</p>
+                <TextReveal className="rk-screen-body" dim={0.26} text={body} />
               </button>
             ))}
           </div>
@@ -411,13 +380,17 @@ export default function Landing() {
           <div className="rk-split">
             <div>
               <span className="rk-kicker">04 — The assistant</span>
-              <h2 className="rk-h2">Ask in Hinglish. Get a checked answer.</h2>
-              <p className="rk-lede">
-                A sentence is read by a small model on the free tier; whether the change is{" "}
-                <em>legal</em> is decided by the constraint kernel, never by the model. When the key
-                is absent or the daily budget is spent, the deterministic parser answers instead —
-                same endpoints, same guarantees.
-              </p>
+              <TextReveal
+                as="h2"
+                className="rk-h2"
+                dim={0.13}
+                text="Ask in Hinglish. Get a checked answer."
+              />
+              <TextReveal
+                className="rk-lede"
+                dim={0.24}
+                text="A sentence is read by a small model on the free tier; whether the change is legal is decided by the constraint kernel, never by the model. When the key is absent or the daily budget is spent, the deterministic parser answers instead — same endpoints, same guarantees."
+              />
               <ul className="rk-bullets">
                 <li>
                   <Icon name="check" size={13} /> {plural(1000, "request")}/day on the 70B model,
@@ -458,30 +431,41 @@ export default function Landing() {
       {/* ----------------------------------------------------------- close */}
       <section className="rk-close">
         <span className="rk-close-mark">
-          <TileMark size={38} accent={false} />
+          <TileMark size={46} accent={false} />
         </span>
-        <h2>Step inside the campus.</h2>
-        <p>
-          Five demo seats, one password, no setup. The board opens on the week that is already
-          solved.
-        </p>
+        <TextReveal as="h2" dim={0.12} text="Step inside the campus." />
+        <TextReveal
+          dim={0.24}
+          text="Five demo seats, one password, no setup. The board opens on the week that is already solved."
+        />
         <div className="rk-cta">
-          <Link className="rk-btn white lg" to="/login">
-            <span className="rk-keycap">
-              <Icon name="arrowRight" size={13} />
-            </span>
-            Sign in
-          </Link>
+          <Magnetic strength={0.14}>
+            <Link className="rk-btn white lg" to="/login">
+              <span className="rk-keycap">
+                <Icon name="arrowRight" size={13} />
+              </span>
+              Sign in
+            </Link>
+          </Magnetic>
           <a className="rk-btn outline lg" href={DOCS_URL} target="_blank" rel="noreferrer">
             API docs
           </a>
         </div>
 
         <footer className="rk-footer">
-          <span>
-            Tessera · team Voltryx · Tech Zephyr 4.0 · dataset{" "}
-            <span className="mono">{data.datasetId || "cit-public-v1"}</span>
-          </span>
+          <div className="rk-footer-brand">
+            <TileMark size={30} />
+            <span>
+              <b>Tessera</b>
+              <i>team Voltryx · Tech Zephyr 4.0</i>
+            </span>
+          </div>
+
+          <div className="rk-footer-note">
+            dataset <span className="mono">{data.datasetId || "cit-public-v1"}</span>
+            <em>{numbers.sessions} sessions · {numbers.exams} papers · {data.bookings.count} requests decided</em>
+          </div>
+
           <span className="rk-footer-links">
             <Link to="/login">Sign in</Link>
             <a href="https://github.com/ssambit635-svg/Tessera" target="_blank" rel="noreferrer">
