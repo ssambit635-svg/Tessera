@@ -36,25 +36,97 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
+/**
+ * A Render free instance sleeps after ~15 minutes idle and takes 30-60s to come back. The UI
+ * must not answer that with "not reachable" — it waits for the box to wake, then retries once.
+ * Only the sign-in calls opt in: the boot sequence keeps its 9s ceiling so a sleeping API
+ * never blocks the workspace (it falls back to the committed snapshot instead).
+ */
+const WAKE_BUDGET_MS = 75_000;
+const WAKE_POLL_MS = 2_500;
+
+async function waitForApi(deadline: number): Promise<boolean> {
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(`${API_BASE}/health`, { cache: "no-store" });
+      if (response.ok) return true;
+    } catch {
+      /* still asleep — keep waiting */
+    }
+    await new Promise((resolve) => setTimeout(resolve, WAKE_POLL_MS));
+  }
+  return false;
+}
+
+let warming = false;
+
+/**
+ * Quietly keep knocking on a sleeping instance, so the visitor's first click lands on a warm
+ * API instead of paying the cold start. Never awaited, never throws, stops as soon as the
+ * instance answers — and gives up after three minutes.
+ */
+export function warmApiInBackground(budgetMs = 180_000): void {
+  if (warming || typeof window === "undefined") return;
+  warming = true;
+  void (async () => {
+    const deadline = Date.now() + budgetMs;
+    while (Date.now() < deadline) {
+      try {
+        const response = await fetch(`${API_BASE}/health`, { cache: "no-store" });
+        if (response.ok) return;
+      } catch {
+        /* still asleep */
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+  })();
+}
+
+interface RequestOptions {
+  /** Wait out a free-tier cold start and retry once. Used by the sign-in calls only. */
+  coldStart?: boolean;
+  timeoutMs?: number;
+}
+
+async function request<T>(
+  path: string,
+  init: RequestInit = {},
+  token?: string | null,
+  options: RequestOptions = {},
+): Promise<T> {
   const headers: Record<string, string> = { ...(init.headers as Record<string, string>) };
   if (init.body) headers["Content-Type"] = "application/json";
   if (token) headers.Authorization = `Bearer ${token}`;
+
+  const send = async (timeoutMs: number): Promise<Response> => {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    try {
+      return await fetch(`${API_BASE}${path}`, {
+        ...init,
+        headers,
+        ...(controller ? { signal: controller.signal } : {}),
+      });
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+
   let response: Response;
-  // A stalled request must never leave the UI on the boot screen: hard-stop after 9s.
-  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-  const timer = controller ? setTimeout(() => controller.abort(), 9000) : null;
   try {
-    response = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      headers,
-      ...(controller ? { signal: controller.signal } : {}),
-    });
+    response = await send(options.timeoutMs ?? 9000);
   } catch (error) {
-    throw new ApiError(0, "The scheduling API is not reachable.", error);
-  } finally {
-    if (timer) clearTimeout(timer);
+    // A sleeping instance looks exactly like a dead one. Give it one chance to wake up.
+    if (!options.coldStart) throw new ApiError(0, "The scheduling API is not reachable.", error);
+    const awake = await waitForApi(Date.now() + WAKE_BUDGET_MS);
+    if (!awake) throw new ApiError(0, "The scheduling API is not reachable.", error);
+    try {
+      response = await send(30_000);
+    } catch (retryError) {
+      throw new ApiError(0, "The scheduling API is not reachable.", retryError);
+    }
   }
+
   const text = await response.text();
   let body: unknown = null;
   try {
@@ -110,15 +182,20 @@ export interface LoginResult {
 
 /** Real sign-in against the scheduler's own auth: email + password in, JWT out. */
 export async function loginWithPassword(email: string, password: string): Promise<LoginResult> {
-  return request<LoginResult>("/api/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-  });
+  return request<LoginResult>(
+    "/api/auth/login",
+    { method: "POST", body: JSON.stringify({ email: email.trim().toLowerCase(), password }) },
+    null,
+    { coldStart: true, timeoutMs: 20_000 },
+  );
 }
 
 export async function demoLogin(role: string, email?: string): Promise<LoginResult> {
   const query = email ? `?email=${encodeURIComponent(email)}` : "";
-  return request<LoginResult>(`/api/auth/demo-login/${role}${query}`, { method: "POST" });
+  return request<LoginResult>(`/api/auth/demo-login/${role}${query}`, { method: "POST" }, null, {
+    coldStart: true,
+    timeoutMs: 20_000,
+  });
 }
 
 /* --------------------------------------------------------------- normalisation */

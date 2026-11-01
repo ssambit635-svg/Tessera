@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ApiError, demoLogin, loginWithPassword, type LoginResult } from "../lib/api";
 import { useWorkspace } from "../lib/workspace";
@@ -35,7 +35,7 @@ function describeFailure(failure: unknown): string {
   if (failure instanceof ApiError) {
     if (failure.status === 401) return "That email and password do not match an account on this campus.";
     if (failure.status === 0) {
-      return "The scheduling API is not answering. Start it with `uvicorn app.main:app --port 8000`, or step in with a demo identity (offline preview).";
+      return "The scheduling API did not wake up in time. It sleeps on the free tier and can take a minute on the first visit — try once more, or step in with a demo identity (offline preview).";
     }
     if (failure.status >= 500) {
       return "Sign-in failed: the scheduling API answered with an error — it is probably still starting up. Wait a second and try again, or step in with a demo identity (offline preview).";
@@ -56,7 +56,19 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState<"password" | string | null>(null);
+  const [waking, setWaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /* A free-tier instance can take most of a minute to wake. After two seconds of waiting the
+     button admits what is happening instead of spinning silently. */
+  useEffect(() => {
+    if (!busy) {
+      setWaking(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setWaking(true), 2000);
+    return () => window.clearTimeout(timer);
+  }, [busy]);
 
   const enter = async (login: LoginResult) => {
     await signIn(login);
@@ -192,13 +204,20 @@ export default function Login() {
               <button className="sf-submit" type="submit" disabled={busy !== null}>
                 {busy === "password" ? (
                   <>
-                    <TileSpinner size={17} label="Signing in" /> Signing in…
+                    <TileSpinner size={17} label="Signing in" />
+                    {waking ? "Waking the solver…" : "Signing in…"}
                   </>
                 ) : (
                   "Sign in"
                 )}
               </button>
             </form>
+
+            {waking && busy ? (
+              <p className="sf-hint" role="status">
+                Free-tier API is starting up. This can take up to a minute on the first visit.
+              </p>
+            ) : null}
 
             <div className="sf-divider">
               <span>or step in as</span>
