@@ -5,6 +5,7 @@ import { useUi, dateFromISO } from "../lib/ui";
 import { Icon } from "../components/Icon";
 import { SessionDrawer } from "../components/SessionDrawer";
 import { TileMark, TileSpinner } from "../components/TileMark";
+import { IsometricStack } from "../components/IsometricStack";
 import {
   boardItems,
   matchRooms,
@@ -412,6 +413,37 @@ export default function Intelligence() {
           </span>
         </div>
       </div>
+
+      <section className="intel-story">
+        <div className="intel-story-copy">
+          <span className="eyebrow">Assistant · the three layers</span>
+          <h2 className="intel-story-title">Build the perfect answer.</h2>
+
+          <div className="intel-story-body">
+            <p className="intel-story-text">
+              A sentence arrives in Hinglish. A small free-tier model only reads the words — it never
+              decides. The parser turns them into one slot, and the constraint kernel says whether that
+              slot can exist.
+            </p>
+          </div>
+
+          <div className="intel-story-body">
+            <p className="intel-story-text">
+              Every reply names the rule it used and links to the screen where you can check it. If the
+              model is unavailable, the deterministic parser answers instead — the answers are the same,
+              only the reading is different.
+            </p>
+            <button className="intel-story-link" onClick={() => navigate("/bookings")}>
+              Trace a live decision <Icon name="arrowUpRight" size={12} />
+            </button>
+          </div>
+        </div>
+
+        <div className="intel-figure">
+          <span className="intel-figure-tag">FIG.01 — SENTENCE TO PROPOSAL</span>
+          <IsometricStack />
+        </div>
+      </section>
 
       <div className="intel-workspace">
         <div className="intel-calendar">
