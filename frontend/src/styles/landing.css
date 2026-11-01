@@ -1371,62 +1371,6 @@
   color: inherit;
 }
 
-/* ============================================================================
-   The brand button — flat crimson, one inner highlight, a keycap that opens on
-   hover. No glow, no gradient haze: the movement carries the "premium" read.
-   ========================================================================== */
-
-.rk-btn.solid {
-  position: relative;
-  overflow: hidden;
-  background: #cf1b34;
-  color: #fff6f4;
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 2px rgba(0, 0, 0, 0.5);
-  transition: background-color 0.22s ease-in-out, box-shadow 0.22s ease-in-out,
-    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.rk-btn.solid:hover {
-  background: #e02440;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 18px -10px rgba(224, 36, 64, 0.85);
-  transform: translateY(-1px);
-}
-
-.rk-btn.solid:active {
-  transform: translateY(1px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-.rk-btn.solid .rk-keycap {
-  background: #fff6f4;
-  color: #a8122a;
-  transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.28s ease-in-out,
-    background-color 0.22s ease-in-out;
-}
-
-.rk-btn.solid:hover .rk-keycap {
-  width: 28px;
-  border-radius: var(--rk-r-full);
-  background: #ffffff;
-}
-
-.rk-btn.solid .rk-keycap svg {
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.rk-btn.solid:hover .rk-keycap svg {
-  transform: translateX(1px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rk-btn.solid,
-  .rk-btn.solid .rk-keycap,
-  .rk-btn.solid .rk-keycap svg {
-    transition: none;
-  }
-}
-
 /* the quiet top-right link leans red on hover, so the nav carries the accent too */
 .rk-navlink {
   transition: color 0.2s ease-in-out;

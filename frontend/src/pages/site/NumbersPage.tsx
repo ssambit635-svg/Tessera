@@ -244,7 +244,7 @@ export default function NumbersPage() {
             club was told no. Sign in and read the board.
           </p>
           <div className="rk-cta">
-            <Link className="rk-btn solid lg" to="/login">
+            <Link className="rk-btn white lg" to="/login">
               <span className="rk-keycap">
                 <Icon name="arrowRight" size={13} />
               </span>
