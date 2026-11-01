@@ -98,9 +98,6 @@ export default function Settings() {
               <div className="eyebrow">Connection</div>
               <h3 style={{ marginTop: 3 }}>Where these numbers come from</h3>
             </div>
-            <span className={`status ${source.mode === "live" ? "valid" : "warning"}`} style={{ marginLeft: "auto" }}>
-              {source.mode === "live" ? "connected" : "offline"}
-            </span>
           </div>
           <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="settings-kv">
