@@ -230,10 +230,11 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 8px 10px;
+  min-height: 38px;
+  padding: 9px 11px;
   border-radius: 10px;
-  color: rgba(244, 241, 232, 0.66);
-  font-size: 13px;
+  color: rgba(244, 241, 232, 0.74);
+  font-size: 13.5px;
   letter-spacing: -0.005em;
   transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
   width: 100%;
@@ -242,9 +243,10 @@
 
 .nav-item svg {
   flex: none;
-  width: 17px;
-  height: 17px;
-  opacity: 0.85;
+  width: 19px;
+  height: 19px;
+  opacity: 0.92;
+  stroke-width: 1.65;
 }
 
 .nav-item .nav-label {
@@ -258,6 +260,15 @@
 .nav-item:hover {
   color: var(--text-inverse);
   background: rgba(255, 255, 255, 0.055);
+}
+
+.nav-item:active {
+  transform: translateY(1px);
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: -2px;
 }
 
 .nav-item.active {

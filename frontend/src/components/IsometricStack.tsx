@@ -16,8 +16,8 @@ import { useState } from "react";
 
    Interaction: the labels are the targets. Hovering or focusing a label lifts its
    plate, dims the other two and lights the leader line. The plates themselves are
-   not hit targets: they overlap in projection, so pointer hit-testing on them would
-   highlight whichever plate happens to be nearest the camera.
+   not hit targets (pointer-events: none): they overlap in projection, so hit-testing
+   on them would highlight whichever plate happens to be nearest the camera.
    ========================================================================== */
 
 type LayerId = "sentence" | "parsed" | "kernel";
@@ -95,10 +95,6 @@ export function IsometricStack() {
             {layer.label}
           </button>
         ))}
-        <span className="iso-label" data-for="proposal">
-          <i />
-          PROPOSAL
-        </span>
       </div>
     </div>
   );

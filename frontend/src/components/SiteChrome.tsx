@@ -14,6 +14,7 @@ const PAGES = [
   { to: "/ledger", label: "Ledger" },
   { to: "/seating", label: "Seating" },
   { to: "/spaces", label: "Spaces" },
+  { to: "/numbers", label: "Numbers" },
 ];
 
 export function SiteHeader({ current }: { current?: string }) {
@@ -44,7 +45,7 @@ export function SiteHeader({ current }: { current?: string }) {
           <Link className="rk-navlink" to="/landing">
             Back to the front door
           </Link>
-          <Link className="rk-btn white sm" to="/login">
+          <Link className="rk-btn solid sm" to="/login">
             <span className="rk-keycap">
               <Icon name="arrowRight" size={12} />
             </span>

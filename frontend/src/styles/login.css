@@ -346,16 +346,18 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  background: var(--sf-accent);
-  color: #fbfbfc;
+  background: #cf1b34;
+  color: #fff6f4;
   font-family: var(--font-display);
   font-size: 13.5px;
   font-weight: 600;
-  transition: background 140ms var(--ease), transform 140ms var(--ease);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.28);
+  transition: background 160ms var(--ease), transform 140ms var(--ease), box-shadow 160ms var(--ease);
 }
 
 .sf-submit:hover:not(:disabled) {
-  background: #333842;
+  background: #e02440;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 8px 18px -12px rgba(207, 27, 52, 0.9);
 }
 
 .sf-submit:active:not(:disabled) {

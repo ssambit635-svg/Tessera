@@ -117,7 +117,7 @@ export default function Landing() {
             Log in
           </Link>
           <Magnetic>
-            <Link className="rk-btn white sm" to="/login">
+            <Link className="rk-btn solid sm" to="/login">
               <span className="rk-keycap">
                 <Icon name="arrowRight" size={12} />
               </span>
@@ -142,7 +142,7 @@ export default function Landing() {
 
           <div className="rk-cta">
             <Magnetic strength={0.14}>
-              <Link className="rk-btn white lg" to="/login">
+              <Link className="rk-btn solid lg" to="/login">
                 <span className="rk-keycap">
                   <Icon name="arrowRight" size={13} />
                 </span>
@@ -163,6 +163,9 @@ export default function Landing() {
         <div className="rk-hero-bottom" aria-hidden="true" />
       </div>
 
+      {/* Everything past the hero shares one dot field, so the pattern is continuous
+          across sections instead of restarting at every boundary. */}
+      <div className="rk-body">
       {/* --------------------------------------------------------- product */}
       <section className="rk-section" id="product">
         <div className="rk-inner">
@@ -506,6 +509,7 @@ export default function Landing() {
           </Magnetic>
         </div>
       </section>
+      </div>
 
       <BeamWordmarkFooter
         brand="Tessera"
@@ -542,7 +546,7 @@ export default function Landing() {
           {
             lead: "Dataset ",
             label: data.datasetId || "cit-public-v1",
-            tail: ` · ${numbers.sessions} sessions · ${numbers.exams} papers · ${numbers.hard} hard conflicts`,
+            tail: ` · ${numbers.sessions} sessions · ${numbers.exams} papers`,
           },
         ]}
       />

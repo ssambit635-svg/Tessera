@@ -775,7 +775,7 @@ table.data tr.selected { background: rgba(212, 240, 90, 0.2); }
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 46px 20px;
+  padding: 34px 20px;
   text-align: center;
 }
 
@@ -946,4 +946,36 @@ table.data tr.selected { background: rgba(212, 240, 90, 0.2); }
 @media (max-width: 520px) {
   .section-head { flex-direction: column; align-items: flex-start; gap: 10px; }
   .kpi .kpi-value { font-size: 25px; }
+}
+
+/* ------------------------------------------------------------ press feedback */
+/* One rule for every control in the workspace: children move, not layouts. */
+.btn:active:not(:disabled),
+.chip:active,
+.seg button:active,
+.icon-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn {
+  transition: background-color 0.16s ease-in-out, border-color 0.16s ease-in-out,
+    color 0.16s ease-in-out, transform 0.12s ease-in-out, box-shadow 0.16s ease-in-out;
+}
+
+.btn:focus-visible,
+.chip:focus-visible,
+.icon-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn:active:not(:disabled),
+  .chip:active,
+  .icon-btn:active:not(:disabled),
+  .nav-item:active {
+    transition: none;
+    transform: none;
+  }
 }

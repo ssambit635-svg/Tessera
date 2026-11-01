@@ -1,7 +1,9 @@
 /** The Tessera mark — the faceted glass T from the brand sheet.
  *
  * It is a raster mark (the original artwork is a rendered glass object, not a flat
- * icon), so it ships as one PNG at 404px in /public and is scaled down. Serving it
+ * icon), so it ships as one PNG in /public and is scaled down. The sheet artwork is
+ * blue; `tessera-mark-crimson.png` is the same geometry recoloured into the brand
+ * crimson so the mark stops fighting the red palette it sits in. Serving it
  * from /public rather than bundling keeps the JS payload small.
  *
  * The old geometric tile is still here as `TilePattern` (used for texture) and as
@@ -19,7 +21,7 @@ interface TileMarkProps {
 export function TileMark({ size = 28, animated = false, className, title }: TileMarkProps) {
   return (
     <img
-      src="/brand/tessera-mark.png"
+      src="/brand/tessera-mark-crimson.png"
       width={size}
       height={size}
       alt={title ?? ""}

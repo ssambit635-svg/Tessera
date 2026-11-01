@@ -6,6 +6,7 @@ import { AppShell } from "./components/AppShell";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
 import LedgerPage from "./pages/site/LedgerPage";
+import NumbersPage from "./pages/site/NumbersPage";
 import SeatingPage from "./pages/site/SeatingPage";
 import SpacesPage from "./pages/site/SpacesPage";
 import { Preloader } from "./components/Preloader";
@@ -49,6 +50,7 @@ function Gate() {
       <Route path="ledger" element={<LedgerPage />} />
       <Route path="seating" element={<SeatingPage />} />
       <Route path="spaces" element={<SpacesPage />} />
+        <Route path="numbers" element={<NumbersPage />} />
       <Route element={<RequireAuth />}>
         {/* The calendar board is the front door: it is the screen the reference describes. */}
         <Route index element={<Navigate to="/mosaic" replace />} />

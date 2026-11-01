@@ -15,9 +15,9 @@
   --g-ribs: 14;
   --g-angle: 54deg;
   --g-bg: #08080a;
-  --g-shadow: #7d0f22;
-  --g-mid: #e23a54;
-  --g-hot: #ffe7e2;
+  --g-shadow: #8e1024;
+  --g-mid: #ff3a58;
+  --g-hot: #fff4f0;
   --gx: 0;
   --gy: 0;
   --g-live: 0.9;
@@ -78,13 +78,13 @@
 /* the light: hot centre, midtone body, deep shadow at the far edge */
 .glass-glow {
   background: radial-gradient(
-    46% 54% at 50% 50%,
-    rgba(255, 238, 232, 0.98) 0%,
-    rgba(255, 196, 200, 0.9) 9%,
-    rgba(244, 96, 118, 0.82) 22%,
-    rgba(226, 58, 84, 0.66) 38%,
-    rgba(176, 40, 66, 0.5) 58%,
-    rgba(104, 22, 42, 0.32) 76%,
+    40% 48% at 50% 50%,
+    rgba(255, 246, 242, 1) 0%,
+    rgba(255, 206, 204, 0.96) 8%,
+    rgba(255, 108, 128, 0.92) 20%,
+    rgba(255, 58, 88, 0.78) 36%,
+    rgba(196, 32, 62, 0.56) 56%,
+    rgba(112, 16, 36, 0.34) 76%,
     rgba(20, 6, 12, 0) 92%
   );
   opacity: var(--g-live);
@@ -102,7 +102,7 @@
     transparent 84%
   );
   mix-blend-mode: screen;
-  opacity: 0.6;
+  opacity: 0.72;
 }
 
 .glass-split.warm {

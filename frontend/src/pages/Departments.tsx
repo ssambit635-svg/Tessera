@@ -52,7 +52,7 @@ export default function Departments() {
               <span className="meter thin">
                 <i style={{ width: `${Math.min(100, (dept.hours / 90) * 100)}%`, background: `var(--${dept.tone})` }} />
               </span>
-              <span className="mono">{dept.rooms.length} rooms</span>
+              <span className="mono">{plural(dept.rooms.length, "room")}</span>
               <Icon name="arrowUpRight" size={13} />
             </div>
           </button>
@@ -68,7 +68,7 @@ export default function Departments() {
                 <div className="eyebrow">Department</div>
                 <h2 style={{ marginTop: 3 }}>{active.code}</h2>
                 <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
-                  {active.courses} courses · {active.sessions} sessions · {active.hours} teaching hours
+                  {plural(active.courses, "course")} · {plural(active.sessions, "session")} · {active.hours} teaching hours
                 </div>
               </div>
               <button className="close-btn" onClick={() => setOpen(null)} aria-label="Close" style={{ marginLeft: "auto" }}>
@@ -89,7 +89,7 @@ export default function Departments() {
                           <span style={{ display: "flex", flexDirection: "column" }}>
                             <b style={{ fontSize: 12.5, fontFamily: "var(--font-display)", fontWeight: 500 }}>{person.name}</b>
                             <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
-                              {summary.hours} h · {summary.classes.length} sessions
+                              {summary.hours} h · {plural(summary.classes.length, "session")}
                             </span>
                           </span>
                         </div>
