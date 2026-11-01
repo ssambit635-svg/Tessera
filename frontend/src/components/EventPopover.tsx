@@ -119,7 +119,7 @@ export function EventPopover({ item, anchor, onClose, onDetails }: Props) {
         <div className="avatar-stack">
           {item.facultyName ? (
             <span className={`avatar sm tone-${tintFor(item.facultyName)}`} title={item.facultyName}>
-              {initials(item.facultyName)}
+              <Icon name="user" size={11} />
             </span>
           ) : null}
           {groupAvatars.map((group, index) => {

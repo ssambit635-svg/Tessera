@@ -6,7 +6,7 @@ import { Icon } from "../components/Icon";
 import { SessionDrawer } from "../components/SessionDrawer";
 import { roomOccupancy, roomSummary, type CellState, type Occupancy } from "../lib/derive";
 import { ratio, DAY_LONG, addDays, dayCodeOf, formatDayLong, percent, plural, startOfWeek } from "../lib/format";
-import { PHOTO_NOTE, ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
+import { ROOM_TYPE_LABELS, roomImage } from "../lib/persona";
 import type { DayCode, Room } from "../lib/types";
 
 const STATE_LABEL: Record<CellState, string> = {
@@ -183,7 +183,6 @@ export default function Availability() {
               return (
                 <div key={room.id} className="matrix-row" style={{ display: "contents" }}>
                   <div className="matrix-rail">
-                    <img src={roomImage(room.id, room.type)} alt={roomImageAlt(room.name)} title={PHOTO_NOTE} />
                     <div style={{ minWidth: 0 }}>
                       <b>{room.name}</b>
                       <span>

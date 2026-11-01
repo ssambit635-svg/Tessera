@@ -1,8 +1,10 @@
 /* ============================================================================
-   Sign in — one sided, exactly like the reference.
+   Sign in — a photograph, and a plate that comes forward when you touch it.
 
-   A pale column on the left holding a single white card; the campus fills the right
-   half of the screen, full height, bleeding to the edges. Nothing else on the page.
+   The campus fills the whole viewport. The plate sits on the left, over the
+   photograph, quiet and unraised. The moment a field takes focus the photograph
+   steps back — blurred and dimmed — and the plate slides to the middle of the
+   screen and lifts off it. Nothing moves until you touch it.
    ========================================================================== */
 
 .signin {
@@ -14,27 +16,61 @@
   --sf-line: #dcdde1;
   --sf-accent: #3a4351;
 
-  height: 100vh;
-  height: 100dvh;
-  display: grid;
-  grid-template-columns: minmax(0, 48%) minmax(0, 1fr);
-  background: var(--sf-page);
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #101317;
   color: var(--sf-ink);
   overflow: hidden;
 }
 
-/* ------------------------------------------------------------------ form side */
-.sf-side {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 26px 40px 20px 46px;
+/* -------------------------------------------------------------- photograph */
+.sf-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  background: #101317;
 }
 
+.sf-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 58% 50%;
+  transition: filter 620ms var(--ease), transform 1100ms var(--ease);
+  animation: photo-settle 1.2s var(--ease-out) both;
+}
+
+@keyframes photo-settle {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Enough shade on the left third to hold dark type, and none on the building
+   itself once it takes the whole screen. */
+.sf-bg-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(96deg, rgba(11, 13, 17, 0.86) 0%, rgba(11, 13, 17, 0.58) 26%, rgba(11, 13, 17, 0.1) 54%, rgba(11, 13, 17, 0.26) 100%);
+  transition: opacity 620ms var(--ease);
+}
+
+.signin.is-focused .sf-bg {
+  filter: blur(18px) saturate(0.82) brightness(0.5);
+  transform: scale(1.06);
+}
+
+.signin.is-focused .sf-bg-veil { opacity: 0.6; }
+
+/* ------------------------------------------------------------------- brand */
 .sf-brand {
-  flex: none;
+  position: absolute;
+  top: 26px;
+  left: clamp(20px, 4vw, 46px);
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -44,7 +80,7 @@
 .sf-mark {
   display: grid;
   place-items: center;
-  color: #15171c;
+  color: #fff;
 }
 
 .sf-wordmark {
@@ -59,7 +95,7 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.3em;
-  color: #15171c;
+  color: #fff;
 }
 
 .sf-wordmark i {
@@ -68,20 +104,33 @@
   font-size: 10.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #8e929c;
+  color: rgba(255, 255, 255, 0.55);
 }
 
-/* stage ----------------------------------------------------------------- */
+/* ------------------------------------------------------------------- stage */
 .sf-stage {
-  flex: 1;
-  min-height: 0;
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.sf-holder {
+  position: absolute;
+  top: 50%;
+  left: clamp(20px, 8vw, 132px);
+  transform: translateY(-50%);
+  width: min(432px, calc(100% - 40px));
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 22px;
-  padding: 20px 0;
-  overflow-y: auto;
+  gap: 16px;
+  transition: left 640ms var(--ease-out), transform 640ms var(--ease-out);
+}
+
+.signin.is-engaged .sf-holder {
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .sf-card {
@@ -93,6 +142,14 @@
     0 1px 2px rgba(20, 22, 26, 0.06),
     0 18px 40px -28px rgba(20, 22, 26, 0.5);
   animation: fade-up 620ms var(--ease-out) 60ms both;
+  transition: box-shadow 640ms var(--ease), transform 640ms var(--ease);
+}
+
+/* Once engaged the plate is the only thing on screen, so it can sit up off the page. */
+.signin.is-focused .sf-card {
+  box-shadow:
+    0 2px 8px rgba(8, 10, 14, 0.28),
+    0 38px 90px -46px rgba(0, 0, 0, 0.9);
 }
 
 .sf-card h1 {
@@ -431,142 +488,77 @@
 /* under the card -------------------------------------------------------- */
 .sf-new {
   font-size: 13px;
-  color: var(--sf-ink-soft);
+  color: rgba(255, 255, 255, 0.66);
   animation: fade-in 620ms var(--ease-out) 200ms both;
 }
 
 .sf-new button {
   font-size: 13px;
   font-weight: 600;
-  color: var(--sf-ink);
+  color: #fff;
   transition: opacity 140ms var(--ease);
 }
 
-.sf-new button:hover {
-  opacity: 0.65;
+.sf-new button:hover { opacity: 0.65; }
+
+/* the two new identity fields sit on one line */
+.sf-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-/* ------------------------------------------------------------------- photo */
-.sf-photo {
-  position: relative;
-  margin: 0;
-  overflow: hidden;
-  background: #cdd5dc;
-}
-
-.sf-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 62% 50%;
-  animation: photo-settle 1.2s var(--ease-out) both;
-}
-
-@keyframes photo-settle {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* A soft inner shade on the seam so the photograph reads as continuing rather than
-   pasted next to a panel. Nothing covers the building itself. */
-.sf-photo-veil {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(236, 238, 239, 0.6) 0%, rgba(236, 238, 239, 0.14) 4%, rgba(236, 238, 239, 0) 10%),
-    linear-gradient(0deg, rgba(14, 16, 20, 0.28) 0%, rgba(14, 16, 20, 0) 18%);
+.sf-note {
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--sf-muted);
+  text-align: center;
 }
 
 /* ---------------------------------------------------------------- responsive */
-@media (max-width: 1080px) {
-  .signin {
-    grid-template-columns: minmax(0, 52%) minmax(0, 1fr);
-  }
-
-  .sf-side {
-    padding: 24px 30px 18px 34px;
-  }
-}
-
 @media (max-width: 880px) {
-  .signin {
-    height: auto;
-    min-height: 100vh;
-    grid-template-columns: minmax(0, 1fr);
-    overflow: visible;
-    background: #eceeef;
-  }
+  .signin { overflow: auto; }
 
-  /* the photograph becomes the top banner, the card sits on the page below it */
-  .sf-photo {
-    order: -1;
-    height: 30vh;
-    min-height: 190px;
-  }
-
-  .sf-photo img {
-    object-position: 66% 46%;
-  }
-
-  .sf-photo-veil {
-    background: linear-gradient(0deg, rgba(236, 238, 239, 0.92) 0%, rgba(236, 238, 239, 0) 26%);
-  }
-
-  .sf-side {
-    padding: 0 20px 22px;
-    margin-top: -26px;
-  }
-
-  .sf-brand {
-    padding: 14px 4px 18px;
-  }
+  .sf-brand { top: 18px; }
 
   .sf-stage {
-    padding: 0 0 16px;
-    gap: 18px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 76px 18px 28px;
   }
 
-  .sf-card {
-    width: min(430px, 100%);
-    padding: 26px 22px 24px;
+  .sf-holder,
+  .signin.is-engaged .sf-holder {
+    position: static;
+    transform: none;
+    width: min(440px, 100%);
+    transition: none;
   }
 
+  .sf-bg-veil {
+    background: linear-gradient(180deg, rgba(11, 13, 17, 0.7) 0%, rgba(11, 13, 17, 0.55) 40%, rgba(11, 13, 17, 0.78) 100%);
+  }
 }
 
-@media (max-width: 460px) {
-  .sf-card {
-    width: 100%;
-  }
+@media (max-width: 520px) {
+  .sf-pair { grid-template-columns: minmax(0, 1fr); }
 
-  .sf-identities {
-    justify-content: center;
-  }
-
+  /* five seats still have to fit on one row: shrink the label rather than clip it */
+  .sf-identities { gap: 4px; }
+  .sf-identity { padding: 10px 4px; }
+  .sf-identity-label { font-size: 9px; letter-spacing: 0.06em; }
 }
 
 @media (max-height: 780px) and (min-width: 881px) {
-  .sf-stage {
-    gap: 16px;
-    padding: 10px 0;
-  }
-
-  .sf-card {
-    padding: 24px 28px 22px;
-  }
-
-  .sf-card form {
-    margin-top: 18px;
-    gap: 13px;
-  }
+  .sf-holder { gap: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sf-brand,
-  .sf-card,
-  .sf-new,
-  .sf-photo img {
-    animation: none !important;
-  }
+  .sf-bg,
+  .sf-holder,
+  .sf-bg-veil { transition: none; }
 }

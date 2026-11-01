@@ -397,7 +397,7 @@ export default function Ripple() {
               {session ? (
                 <>
                   <div className="row gap-10">
-                    <span className={`avatar tone-${tintFor(session.facultyId)}`}>{initials(session.facultyName)}</span>
+                    <span className={`avatar tone-${tintFor(session.facultyId)}`}><Icon name="user" size={13} /></span>
                     <div style={{ display: "flex", flexDirection: "column" }}>
                       <b style={{ fontFamily: "var(--font-display)", fontSize: 12.5, fontWeight: 500 }}>
                         {session.facultyName}

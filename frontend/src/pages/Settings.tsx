@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Layers, useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
-import { initials, tintFor } from "../lib/persona";
+import { tintFor } from "../lib/persona";
 
 const TOKENS = [
   { name: "Warm Paper", value: "#F1EEE6", role: "page foundation" },
@@ -59,7 +59,7 @@ export default function Settings() {
           </div>
           <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div className="row gap-12">
-              <span className={`avatar xl tone-${tintFor(displayUser.email)}`}>{initials(displayUser.name)}</span>
+              <span className={`avatar xl tone-${tintFor(displayUser.email)}`}><Icon name="user" size={22} /></span>
               <div>
                 <b style={{ fontFamily: "var(--font-display)", fontSize: 15 }}>{displayUser.name}</b>
                 <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 2 }}>
@@ -98,9 +98,6 @@ export default function Settings() {
               <div className="eyebrow">Connection</div>
               <h3 style={{ marginTop: 3 }}>Where these numbers come from</h3>
             </div>
-            <span className={`status ${source.mode === "live" ? "valid" : "warning"}`} style={{ marginLeft: "auto" }}>
-              {source.mode === "live" ? "connected" : "offline"}
-            </span>
           </div>
           <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="settings-kv">

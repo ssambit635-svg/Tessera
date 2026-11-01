@@ -11,7 +11,7 @@ import {
   type StripState,
 } from "../lib/derive";
 import { DAY_LONG, formatStampShort, percent, plural } from "../lib/format";
-import { designationFor, initials, tintFor } from "../lib/persona";
+import { designationFor,  tintFor } from "../lib/persona";
 import type { Faculty } from "../lib/types";
 
 const STRIP_LEGEND: { state: StripState; label: string }[] = [
@@ -122,7 +122,7 @@ export default function People() {
           return (
             <article key={person.id} className="person-card">
               <div className="pc-top">
-                <span className={`avatar xl tone-${tintFor(person.id)}`}>{initials(person.name)}</span>
+                <span className={`avatar xl tone-${tintFor(person.id)}`}><Icon name="user" size={22} /></span>
                 <div className="pc-id">
                   <h3>{person.name}</h3>
                   <span className="pc-role">{designationFor(person.id, person.department)}</span>
@@ -251,7 +251,7 @@ function FacultyDrawer({
       <div className="scrim" onClick={onClose} />
       <aside className="drawer wide" role="dialog" aria-label={faculty.name}>
         <div className="drawer-head">
-          <span className={`avatar xl tone-${tintFor(faculty.id)}`}>{initials(faculty.name)}</span>
+          <span className={`avatar xl tone-${tintFor(faculty.id)}`}><Icon name="user" size={22} /></span>
           <div style={{ minWidth: 0 }}>
             <h2>{faculty.name}</h2>
             <div className="pc-role" style={{ marginTop: 2 }}>{designationFor(faculty.id, faculty.department)}</div>
@@ -373,7 +373,7 @@ function FacultyDrawer({
             <div className="candidate-list">
               {candidates.map((candidate) => (
                 <div key={candidate.faculty.id} className={`candidate ${candidate.compatible ? "ok" : "no"}`}>
-                  <span className={`avatar tone-${tintFor(candidate.faculty.id)}`}>{initials(candidate.faculty.name)}</span>
+                  <span className={`avatar tone-${tintFor(candidate.faculty.id)}`}><Icon name="user" size={13} /></span>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div className="row-between" style={{ gap: 8 }}>
                       <b>{candidate.faculty.name}</b>

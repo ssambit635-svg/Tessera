@@ -128,7 +128,7 @@ function Tile({
     <span className={`tile-avatars ${compact ? "compact" : ""}`}>
       {item.facultyName ? (
         <span className={`avatar tone-${tintFor(item.facultyName)}`} title={item.facultyName}>
-          {initials(item.facultyName)}
+          <Icon name="user" size={11} />
         </span>
       ) : (
         <span className={`avatar tone-sand`} title={item.subtitle}>

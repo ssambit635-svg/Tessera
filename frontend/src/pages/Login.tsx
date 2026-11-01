@@ -4,7 +4,7 @@ import { ApiError, demoLogin, loginWithPassword, type LoginResult } from "../lib
 import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { TileMark, TileSpinner } from "../components/TileMark";
-import { initials, tintFor } from "../lib/persona";
+import { tintFor } from "../lib/persona";
 
 const DEMO_PASSWORD = "Tessera@2027";
 
@@ -54,6 +54,13 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [staffId, setStaffId] = useState("");
+  /* The plate sits over the photograph until someone starts filling the form; then the
+     photograph steps back and the plate comes forward. `engaged` is sticky so the page
+     never jumps while an error is being read. */
+  const [engaged, setEngaged] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
   const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState<"password" | string | null>(null);
   const [waking, setWaking] = useState(false);
@@ -116,27 +123,43 @@ export default function Login() {
   };
 
   return (
-    <div className="signin">
-      {/* ------------------------------------------------------------ form side */}
-      <div className="sf-side">
-        <header className="sf-brand">
-          <span className="sf-mark">
-            <TileMark size={25} accent={false} />
-          </span>
-          <span className="sf-wordmark">
-            <b>TESSERA</b>
-            <i>campus scheduling</i>
-          </span>
-        </header>
+    <div className={`signin ${engaged ? "is-engaged" : ""} ${focusWithin ? "is-focused" : ""}`}>
+      {/* --------------------------------------------------------- photograph */}
+      <figure className="sf-canvas" aria-hidden={focusWithin}>
+        <img
+          className="sf-bg"
+          src={CAMPUS_PHOTO}
+          alt="The academic block at golden hour: sandstone louvre fins and recessed glass balconies against a pale sky."
+        />
+        <span className="sf-bg-veil" />
+      </figure>
 
-        <main className="sf-stage">
+      <header className="sf-brand">
+        <span className="sf-mark">
+          <TileMark size={25} accent={false} />
+        </span>
+        <span className="sf-wordmark">
+          <b>TESSERA</b>
+          <i>campus scheduling</i>
+        </span>
+      </header>
+
+      <main className="sf-stage">
+        <div
+          className="sf-holder"
+          onFocusCapture={() => {
+            setEngaged(true);
+            setFocusWithin(true);
+          }}
+          onBlurCapture={() => setFocusWithin(false)}
+        >
           <div className="sf-card">
             <h1>Sign in</h1>
-            <p className="sf-sub">Please enter your details</p>
+            <p className="sf-sub">Campus accounts only · Chilika Institute of Technology</p>
 
             {user && status === "ready" ? (
               <div className="sf-session">
-                <span className={`avatar sm tone-${tintFor(user.email)}`}>{initials(user.name)}</span>
+                <span className={`avatar sm tone-${tintFor(user.email)}`}><Icon name="user" size={12} /></span>
                 <span className="sf-session-copy">
                   <b>{user.name}</b>
                   <span>{user.email}</span>
@@ -148,6 +171,35 @@ export default function Login() {
             ) : null}
 
             <form onSubmit={submit} noValidate>
+              <div className="sf-pair">
+                <label className="sf-field" htmlFor="name">
+                  <span>Full name</span>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Ananya Rao"
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                  />
+                </label>
+
+                <label className="sf-field" htmlFor="staffId">
+                  <span>Staff / employee ID</span>
+                  <input
+                    id="staffId"
+                    name="staffId"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="CIT-2041"
+                    value={staffId}
+                    onChange={(event) => setStaffId(event.target.value)}
+                    spellCheck={false}
+                  />
+                </label>
+              </div>
+
               <label className="sf-field" htmlFor="email">
                 <span>Campus email</span>
                 <input
@@ -211,6 +263,11 @@ export default function Login() {
                   "Sign in"
                 )}
               </button>
+
+              <p className="sf-note">
+                Name and staff ID label this browser session; the campus directory still authenticates with
+                the email above.
+              </p>
             </form>
 
             {waking && busy ? (
@@ -260,18 +317,8 @@ export default function Login() {
               Open the demo workspace
             </button>
           </p>
-        </main>
-
-      </div>
-
-      {/* ---------------------------------------------------------------- photo */}
-      <figure className="sf-photo">
-        <span className="sf-photo-veil" aria-hidden="true" />
-        <img
-          src={CAMPUS_PHOTO}
-          alt="The academic block at golden hour: sandstone louvre fins and recessed glass balconies against a pale sky."
-        />
-      </figure>
+        </div>
+      </main>
     </div>
   );
 }

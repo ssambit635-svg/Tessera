@@ -2679,8 +2679,8 @@ table.data tr.detail-row > td { background: var(--paper-2); padding: 0; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: var(--tint-violet);
-  color: var(--violet-ink);
+  background: var(--tint-sand);
+  color: var(--sand-ink);
   border-radius: 999px;
   padding: 2px 8px;
   font-size: 10.5px;
