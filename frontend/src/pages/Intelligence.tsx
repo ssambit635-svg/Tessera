@@ -1,22 +1,26 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspace } from "../lib/workspace";
 import { useUi, dateFromISO } from "../lib/ui";
 import { Icon } from "../components/Icon";
-import { SessionDrawer } from "../components/SessionDrawer";
 import { TileMark, TileSpinner } from "../components/TileMark";
-import { IsometricStack } from "../components/IsometricStack";
-import {
-  boardItems,
-  matchRooms,
-  packItems,
-  periodSpan,
-  suggestSlots,
-  toneForDepartment,
-} from "../lib/derive";
-import { DAY_LONG, MONTHS, addDays, dayCodeOf, percent, plural } from "../lib/format";
+import { matchRooms, periodSpan, suggestSlots } from "../lib/derive";
+import { DAY_LONG, dayCodeOf, plural } from "../lib/format";
 import type { DayCode } from "../lib/types";
 import { facultyChangeRequest, fetchAiStatus } from "../lib/api";
+
+/* ============================================================================
+   TESSERA Intelligence — the workspace, asked in a sentence.
+
+   The page is the conversation and nothing else: a reading column, the thread,
+   and a composer that stays where you left it. No decorative panels, no second
+   dashboard beside the chat — the model reads, the constraint kernel decides, and
+   every reply links to the screen where you can check it.
+
+   The deterministic answerer below is the floor, not the ceiling: it answers from
+   this workspace with numbers, and the engine path is only used for change-shaped
+   questions (where a proposal can actually be filed).
+   ========================================================================== */
 
 interface Action {
   label: string;
@@ -71,7 +75,6 @@ export default function Intelligence() {
   ]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
-  const [drawer, setDrawer] = useState<string | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -88,89 +91,13 @@ export default function Intelligence() {
       live = false;
     };
   }, [source.token]);
+
   const active = dateFromISO(activeDate);
   const nextTeaching: DayCode = data.calendar.days[(data.calendar.days.indexOf(dayCodeOf(active)) + 1) % data.calendar.days.length];
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
-
-  const calendarDays = data.calendar.days;
-
-  const recommendations = useMemo(() => {
-    const labs = data.rooms.filter((room) => room.type.startsWith("lab_") || room.type === "workshop");
-    const target = labs
-      .map((room) => {
-        const windows: { start: number; end: number }[] = [];
-        for (const period of data.calendar.periods.filter((p) => p.teaching)) {
-          let span = 0;
-          while (
-            span < 3 &&
-            data.calendar.periods.some((p) => p.id === period.id + span) &&
-            data.rooms.find((r) => r.id === room.id)?.availability.find((a) => a.day === nextTeaching && a.period === period.id + span)?.free
-          ) {
-            span += 1;
-          }
-          if (span >= 2) windows.push({ start: period.id, end: period.id + span - 1 });
-        }
-        return { room, window: windows[0] };
-      })
-      .filter((entry) => entry.window)
-      .slice(0, 1)[0];
-
-    const rejected = data.bookings.bookings.find((b) => b.decision.status === "rejected");
-    const alternative = data.bookings.bookings.find((b) => b.decision.status === "alternative_offered");
-    const busiest = [...data.dashboard.utilisation].sort((a, b) => b.utilisation - a.utilisation)[0];
-
-    return [
-      target
-        ? {
-            tone: "sage",
-            icon: "flask",
-            title: `${target.room.name} is free ${DAY_LONG[nextTeaching]} P${target.window!.start}–P${target.window!.end}`,
-            detail: `${target.room.capacity} seats · ${target.room.features.join(", ")} · ${percent(0.4)} typical load`,
-            actions: [
-              { label: "Open availability", to: `/availability?room=${target.room.id}` },
-              { label: "Book this space", to: `/bookings?space=${target.room.id}&day=${nextTeaching}&from=${target.window!.start}&to=${target.window!.end}` },
-            ],
-            meta: "computed from room availability",
-          }
-        : null,
-      rejected
-        ? {
-            tone: "coral",
-            icon: "alert",
-            title: `${rejected.request_id} asks for ${rejected.attendance} seats — no venue is that large`,
-            detail: rejected.decision.reason ?? "Rejected by the capacity constraint.",
-            actions: [
-              { label: "See the decision", to: `/bookings?request=${rejected.request_id}` },
-              { label: "Browse large venues", to: "/discovery?capacity=500" },
-            ],
-            meta: "from the booking decisions",
-          }
-        : null,
-      alternative
-        ? {
-            tone: "violet",
-            icon: "sparkles",
-            title: `${alternative.request_id} can only run as an alternative`,
-            detail: alternative.decision.reason ?? "The requested window conflicts with a hard rule.",
-            actions: [{ label: "Review the request", to: `/bookings?request=${alternative.request_id}` }],
-            meta: "from the booking decisions",
-          }
-        : null,
-      busiest
-        ? {
-            tone: "sky",
-            icon: "chart",
-            title: `${busiest.room_id} carries the heaviest load (${percent(busiest.utilisation)})`,
-            detail: `${busiest.sessions} sessions · ${busiest.hours} teaching hours this week.`,
-            actions: [{ label: "Utilisation report", to: "/reports" }],
-            meta: "from /api/admin/dashboard utilisation",
-          }
-        : null,
-    ].filter(Boolean) as { tone: string; icon: string; title: string; detail: string; actions: Action[]; meta: string }[];
-  }, [data, nextTeaching]);
 
   const answer = async (question: string): Promise<Message> => {
     const q = question.toLowerCase();
@@ -381,195 +308,55 @@ export default function Intelligence() {
     }, 520);
   };
 
+  const empty = messages.length === 1 && !thinking;
+
   return (
-    <div className="intel-page">
-      <div className="intel-head">
-        <div>
-          <div className="row gap-8">
-            <span className="eyebrow">TESSERA Intelligence</span>
-            <span className={`chip ${ai?.enabled ? "violet" : "outline"}`}>
-              <Icon name="sparkles" size={10} /> {ai?.enabled ? `groq · ${ai.model}` : "deterministic layer"}
-            </span>
-          </div>
-          <h2 className="serif" style={{ fontSize: 32, marginTop: 4 }}>
-            Ask the timetable.
-          </h2>
-        </div>
-        <div className="intel-context">
-          <span>
-            <b>{data.sessions.length}</b> sessions
+    <div className="ai-page">
+      <div className="ai-shell">
+        <header className="ai-top">
+          <span className="ai-top-title">
+            Grounded in {plural(data.sessions.length, "session")}, {plural(data.rooms.length, "room")} and{" "}
+            {plural(data.bookings.bookings.length, "venue request")}
           </span>
-          <span>
-            <b>{data.rooms.length}</b> spaces
+          <span className={`ai-status ${ai && !ai.enabled ? "quiet" : ""}`}>
+            <i /> {ai?.enabled ? `groq · ${ai.model}` : "deterministic rules"}
           </span>
-          <span>
-            <b>{data.faculty.length}</b> faculty
-          </span>
-          <span>
-            <b>{data.bookings.totals.approved}</b> bookings
-          </span>
-          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
-            {MONTHS[active.getMonth()].toUpperCase()} · WEEK {data.calendar.festWeek}
-          </span>
-        </div>
-      </div>
+        </header>
 
-      <section className="intel-story">
-        <div className="intel-story-copy">
-          <span className="eyebrow">Assistant · the three layers</span>
-          <h2 className="intel-story-title">Build the perfect answer.</h2>
-
-          <div className="intel-story-body">
-            <p className="intel-story-text">
-              A sentence arrives in Hinglish. A small free-tier model only reads the words — it never
-              decides. The parser turns them into one slot, and the constraint kernel says whether that
-              slot can exist.
-            </p>
-          </div>
-
-          <div className="intel-story-body">
-            <p className="intel-story-text">
-              Every reply names the rule it used and links to the screen where you can check it. If the
-              model is unavailable, the deterministic parser answers instead — the answers are the same,
-              only the reading is different.
-            </p>
-            <button className="intel-story-link" onClick={() => navigate("/bookings")}>
-              Trace a live decision <Icon name="arrowUpRight" size={12} />
-            </button>
-          </div>
-        </div>
-
-        <div className="intel-figure">
-          <span className="intel-figure-tag">FIG.01 — SENTENCE TO PROPOSAL</span>
-          <IsometricStack />
-        </div>
-      </section>
-
-      <div className="intel-workspace">
-        <div className="intel-calendar">
-          <div className="intel-cal-head">
-            <div>
-              <span className="eyebrow">Contextual calendar</span>
-              <h3 style={{ marginTop: 3 }}>
-                {MONTHS[active.getMonth()]} {active.getFullYear()}
-              </h3>
-            </div>
-            <div className="row gap-6">
-              <span className="chip outline">
-                <Icon name="calendar" size={10} /> {DAY_LONG[dayCodeOf(active)]}
+        <div className={`ai-thread ${empty ? "is-empty" : ""}`} ref={scroller}>
+          {empty ? (
+            <div className="ai-empty">
+              <span className="ai-empty-mark">
+                <TileMark size={30} />
               </span>
-              <button className="btn sm" onClick={() => navigate("/mosaic")}>
-                Full board <Icon name="arrowUpRight" size={12} />
-              </button>
-            </div>
-          </div>
-
-          <div className="intel-cal-grid">
-            <div className="icg-corner" />
-            {calendarDays.map((day) => (
-              <div key={day} className="icg-day">
-                <span>{DAY_LONG[day].slice(0, 3)}</span>
-                <b>{addDays(active, data.calendar.days.indexOf(day) - data.calendar.days.indexOf(dayCodeOf(active))).getDate()}</b>
+              <h1>Ask the workspace</h1>
+              <p>
+                Every session, room, faculty hour and venue request is already indexed. Ask in plain
+                language — the answer is computed from the dataset, not guessed.
+              </p>
+              <div className="ai-empty-prompts">
+                {QUICK_PROMPTS.slice(0, 4).map((prompt) => (
+                  <button key={prompt} onClick={() => void send(prompt)}>
+                    <span>{prompt}</span>
+                    <Icon name="arrowUpRight" size={13} />
+                  </button>
+                ))}
               </div>
-            ))}
-
-            {data.calendar.periods
-              .filter((p) => p.teaching)
-              .map((period) => (
-                <div key={`row-${period.id}`} style={{ display: "contents" }}>
-                  <div className="icg-time">{period.start}</div>
-                  {calendarDays.map((day) => {
-                    const items = packItems(boardItems(data, day)).filter(
-                      (entry) => entry.item.startPeriod === period.id,
-                    );
-                    if (!items.length) {
-                      return <div key={`${day}-${period.id}`} className="icg-cell" />;
-                    }
-                    // This is a density map, not a timetable: every session in the slot is
-                    // shown as a tint bar, and the count is stated once.
-                    const lead = items[0].item;
-                    const tones = [...new Set(items.map((entry) => toneForDepartment(entry.item.department)))];
-                    return (
-                      <button
-                        key={`${day}-${period.id}`}
-                        className="icg-cell has-sessions"
-                        onClick={() => lead.sessionId && setDrawer(lead.sessionId)}
-                        title={`${items.length} session${items.length === 1 ? "" : "s"} · ${items
-                          .slice(0, 4)
-                          .map((entry) => entry.item.title)
-                          .join(" · ")}${items.length > 4 ? " …" : ""}`}
-                        aria-label={`${items.length} sessions on ${DAY_LONG[day]} at ${period.start}`}
-                      >
-                        <span className="icg-bars" aria-hidden="true">
-                          {tones.slice(0, 4).map((tone) => (
-                            <i key={tone} style={{ background: `var(--tint-${tone})` }} />
-                          ))}
-                        </span>
-                        <span className="icg-count">{items.length > 1 ? items.length : ""}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-          </div>
-
-          <div className="intel-recs">
-            <div className="row-between" style={{ marginBottom: 10 }}>
-              <div>
-                <span className="eyebrow">Recommendations</span>
-                <h3 style={{ marginTop: 3 }}>Contextual next actions</h3>
-              </div>
-              <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
-                DERIVED, NOT INVENTED
-              </span>
             </div>
-            <div className="rec-grid">
-              {recommendations.map((rec) => (
-                <div className={`rec-card tone-${rec.tone}`} key={rec.title}>
-                  <div className="rec-top">
-                    <span className="rec-icon">
-                      <Icon name={rec.icon} size={14} />
-                    </span>
-                    <span className="rec-meta">{rec.meta}</span>
-                  </div>
-                  <b className="rec-title">{rec.title}</b>
-                  <p className="rec-detail">{rec.detail}</p>
-                  <div className="row gap-6 wrap">
-                    {rec.actions.map((action) => (
-                      <button key={action.label} className="chip outline" onClick={() => navigate(action.to)}>
-                        {action.label} <Icon name="arrowUpRight" size={10} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+          ) : null}
 
-        <aside className="ai-panel">
-          <div className="ai-panel-head">
-            <span className="ai-orb">
-              <TileMark size={22} animated />
-            </span>
-            <div>
-              <b>TESSERA Intelligence</b>
-              <span>reasoning over the live workspace</span>
-            </div>
-            <span className={`ai-status ${ai && !ai.enabled ? "quiet" : ""}`}>
-              <i /> {ai?.enabled ? "groq ready" : "local rules"}
-            </span>
-          </div>
+          {(empty ? [] : messages).map((message) => (
+            <div key={message.id} className={`ai-turn ${message.role}`}>
+              {message.role === "ai" ? (
+                <span className="ai-avatar">
+                  <TileMark size={17} />
+                </span>
+              ) : null}
 
-          <div className="ai-messages" ref={scroller}>
-            {messages.map((message) => (
-              <div key={message.id} className={`ai-msg ${message.role}`}>
-                {message.role === "ai" ? (
-                  <span className="ai-avatar">
-                    <TileMark size={15} />
-                  </span>
-                ) : null}
-                <div className="ai-bubble">
+              {message.role === "user" ? (
+                <div className="ai-user">{message.text}</div>
+              ) : (
+                <div className="ai-say">
                   <p>{message.text}</p>
                   {message.bullets?.length ? (
                     <ul>
@@ -579,41 +366,48 @@ export default function Intelligence() {
                     </ul>
                   ) : null}
                   {message.actions?.length ? (
-                    <div className="ai-actions">
+                    <div className="ai-chips">
                       {message.actions.slice(0, 3).map((action) => (
                         <button key={action.label} onClick={() => navigate(action.to)}>
-                          {action.label} <Icon name="arrowUpRight" size={10} />
+                          {action.label} <Icon name="arrowUpRight" size={11} />
                         </button>
                       ))}
                     </div>
                   ) : null}
                   {message.meta ? <span className="ai-meta">{message.meta}</span> : null}
                 </div>
-              </div>
-            ))}
-            {thinking ? (
-              <div className="ai-msg ai">
-                <span className="ai-avatar">
-                  <TileMark size={15} />
-                </span>
-                <div className="ai-bubble thinking">
-                  <TileSpinner size={18} label="Thinking" />
-                  <span>Reading the workspace…</span>
-                </div>
-              </div>
-            ) : null}
-          </div>
+              )}
+            </div>
+          ))}
 
-          <div className="ai-quick">
-            {QUICK_PROMPTS.slice(0, 3).map((prompt) => (
-              <button key={prompt} onClick={() => void send(prompt)}>
-                {prompt}
-              </button>
-            ))}
-          </div>
+          {thinking ? (
+            <div className="ai-turn ai">
+              <span className="ai-avatar">
+                <TileMark size={17} />
+              </span>
+              <div className="ai-say">
+                <span className="ai-thinking">
+                  <TileSpinner size={15} label="Thinking" />
+                  Reading the workspace…
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="ai-dock">
+          {empty ? null : (
+            <div className="ai-quick">
+              {QUICK_PROMPTS.map((prompt) => (
+                <button key={prompt} onClick={() => void send(prompt)}>
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form
-            className="ai-input"
+            className="ai-compose"
             onSubmit={(event) => {
               event.preventDefault();
               void send(input);
@@ -622,22 +416,20 @@ export default function Intelligence() {
             <input
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask about a room, a request, a change…"
+              placeholder="Ask about a room, a request, or a change…"
               aria-label="Ask TESSERA"
             />
             <button type="submit" className="ai-send" aria-label="Send" disabled={!input.trim()}>
-              <Icon name="arrowRight" size={15} />
+              <Icon name="arrowRight" size={16} />
             </button>
           </form>
-          <p className="ai-foot">
-            Read the small print: change requests go to the scheduling engine, which decides validity — the
-            model only reads your sentence. Answers come from this workspace, every reply links to a screen,
-            and the assistant never approves anything on its own.
-          </p>
-        </aside>
-      </div>
 
-      {drawer ? <SessionDrawer sessionId={drawer} onClose={() => setDrawer(null)} /> : null}
+          <p className="ai-foot">
+            Change requests go to the scheduling engine, which decides validity — the model only reads your
+            sentence. Every reply links to the screen where you can check it.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

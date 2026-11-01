@@ -189,9 +189,6 @@ export default function Overview() {
                 <span>room-time free this week</span>
               </div>
             </div>
-            <div className="hero-tile">
-              <TileMark size={44} title="Tessera tile" />
-            </div>
           </figcaption>
         </figure>
       </section>
@@ -432,10 +429,10 @@ export default function Overview() {
         </div>
         <div>
           <div className="eyebrow">Why the tile</div>
-          <p className="serif" style={{ fontSize: 24, lineHeight: 1.25, marginTop: 6, color: "var(--text)" }}>
+          <p className="serif editorial-note-title">
             Four interlocking blocks. Remove one and the rest no longer hold.
           </p>
-          <p style={{ marginTop: 8, fontSize: 12.5, color: "var(--text-soft)", maxWidth: "68ch" }}>
+          <p className="editorial-note-body">
             That is the scheduling problem in one mark: a room, a lecturer, a group and an hour. TESSERA keeps
             them locked together — and shows you the shape of a change before you make it.
           </p>
