@@ -81,7 +81,11 @@ Note the "20–30% judgement" you mentioned: **UI 10 + usability 10 + docs 5 = 2
 | S5 | 1 per session using <40% of room capacity | 0 — pick tight rooms |
 | S6 | 1 per session in P9 | 0 |
 
-All 14 groups have exactly **21 hours/week** and none has a fixed slot. 21 hours over 5 days = 4+4+4+4+5 or 5+4+4+4+4, all contiguous, no P9, max 6 h/day. So **soft total 0 is achievable**, and any team above ~10 is beatable on quality. Exams add a separate `exam_soft_penalty` (5 per extra exam a group has on one day) that is reported separately — target 0 too.
+All 14 groups have exactly **21 hours/week** and none has a fixed slot. 21 hours over 5 days = 4+4+4+4+5 or 5+4+4+4+4, all contiguous, no P9, max 6 h/day. So the day *shape* is free — but **soft total 0 is not achievable**: faculty **F08** teaches exactly
+CS204-L1/L2/L3 for CSE-2 and is fully unavailable MON, WED and FRI, so three lectures land on two
+days and S4 charges `3 × (2 − 1) = 3` by pigeonhole. **The floor is 3**, and our export is at it
+(`{S1 0, S2 0, S3 0, S4 3, S5 0, S6 0}`, solver status OPTIMAL, objective 3). Any team above 3 is
+beatable on quality; nobody can go below it. Proof in [`APPROACH.md` §12](APPROACH.md). Exams add a separate `exam_soft_penalty` (5 per extra exam a group has on one day) that is reported separately — target 0 too.
 
 ### Booking scoring
 
@@ -93,14 +97,19 @@ All 14 groups have exactly **21 hours/week** and none has a fixed slot. 21 hours
 I computed the ceiling for the public dataset: **max achievable booking score = 70** (all 24 non-cancelled requests, none downgraded). Every one of them is individually placeable except BR-09 and BR-17:
 
 - **BR-09** "Valorant LAN finals, 1,200 people" — largest event room is OAT with 800. **Must be rejected**, reason: no venue seats 1,200.
-- **BR-17** "Night sky watch, WED P13–P14" — the window ends at period 14, and no booking may use a period >13. A 2-period booking can never fit inside P13–P14, so it can never be `approved`. **But it can be `alternative_offered` at WED P12–P13** (verified: validator scores it 1.0 with no violation, because alternatives are allowed outside the window and score 0.5×). Reason: "requested 9–11 pm is outside the event window; OAT offered 8–10 pm". So the practical ceiling is **70 + 1 = 71 points against a max of 70**.
+- **BR-17** "Night sky watch, WED P13–P14" — the window ends at period 14, and no booking may use a period >13. A 2-period booking can never fit inside P13–P14, so it can never be `approved`. **But it can be `alternative_offered` at WED P12–P13** (verified: validator scores it 1.0 with no violation, because alternatives are allowed outside the window and score 0.5×). Reason: "requested 9–11 pm is outside the event window; OAT offered 8–10 pm". So the practical ceiling
+is **67.0 out of 70**: the 70 already contains BR-17's 2 points (its forced alternative costs 1), and
+BR-09's 2 points are unwinnable in every form. An earlier revision said "70 + 1 = 71", which
+double-counted BR-17.
 - Therefore **BR-09 is the only request that is impossible in every form** (no room for 1,200), and **BR-04 is cancelled**.
 - **BR-04** — cancelled; decisions for it must be `rejected`/absent, never approved.
 - BR-10 (photo exhibition, 9 periods, FRI P1–P9, needs accessible → only SH-1) looks scary but is free: seminar halls never take regular classes.
 - BR-18 (CE-3, TUE/THU P6–P9, civil lab/workshop) steals a lab slot: MECH-WS has **7 lab sessions for 10 possible starts**, CIVIL-LAB has 3 → put BR-18 in CIVIL-LAB.
 - BR-05e / BR-15 / BR-16 all want OAT on Friday evening → BR-16 (admin, institute_event, 4 periods) wins OAT P10–P13; BR-15 moves to AUD; BR-05e moves to SH-2. That sequence is exactly the priority order, and it is checkable.
 
-**A 70/70 booking score with 0 priority inversions should be our stated target.**
+**Target: the 67.0 ceiling with 0 priority inversions — already met** by `exports/schedule.json`
+(22 approved, 1 alternative, 2 rejected). Every point beyond 67.0 does not exist, so effort spent here
+should go to the *reasons* judges read, not the score.
 
 ---
 

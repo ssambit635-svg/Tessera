@@ -98,7 +98,12 @@ Note: optimisation marks are **ranked across teams that already score ≥15 corr
 6. **Priority inversions** are reported by the validator (a higher-priority rejected request that could have used a slot held by a lower-priority approved one). Not a hard rule, but it reads as "wrong decision". Target **0**.
 7. **Never approve a cancelled request.** Never emit two decisions for one id. Emit a decision for **every** non-cancelled request (a missing decision is a warning; a missing decision that could have been placed is lost marks).
 8. **Admin "change the priority order" feature is a trap:** the validator always uses the dataset order. Keep dataset order authoritative for exports; any custom order is a what-if view only.
-9. Ceiling for the public dataset: **71 points** (70 max + BR-17's 0.5×2). Known truths to state in the video:
+9. Ceiling for the public dataset: **67.0 points** out of the validator's `max_score` of 70 — we are
+   **at it**. The arithmetic: 70 already includes BR-17's 2 points, so BR-17's forced
+   `alternative_offered` costs 1 (`70 − 1`), and BR-09 (1,200 attendees, largest venue 800) has no
+   legal placement at all (`− 2`). BR-04 is cancelled and is excluded from the 70 by the validator.
+   An earlier revision of this line said 71; that double-counted BR-17 and ignored BR-09. Proof in
+   [`APPROACH.md` §12](APPROACH.md). Known truths to state in the video:
    - **BR-04** cancelled → reject/omit decision, never approve.
    - **BR-09** 1,200 attendees > 800 (OAT) → **reject**, reason "no venue seats 1,200".
    - **BR-17** window P13–P14 exceeds the event window (max P13) → **`alternative_offered`** WED P12–P13.

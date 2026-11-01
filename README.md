@@ -390,9 +390,11 @@ from another team, no dependency on the organisers' files being writable.
 
 ## Documentation
 
-[`docs/API.md`](docs/API.md) · [`docs/REPAIR.md`](docs/REPAIR.md) · [`docs/DATABASE.md`](docs/DATABASE.md)
-· [`docs/RULES_MASTER.md`](docs/RULES_MASTER.md) · [`docs/NOVELTY.md`](docs/NOVELTY.md)
-· [`docs/DEMO.md`](docs/DEMO.md) · [`AI_USAGE.md`](AI_USAGE.md) · [`THIRD_PARTY.md`](THIRD_PARTY.md)
+[`docs/APPROACH.md`](docs/APPROACH.md) — **start here**: rules → design → proofs → gaps ·
+[`docs/RULES_MASTER.md`](docs/RULES_MASTER.md) · [`docs/STRATEGY.md`](docs/STRATEGY.md)
+· [`docs/API.md`](docs/API.md) · [`docs/REPAIR.md`](docs/REPAIR.md) · [`docs/DATABASE.md`](docs/DATABASE.md)
+· [`docs/NOVELTY.md`](docs/NOVELTY.md) · [`docs/DEMO.md`](docs/DEMO.md) · [`AI_USAGE.md`](AI_USAGE.md)
+· [`THIRD_PARTY.md`](THIRD_PARTY.md)
 
 Built by **Team Voltryx** for **Tech Zephyr 4.0**. All numbers in this README are produced by this
 repository; none of them were typed by hand.
