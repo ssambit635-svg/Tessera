@@ -137,11 +137,14 @@ export default function People() {
 
               <div className="pc-expertise">
                 {expertise.length ? (
-                  expertise.map((title) => (
-                    <span key={title} className="chip outline">
-                      {title}
-                    </span>
-                  ))
+                  <>
+                    <span className="chip outline">{expertise[0]}</span>
+                    {expertise.length > 1 && (
+                      <span className="chip outline quiet" title={expertise.slice(1).join(", ")}>
+                        +{expertise.length - 1}
+                      </span>
+                    )}
+                  </>
                 ) : (
                   <span className="chip outline">No assigned courses</span>
                 )}

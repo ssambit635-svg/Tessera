@@ -8,14 +8,16 @@ import { matchRooms, periodSpan, suggestSlots } from "../lib/derive";
 import { DAY_LONG, dayCodeOf, plural } from "../lib/format";
 import type { DayCode } from "../lib/types";
 import { facultyChangeRequest, fetchAiStatus } from "../lib/api";
+import { IsometricStack } from "../components/IsometricStack";
 
 /* ============================================================================
    TESSERA Intelligence — the workspace, asked in a sentence.
 
-   The page is the conversation and nothing else: a reading column, the thread,
-   and a composer that stays where you left it. No decorative panels, no second
-   dashboard beside the chat — the model reads, the constraint kernel decides, and
-   every reply links to the screen where you can check it.
+   Two halves, one page. Up top the argument, drawn: the left column says what the
+   assistant is and is not, the right column is the exploded isometric of the three
+   layers every sentence passes through — what you typed, what the parser made of
+   it, what the rules allow. Below it, the conversation itself, with the composer
+   pinned to the bottom of its own panel.
 
    The deterministic answerer below is the floor, not the ceiling: it answers from
    this workspace with numbers, and the engine path is only used for change-shaped
@@ -91,6 +93,14 @@ export default function Intelligence() {
       live = false;
     };
   }, [source.token]);
+
+  const composerRef = useRef<HTMLInputElement>(null);
+  const shellRef = useRef<HTMLElement>(null);
+
+  const jumpToComposer = () => {
+    shellRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => composerRef.current?.focus(), 380);
+  };
 
   const active = dateFromISO(activeDate);
   const nextTeaching: DayCode = data.calendar.days[(data.calendar.days.indexOf(dayCodeOf(active)) + 1) % data.calendar.days.length];
@@ -312,7 +322,38 @@ export default function Intelligence() {
 
   return (
     <div className="ai-page">
-      <div className="ai-shell">
+      <div className="ai-wrap">
+        <section className="intel-story ai-story">
+          <div className="intel-story-copy">
+            <span className="eyebrow">Assistant · grounded in the dataset</span>
+            <h1 className="intel-story-title">Ask the workspace.</h1>
+
+            <div className="intel-story-body">
+              <p className="intel-story-text">
+                Every session, room, faculty hour and venue request is already indexed. Ask in plain
+                language — or in Hinglish — and the answer is computed from the workspace, not guessed.
+              </p>
+            </div>
+
+            <div className="intel-story-body">
+              <p className="intel-story-text">
+                The model only reads your sentence. Validity is decided by the scheduling kernel, so a
+                change never leaves this page unless the rules allow it.
+              </p>
+            </div>
+
+            <button className="intel-story-link" onClick={jumpToComposer}>
+              Start with a question <Icon name="arrowRight" size={13} />
+            </button>
+          </div>
+
+          <div className="intel-figure">
+            <span className="intel-figure-tag">FIG. 01 — SENTENCE → PARSED SLOT → RULE CHECK</span>
+            <IsometricStack />
+          </div>
+        </section>
+
+        <section className="ai-shell" ref={shellRef}>
         <header className="ai-top">
           <span className="ai-top-title">
             Grounded in {plural(data.sessions.length, "session")}, {plural(data.rooms.length, "room")} and{" "}
@@ -325,15 +366,8 @@ export default function Intelligence() {
 
         <div className={`ai-thread ${empty ? "is-empty" : ""}`} ref={scroller}>
           {empty ? (
-            <div className="ai-empty">
-              <span className="ai-empty-mark">
-                <TileMark size={30} />
-              </span>
-              <h1>Ask the workspace</h1>
-              <p>
-                Every session, room, faculty hour and venue request is already indexed. Ask in plain
-                language — the answer is computed from the dataset, not guessed.
-              </p>
+            <div className="ai-empty is-quiet">
+              <p className="ai-empty-hint">No question yet — pick one, or type your own below.</p>
               <div className="ai-empty-prompts">
                 {QUICK_PROMPTS.slice(0, 4).map((prompt) => (
                   <button key={prompt} onClick={() => void send(prompt)}>
@@ -414,6 +448,7 @@ export default function Intelligence() {
             }}
           >
             <input
+              ref={composerRef}
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="Ask about a room, a request, or a change…"
@@ -429,6 +464,7 @@ export default function Intelligence() {
             sentence. Every reply links to the screen where you can check it.
           </p>
         </div>
+        </section>
       </div>
     </div>
   );

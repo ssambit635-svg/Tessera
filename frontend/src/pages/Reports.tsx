@@ -45,10 +45,6 @@ export default function Reports() {
           </p>
         </div>
         <div className="row gap-8">
-          <span className={`conn-badge ${source.mode}`}>
-            <span className="led" />
-            {source.mode === "live" ? "LIVE" : "OFFLINE"}
-          </span>
           <button className="btn sm" onClick={() => navigate("/availability")}>
             <Icon name="grid" size={13} /> Availability
           </button>

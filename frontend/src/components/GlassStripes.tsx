@@ -55,9 +55,9 @@ interface GlassStripesProps {
   restY?: number;
 }
 
-const IDLE_ORBIT_MS = 26_000;
+const IDLE_ORBIT_MS = 34_000;
 /** how long the light waits after the pointer stops before it starts drifting again */
-const IDLE_HOLD_MS = 4_000;
+const IDLE_HOLD_MS = 2_200;
 
 export function GlassStripes({
   className = "",
@@ -118,21 +118,25 @@ export function GlassStripes({
       // hero is alive before the visitor touches it.
       const stillFor = now - lastMove;
       if (stillFor > IDLE_HOLD_MS) {
+        /* Two unrelated periods, so the light wanders an open ellipse instead of
+           retracing one ring: 34s across, 47s down. The amplitude is a fraction of
+           the stage, not of the pointer strength — the hero has to be alive on its own. */
         const phase = (stillFor - IDLE_HOLD_MS) / IDLE_ORBIT_MS;
-        targetX = Math.cos(phase * Math.PI * 2) * 0.42 * pointerStrength;
-        targetY = Math.sin(phase * Math.PI * 2) * 0.3 * pointerStrength;
+        targetX = Math.cos(phase * Math.PI * 2) * 0.62 + Math.sin(phase * Math.PI * 1.37) * 0.16;
+        targetY = Math.sin(phase * Math.PI * 1.45) * 0.5 + Math.cos(phase * Math.PI * 0.61) * 0.12;
       }
 
-      x += (targetX - x) * 0.06;
-      y += (targetY - y) * 0.06;
+      // Slower easing than the pointer: a drift this long should read as breathing.
+      x += (targetX - x) * 0.045;
+      y += (targetY - y) * 0.045;
 
       // The light breathes a little, the way a real refraction shifts as the pane settles.
-      const live = 0.82 + Math.sin(now / 5200) * 0.12;
+      const live = 0.92 + Math.sin(now / 5200) * 0.08;
 
       // Transform + opacity are the two properties the compositor owns: no style recalc,
       // no layout, no paint. Offsets are in px so each layer keeps its own parallax.
-      const dx = restX + x * 300;
-      const dy = restY + y * 260;
+      const dx = restX + x * 320;
+      const dy = restY + y * 280;
       if (glowRef.current) {
         glowRef.current.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`;
         glowRef.current.style.opacity = live.toFixed(3);
@@ -160,9 +164,9 @@ export function GlassStripes({
     "--g-ribs": ribs,
     "--g-angle": `${90 - angle}deg`,
     "--g-bg": colors?.background ?? "#08080a",
-    "--g-shadow": colors?.shadow ?? "#7d0f22",
-    "--g-mid": colors?.midtone ?? "#e23a54",
-    "--g-hot": colors?.highlight ?? "#ffe7e2",
+    "--g-shadow": colors?.shadow ?? "#8e1024",
+    "--g-mid": colors?.midtone ?? "#ff3a58",
+    "--g-hot": colors?.highlight ?? "#fff4f0",
     "--g-quality": quality === "low" ? "0.6" : "1",
   } as React.CSSProperties;
 

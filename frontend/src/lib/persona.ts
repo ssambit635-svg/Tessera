@@ -90,7 +90,6 @@ export function roomImageAlt(roomName: string): string {
   return `Reference photograph illustrating ${roomName}`;
 }
 
-export const PHOTO_NOTE = "Reference imagery · illustrative, not this exact room";
 
 /** Rooms we promote on the editorial pages, because they photograph well. */
 export const FEATURED_ROOMS = ["CS-LAB-1", "ELEC-LAB-1", "SH-1", "INNOV-HUB", "MECH-WS"];

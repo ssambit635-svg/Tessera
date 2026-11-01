@@ -230,7 +230,7 @@ const isIconName = (v: unknown): v is SocialIcon => typeof v === "string" && v i
 // One scoped stylesheet. Every rule sits under .bwf; element resets go through
 // :where(.bwf) so they never out-rank the component's own classes or yours.
 const CSS =
-  ".bwf{position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;background:var(--bwf-bg);color:var(--bwf-ink);font-family:var(--bwf-sans);-webkit-font-smoothing:antialiased;touch-action:pan-y}" +
+  ".bwf{position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;background-color:var(--bwf-bg);background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.085) 1px,transparent 1.7px);background-size:26px 26px;color:var(--bwf-ink);font-family:var(--bwf-sans);-webkit-font-smoothing:antialiased;touch-action:pan-y}" +
   ":where(.bwf) a{color:inherit;text-decoration:none}" +
   ":where(.bwf) button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}" +
   ":where(.bwf) ul{list-style:none;margin:0;padding:0}" +
@@ -238,17 +238,17 @@ const CSS =
   ".bwf svg{max-width:none;display:block}" +
   ".bwf .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}" +
   // The top rule: a hairline of accent, brighter where the beam crosses it.
-  ".bwf-rule{position:absolute;left:0;right:0;top:0;height:1px;z-index:3;background:linear-gradient(90deg,rgba(var(--bwf-acc),.15),rgba(var(--bwf-acc),.55) var(--bwf-b),rgba(var(--bwf-acc),.15))}" +
+  ".bwf-rule{position:absolute;left:0;right:0;top:0;height:1px;z-index:3;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(var(--bwf-acc),.4) var(--bwf-b),rgba(255,255,255,.05))}" +
   // Backdrop: a wash, faint vertical bands, the beam, a soft second beam,
   // the pointer glow, and grain. One frame (the section box) for all of them.
   ".bwf-sky{position:absolute;inset:0;z-index:0;pointer-events:none}" +
-  ".bwf-wash{position:absolute;inset:0;background:radial-gradient(120% 90% at 8% 0%,rgba(var(--bwf-acc),.13),transparent 55%),radial-gradient(90% 70% at 92% 8%,rgba(var(--bwf-acc),.1),transparent 60%),linear-gradient(180deg,rgba(var(--bwf-acc),.045),transparent 70%)}" +
+  ".bwf-wash{position:absolute;inset:0;background:linear-gradient(180deg,var(--bwf-bg) 0%,rgba(var(--bwf-bg-rgb),0) 16%),radial-gradient(115% 85% at 6% 0%,rgba(var(--bwf-acc),.085),transparent 55%),radial-gradient(85% 65% at 92% 6%,rgba(var(--bwf-acc),.07),transparent 58%)}" +
   ".bwf-bands{position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(var(--bwf-acc),.04) 0 1.6cqw,transparent 1.6cqw 4.2cqw);-webkit-mask-image:linear-gradient(100deg,#000 0%,transparent 55%);mask-image:linear-gradient(100deg,#000 0%,transparent 55%);opacity:.9}" +
-  ".bwf-beam{position:absolute;inset:0;filter:blur(calc(0.5px + 0.95cqw));background:linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 11%),rgba(var(--bwf-acc),.10) calc(var(--bwf-b) - 5%),rgba(var(--bwf-acc),.46) var(--bwf-b),rgba(var(--bwf-acc),.08) calc(var(--bwf-b) + 4%),transparent calc(var(--bwf-b) + 9%)),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 34%),rgba(var(--bwf-acc),.10) calc(var(--bwf-b) - 27%),transparent calc(var(--bwf-b) - 20%))}" +
+  ".bwf-beam{position:absolute;inset:0;filter:blur(calc(0.5px + 1.05cqw));background:linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 12%),rgba(var(--bwf-acc),.09) calc(var(--bwf-b) - 5%),rgba(var(--bwf-acc),.34) var(--bwf-b),rgba(var(--bwf-acc),.08) calc(var(--bwf-b) + 5%),transparent calc(var(--bwf-b) + 10%)),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 34%),rgba(var(--bwf-acc),.09) calc(var(--bwf-b) - 27%),transparent calc(var(--bwf-b) - 20%))}" +
   ".bwf-glow{position:absolute;inset:0;opacity:var(--bwf-g);background:radial-gradient(circle 26cqw at var(--bwf-px) var(--bwf-py),rgba(var(--bwf-acc),.16),transparent 70%)}" +
   ".bwf-grain{position:absolute;inset:0;opacity:.14;mix-blend-mode:overlay;background-image:url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")}" +
   // Layout.
-  ".bwf-inner{position:relative;z-index:2;box-sizing:border-box;max-width:1120px;margin:0 auto;padding:clamp(48px,8.5cqw,104px) clamp(20px,6cqw,88px) 0;display:grid;grid-template-columns:minmax(0,1.62fr) minmax(0,.86fr) minmax(0,.86fr);column-gap:clamp(24px,4cqw,48px);row-gap:44px}" +
+  ".bwf-inner{position:relative;z-index:2;box-sizing:border-box;max-width:1120px;margin:0 auto;padding:clamp(40px,5.6cqw,72px) clamp(20px,6cqw,88px) 0;display:grid;grid-template-columns:minmax(0,1.62fr) minmax(0,.86fr) minmax(0,.86fr);column-gap:clamp(24px,4cqw,48px);row-gap:38px}" +
   ".bwf-label{font-size:12px;line-height:1;letter-spacing:.01em;color:rgb(var(--bwf-acc));padding-bottom:13px;position:relative;display:block}" +
   ".bwf-label::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,rgba(var(--bwf-acc),.55),rgba(var(--bwf-acc),.28));transform-origin:0 50%;transform:scaleX(var(--bwf-line,1));transition:transform 1.1s cubic-bezier(.2,.7,.1,1) var(--bwf-d,0ms)}" +
   ".bwf[data-in='false'] .bwf-label::after{--bwf-line:0}" +
@@ -284,7 +284,7 @@ const CSS =
   ".bwf-link:focus-visible .bwf-link-t{text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(var(--bwf-acc),.8)}" +
   // The wordmark. Each letter paints the section-sized background, shifted
   // back by its own offset, so beam and glow line up with the backdrop.
-  ".bwf-word{position:relative;z-index:1;overflow:hidden;margin-top:clamp(28px,7cqw,96px)}" +
+  ".bwf-word{position:relative;z-index:1;overflow:hidden;margin-top:clamp(24px,4.4cqw,62px)}" +
   ".bwf-word-box{padding:0 clamp(20px,6cqw,88px);max-width:1120px;margin:0 auto;box-sizing:border-box}" +
   ".bwf-word-in{display:inline-flex;white-space:nowrap;font-weight:var(--bwf-ww);line-height:1;letter-spacing:-.045em;user-select:none;-webkit-user-select:none}" +
   ".bwf-lw{display:inline-block;translate:0 0;transition:translate 1.25s cubic-bezier(.16,.84,.2,1) var(--bwf-d,0ms)}" +
@@ -298,7 +298,7 @@ const CSS =
   ".bwf-l.is-hop{animation:bwf-hop .75s cubic-bezier(.2,.8,.2,1)}" +
   "@keyframes bwf-hop{0%{transform:translateY(0) scale(1,1)}18%{transform:translateY(.02em) scale(1.06,.9)}45%{transform:translateY(-.14em) scale(.97,1.05)}70%{transform:translateY(.01em) scale(1.02,.97)}100%{transform:translateY(-.045em) scale(1,1)}}" +
   // The foot sinks into the dark, the way the reference does.
-  ".bwf-foot{position:absolute;left:0;right:0;bottom:0;height:34%;z-index:2;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(var(--bwf-bg-rgb),.55) 55%,var(--bwf-bg))}" +
+  ".bwf-foot{position:absolute;left:0;right:0;bottom:0;height:26%;z-index:2;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(var(--bwf-bg-rgb),.4) 62%,var(--bwf-bg))}" +
   "@container (max-width: 760px){.bwf-inner{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:40px}.bwf-col:nth-child(1){grid-column:1 / -1;max-width:none}}" +
   "@media (prefers-reduced-motion: reduce){.bwf .bwf-lw,.bwf .bwf-fade,.bwf .bwf-label::after,.bwf .bwf-l,.bwf .bwf-soc,.bwf .bwf-link-t,.bwf .bwf-link svg{transition:none!important;animation:none!important}.bwf[data-in='false'] .bwf-lw,.bwf[data-in='false'] .bwf-fade{translate:none;opacity:1}.bwf[data-in='false'] .bwf-label::after{--bwf-line:1}}";
 
@@ -329,7 +329,7 @@ export default function BeamWordmarkFooter({
   ink = "#f4f4f6",
   muted = "#9c9c9d",
   accent = "#e23a54",
-  wordTop = "#7d1a2b",
+  wordTop = "#961f33",
   wordFoot = "#0a0a0b",
   fontSans = SANS,
   wordWeight = 500,
