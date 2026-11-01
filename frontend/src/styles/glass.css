@@ -1,0 +1,170 @@
+/* ============================================================================
+   Glass Stripes — fluted glass refracting a drifting light.
+
+   Built to be cheap, because it sits above the fold: every layer is a static
+   gradient, the light is moved with `transform` only (compositor), and there is
+   no `filter: blur()` anywhere — a radial gradient is already soft, and a
+   full-screen blur is what makes a hero drop frames on integrated graphics.
+
+   Two custom properties drive everything:
+     --g-ribs   flute count         --g-angle  rib angle (gradient axis)
+     --gx/--gy  light offset        --g-live   light intensity
+   ========================================================================== */
+
+.glass-stripes {
+  --g-ribs: 14;
+  --g-angle: 54deg;
+  --g-bg: #08080a;
+  --g-shadow: #7d0f22;
+  --g-mid: #e23a54;
+  --g-hot: #ffe7e2;
+  --gx: 0;
+  --gy: 0;
+  --g-live: 0.9;
+  --g-flute: calc(100% / var(--g-ribs));
+
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--g-bg);
+  pointer-events: none;
+  z-index: 0;
+  contain: paint;
+}
+
+/* ------------------------------------------------------------- the light */
+
+/* Light only arrives *through* the glass body: a rib-profile mask that is open
+   through the middle of each flute and closed at the seams. That is the whole
+   refraction read, and it costs one mask instead of a shader. */
+.glass-field {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: repeating-linear-gradient(
+    var(--g-angle),
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0.1) calc(var(--g-flute) * 0.07),
+    rgba(0, 0, 0, 0.8) calc(var(--g-flute) * 0.22),
+    #000 calc(var(--g-flute) * 0.4),
+    #000 calc(var(--g-flute) * 0.6),
+    rgba(0, 0, 0, 0.78) calc(var(--g-flute) * 0.78),
+    rgba(0, 0, 0, 0.08) calc(var(--g-flute) * 0.93),
+    rgba(0, 0, 0, 0) var(--g-flute)
+  );
+  mask-image: repeating-linear-gradient(
+    var(--g-angle),
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0.1) calc(var(--g-flute) * 0.07),
+    rgba(0, 0, 0, 0.8) calc(var(--g-flute) * 0.22),
+    #000 calc(var(--g-flute) * 0.4),
+    #000 calc(var(--g-flute) * 0.6),
+    rgba(0, 0, 0, 0.78) calc(var(--g-flute) * 0.78),
+    rgba(0, 0, 0, 0.08) calc(var(--g-flute) * 0.93),
+    rgba(0, 0, 0, 0) var(--g-flute)
+  );
+}
+
+.glass-glow,
+.glass-split {
+  position: absolute;
+  /* just enough oversize for the light to travel without clipping its falloff */
+  inset: -22%;
+  display: block;
+  will-change: transform;
+  /* the resting position; the loop overwrites transform/opacity directly */
+  transform: translate3d(0, 0, 0);
+}
+
+/* the light: hot centre, midtone body, deep shadow at the far edge */
+.glass-glow {
+  background: radial-gradient(
+    46% 54% at 50% 50%,
+    rgba(255, 238, 232, 0.98) 0%,
+    rgba(255, 196, 200, 0.9) 9%,
+    rgba(244, 96, 118, 0.82) 22%,
+    rgba(226, 58, 84, 0.66) 38%,
+    rgba(176, 40, 66, 0.5) 58%,
+    rgba(104, 22, 42, 0.32) 76%,
+    rgba(20, 6, 12, 0) 92%
+  );
+  opacity: var(--g-live);
+}
+
+/* Chromatic split: the same light nudged either side in a warmer and a cooler
+   tint. Two static gradients, no filter, no blend mode — screened on top so the
+   seams read as glass edges rather than paint. */
+.glass-split {
+  background: radial-gradient(
+    34% 40% at 50% 50%,
+    rgba(255, 122, 146, 0.34) 0%,
+    rgba(232, 62, 110, 0.22) 34%,
+    rgba(120, 30, 70, 0.12) 62%,
+    transparent 84%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.6;
+}
+
+.glass-split.warm {
+  background: radial-gradient(
+    32% 38% at 50% 50%,
+    rgba(255, 176, 120, 0.24) 0%,
+    rgba(232, 92, 84, 0.16) 36%,
+    rgba(96, 24, 40, 0.1) 64%,
+    transparent 86%
+  );
+  opacity: 0.45;
+  /* normal blending: one screen layer is enough, two is twice the compositing cost */
+  mix-blend-mode: normal;
+}
+
+/* ------------------------------------------------------------- the ribs */
+
+/* Rims and troughs, independent of the light, so the glass reads even where the
+   light is weak. Normal blending with explicit alpha — cheaper than overlay. */
+.glass-ribs {
+  position: absolute;
+  inset: -12% -6%;
+  background: repeating-linear-gradient(
+    var(--g-angle),
+    rgba(255, 255, 255, 0.1) 0,
+    rgba(255, 255, 255, 0.1) 1px,
+    rgba(255, 255, 255, 0.025) 2px,
+    rgba(255, 255, 255, 0) calc(var(--g-flute) * 0.16),
+    rgba(0, 0, 0, 0.22) calc(var(--g-flute) * 0.34),
+    rgba(0, 0, 0, 0.34) calc(var(--g-flute) * 0.5),
+    rgba(0, 0, 0, 0.2) calc(var(--g-flute) * 0.66),
+    rgba(255, 255, 255, 0) calc(var(--g-flute) * 0.84),
+    rgba(0, 0, 0, 0.46) calc(var(--g-flute) * 0.94),
+    rgba(0, 0, 0, 0.8) var(--g-flute)
+  );
+}
+
+/* one tiled turbulence bitmap, plain alpha — grain, not a blend-mode stack */
+.glass-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.38;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+.glass-stripes[data-quality="low"] .glass-grain {
+  opacity: 0.26;
+}
+
+/* if a browser drops mask-image, the light must still read rather than vanish */
+@supports not ((mask-image: linear-gradient(#000, #000)) or (-webkit-mask-image: linear-gradient(#000, #000))) {
+  .glass-field {
+    opacity: 0.55;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-glow,
+  .glass-split {
+    will-change: auto;
+  }
+}

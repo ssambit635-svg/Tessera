@@ -2936,3 +2936,373 @@ table.data tr.detail-row > td { background: var(--paper-2); padding: 0; }
   .audit-list li { grid-template-columns: 1fr; gap: 3px; }
   .reject-sheet { right: 12px; left: 12px; bottom: 12px; width: auto; }
 }
+
+/* ==========================================================================
+   Intelligence — the side-by-side story band and FIG.01.
+   A bordered grid: copy in the left third, the drawing in the other two.
+   Same grammar as the reference section, drawn in the app's own ink palette.
+   ========================================================================== */
+
+.intel-story {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  min-height: 470px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.intel-story-copy {
+  display: flex;
+  flex-direction: column;
+  padding: 30px 30px 0;
+  border-right: 1px solid var(--line);
+  min-width: 0;
+}
+
+.intel-story-title {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 2.5vw, 36px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  max-width: 11ch;
+}
+
+/* the body sits under a hairline, like the reference's stacked copy blocks */
+.intel-story-body {
+  margin-top: auto;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.intel-story-body + .intel-story-body {
+  margin-top: 18px;
+}
+
+.intel-story-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.85;
+  color: var(--muted);
+  letter-spacing: 0.005em;
+  max-width: 34ch;
+}
+
+.intel-story-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 18px 0 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.intel-story-link svg {
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.intel-story-link:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.intel-story-link:hover {
+  color: var(--coral-ink);
+}
+
+/* ------------------------------------------------------------------ figure */
+
+.intel-figure {
+  position: relative;
+  min-width: 0;
+  min-height: 470px;
+  display: grid;
+  place-items: center;
+  padding: 30px 24px;
+  background-color: var(--ivory);
+  background-image: radial-gradient(rgba(25, 26, 28, 0.14) 0.9px, transparent 0.9px);
+  background-size: 18px 18px;
+  background-position: 6px 6px;
+}
+
+.intel-figure-tag {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+/* the 3D stage: rotated so the stack reads as an exploded isometric drawing.
+   The button is a stationary hit area; only the face inside it lifts, otherwise the
+   pointer is left hovering nothing the moment the plate moves. */
+.iso {
+  position: relative;
+  width: min(430px, 100%);
+  height: 400px;
+  perspective: 1600px;
+  perspective-origin: 50% 45%;
+}
+
+.iso-stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(58deg) rotateZ(-42deg);
+}
+
+.iso-layer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 196px;
+  height: 196px;
+  margin: -98px 0 0 -98px;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translateZ(var(--z));
+  transform-style: preserve-3d;
+  /* not a hit target: the plates overlap in projection (see the component note) */
+  pointer-events: none;
+}
+
+.iso-face {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  border: 1px solid var(--line-3);
+  border-radius: 14px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: 0 24px 50px -38px rgba(22, 22, 24, 0.75);
+  text-align: left;
+  transition: transform var(--dur-3) var(--ease-out), border-color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease);
+}
+
+.iso[data-active]:not([data-active=""]) .iso-face {
+  opacity: 0.4;
+}
+
+.iso[data-active="sentence"] .iso-layer[data-id="sentence"] .iso-face,
+.iso[data-active="parsed"] .iso-layer[data-id="parsed"] .iso-face,
+.iso[data-active="kernel"] .iso-layer[data-id="kernel"] .iso-face {
+  opacity: 1;
+  border-color: var(--coral);
+  background: rgba(255, 253, 248, 0.98);
+  transform: translateZ(46px);
+}
+
+.iso-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.iso-bars i {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(25, 26, 28, 0.14);
+}
+
+.iso-bars i.lit {
+  background: linear-gradient(90deg, var(--coral), rgba(241, 107, 85, 0.4));
+}
+
+.iso-caret {
+  width: 2px;
+  height: 14px;
+  margin-top: 2px;
+  background: var(--text);
+  opacity: 0.55;
+}
+
+.iso-field {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--line-2);
+}
+
+.iso-field i {
+  font-style: normal;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 7.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.iso-field b {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 8.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.iso-field[data-lit="true"] b {
+  color: var(--coral-ink);
+}
+
+.iso-field[data-lit="true"] {
+  border-bottom-color: rgba(241, 107, 85, 0.55);
+}
+
+.iso-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  width: 100%;
+}
+
+.iso-grid i {
+  height: 26px;
+  border-radius: 3px;
+  border: 1px solid var(--line-2);
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(25, 26, 28, 0.07) 0,
+    rgba(25, 26, 28, 0.07) 1px,
+    transparent 1px,
+    transparent 5px
+  );
+}
+
+.iso-grid i[data-fail="true"] {
+  border-color: var(--coral);
+  background: rgba(241, 107, 85, 0.16);
+}
+
+/* labels ride outside the 3D transform so the type stays crisp */
+.iso-labels {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.iso-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: default;
+  transition: color var(--dur-2) var(--ease);
+}
+
+button.iso-label {
+  pointer-events: auto;
+}
+
+button.iso-label:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.iso-label i {
+  position: relative;
+  width: 22px;
+  height: 1px;
+  background: var(--line-3);
+  transition: background-color var(--dur-2) var(--ease), width var(--dur-2) var(--ease);
+}
+
+.iso-label i::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -1px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: inherit;
+}
+
+.iso-label[data-for="sentence"] {
+  top: 2%;
+  left: 1%;
+}
+
+.iso-label[data-for="parsed"] {
+  top: 46%;
+  right: -3%;
+}
+
+.iso-label[data-for="parsed"] i {
+  order: 2;
+}
+
+.iso-label[data-for="kernel"] {
+  bottom: 12%;
+  left: 0;
+}
+
+.iso-label[data-for="proposal"] {
+  bottom: 2%;
+  right: 3%;
+}
+
+.iso[data-active="sentence"] .iso-label[data-for="sentence"],
+.iso[data-active="parsed"] .iso-label[data-for="parsed"],
+.iso[data-active="kernel"] .iso-label[data-for="kernel"] {
+  color: var(--coral-ink);
+}
+
+.iso[data-active="sentence"] .iso-label[data-for="sentence"] i,
+.iso[data-active="parsed"] .iso-label[data-for="parsed"] i,
+.iso[data-active="kernel"] .iso-label[data-for="kernel"] i {
+  background: var(--coral);
+  width: 24px;
+}
+
+@media (max-width: 1180px) {
+  .intel-story {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .intel-story-copy {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 22px 22px 0;
+  }
+  .intel-story-title {
+    max-width: none;
+  }
+  .intel-figure {
+    min-height: 330px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iso-layer,
+  .iso-label,
+  .iso-label i {
+    transition: none;
+  }
+}

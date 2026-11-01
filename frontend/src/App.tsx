@@ -5,6 +5,9 @@ import { UiProvider } from "./lib/ui";
 import { AppShell } from "./components/AppShell";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
+import LedgerPage from "./pages/site/LedgerPage";
+import SeatingPage from "./pages/site/SeatingPage";
+import SpacesPage from "./pages/site/SpacesPage";
 import { Preloader } from "./components/Preloader";
 import Overview from "./pages/Overview";
 import Mosaic from "./pages/Mosaic";
@@ -42,6 +45,10 @@ function Gate() {
     <Routes>
       <Route path="login" element={<Login />} />
       <Route path="landing" element={<Landing />} />
+      {/* public long-form pages: readable without a session, linked from the front door */}
+      <Route path="ledger" element={<LedgerPage />} />
+      <Route path="seating" element={<SeatingPage />} />
+      <Route path="spaces" element={<SpacesPage />} />
       <Route element={<RequireAuth />}>
         {/* The calendar board is the front door: it is the screen the reference describes. */}
         <Route index element={<Navigate to="/mosaic" replace />} />

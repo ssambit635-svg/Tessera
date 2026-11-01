@@ -22,7 +22,9 @@ import "./styles/board.css";
 import "./styles/pages.css";
 import "./styles/login.css";
 import "./styles/landing.css";
+import "./styles/site.css";
 import "./styles/preloader.css";
+import "./styles/glass.css";
 
 import App from "./App";
 

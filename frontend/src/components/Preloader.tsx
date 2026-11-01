@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TileMark } from "./TileMark";
 
 /* ============================================================================
    The intro curtain.
@@ -53,6 +54,7 @@ export function Preloader({ state, ready }: PreloaderProps) {
       </div>
 
       <div className="pre-center">
+        <TileMark size={64} className="pre-mark" />
         <div className="pre-word">Tessera</div>
         <div className="pre-track" aria-hidden="true">
           <span style={{ transform: `scaleX(${progress / 100})` }} />
