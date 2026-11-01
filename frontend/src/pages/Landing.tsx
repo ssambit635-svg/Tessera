@@ -504,11 +504,7 @@ export default function Landing() {
               Sign in
             </Link>
           </Magnetic>
-          <a className="rk-btn outline lg" href={DOCS_URL} target="_blank" rel="noreferrer">
-            API docs
-          </a>
         </div>
-
       </section>
 
       <BeamWordmarkFooter
