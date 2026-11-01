@@ -73,8 +73,10 @@ def change_request(body: ChangeIn,
 
     parsed = change_ai.parse_change(body.text, ds, faculty_id,
                                     tomorrow=_tomorrow(ds), today=_today_name(ds))
+    # `parsed["source"]` says who read the sentence (rule reader or the model); the
+    # engine below still decides whether the change is legal.
     base = {"parsed": parsed, "summary": change_ai.summarise(parsed),
-            "source": {"provider": "deterministic", "llm": None}}
+            "source": parsed.get("source", {"provider": "deterministic", "llm": None})}
     if parsed["missing"]:
         return {**base, "status": "needs_detail", "follow_up": parsed["missing"][0],
                 "proposal_id": None, "valid": None,
@@ -175,9 +177,15 @@ def ai_status(user: User = Depends(current_user)):
         "model": s.groq_model if s.llm_enabled else None,
         "daily_limit": ai_budget.snapshot()["daily_limit"],
         "fallback_model": s.groq_fallback_model if s.llm_enabled else None,
+        "readers": {"booking_request": "prompts/extract_booking.md",
+                    "faculty_change": "prompts/change_request.md"},
+        "models": {"primary": s.groq_model, "fallback": s.groq_fallback_model},
+        "change_reader": ("model reads, rules re-parse" if s.llm_enabled
+                          else "deterministic reader only"),
         "note": ("deterministic parser only - the product behaves identically with no model"
                  if not s.llm_enabled else "the model reads requests; rules still decide validity"),
-        "prompts": ["prompts/extract_booking.md", "prompts/followup.md", "prompts/explain_decision.md"],
+        "prompts": ["prompts/extract_booking.md", "prompts/change_request.md",
+                    "prompts/explain_decision.md"],
     }
 
 

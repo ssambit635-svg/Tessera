@@ -17,11 +17,15 @@ import re
 
 from ..core.dataset import Dataset
 from . import normalizer as nz
+from .providers import get_provider
 
 UNAVAILABLE_WORDS = [
     "can't come", "cannot come", "cant come", "not available", "unavailable", "leave",
-    "chutti", "out of station", "out of town", "sick", "ill ", "medical", "conference",
+    "chutti", "chhutti", "out of station", "out of town", "sick", "ill ", "medical", "conference",
     "won't be there", "wont be there", "no class", "busy that day",
+    # how faculty actually phrase it: "I am out on Friday", "kal nahi aa paunga"
+    "i'm out", "im out", "i am out", "out on", "not coming", "won't come", "wont come",
+    "nahi aa paunga", "nahi aa paungi", "nahi aa sakta", "nahi aa sakti", "ghar ja",
 ]
 MOVE_WORDS = ["move", "shift", "reschedule", "prepone", "postpone", "change the time",
               "change timing", "badal", "aage", "peeche", "clash"]
@@ -64,8 +68,37 @@ def _periods(text: str, ds: Dataset) -> list[int]:
     return list(range(start, min(end, ds.max_period) + 1))
 
 
-def parse_change(text: str, ds: Dataset, faculty_id: str, *, tomorrow: str | None = None,
-                 today: str | None = None) -> dict:
+def _canonical_from_model(data: dict) -> str | None:
+    """Turn the model's JSON into a sentence *our* parser already understands.
+
+    This is the whole safety story for the change reader: the model never produces a
+    proposal, a pin or a day that the rule-based reader cannot re-derive. It only rewrites
+    the sentence into a shape the deterministic parser is guaranteed to read, and that
+    parse is what the repair engine sees.
+    """
+    intent = data.get("intent")
+    days = [str(day).upper()[:3] for day in (data.get("days") or [])]
+    days = [day for day in days if day in {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}]
+    course = str(data.get("course_id") or "").strip().upper() or None
+    kind = data.get("kind") if data.get("kind") in {"lecture", "tutorial", "lab"} else None
+    start, end = data.get("from_period"), data.get("to_period")
+    window = ""
+    if isinstance(start, int) and 1 <= start <= 13:
+        window = f"P{start}"
+        if isinstance(end, int) and start < end <= 13:
+            window += f"-P{end}"
+
+    if intent == "faculty_unavailable" and days:
+        return f"not available on {' and '.join(days)} {window}".strip()
+    if intent == "move_session" and days and course:
+        return f"move {course} {kind or ''} to {days[0]} {window or 'P1'}".replace("  ", " ").strip()
+    if intent == "add_session" and days and course:
+        return f"extra class for {course} {kind or ''} on {days[0]} {window or 'P1'}".replace("  ", " ").strip()
+    return None
+
+
+def _read_rules(text: str, ds: Dataset, faculty_id: str, *, tomorrow: str | None = None,
+                today: str | None = None) -> dict:
     raw = nz._norm(text)
     days = nz.find_days(raw, ds.days, tomorrow=tomorrow, today=today)
     periods = _periods(raw, ds)
@@ -170,6 +203,51 @@ def parse_change(text: str, ds: Dataset, faculty_id: str, *, tomorrow: str | Non
     out["missing"].append("I could not tell what you want: mark yourself unavailable, "
                           "move a class, or add an extra one?")
     return out
+
+
+def parse_change(text: str, ds: Dataset, faculty_id: str, *, tomorrow: str | None = None,
+                 today: str | None = None, allow_llm: bool = True) -> dict:
+    """Rule-based read first, then (optionally) the model as a *second reader*.
+
+    The model is only asked when one is configured. Whatever it answers is converted into a
+    canonical sentence and re-parsed by `_read_rules`, so the change file, the pinned move and
+    the conflict check are always produced by the same deterministic code path. If the model
+    is unavailable, slow, or returns something our parser cannot re-derive, the rule-based
+    read stands untouched.
+    """
+    result = _read_rules(text, ds, faculty_id, tomorrow=tomorrow, today=today)
+    result.setdefault("source", {"provider": "deterministic", "llm": None})
+
+    if not allow_llm:
+        return result
+    provider = get_provider()
+    if not provider.available():
+        return result
+
+    read = provider.read_change(text, {"days": ds.days, "faculty_id": faculty_id,
+                                       "role": "faculty"})
+    if not read.ok:
+        result["source"] = {"provider": "deterministic", "llm": None,
+                            "model_error": read.error}
+        result["notes"].append("the model could not read this - the rule-based reader answered")
+        return result
+
+    canonical = _canonical_from_model(read.data or {})
+    source = {"provider": read.provider, "llm": read.model, "latency_ms": read.latency_ms,
+              "model_intent": (read.data or {}).get("intent")}
+    if canonical:
+        source["read_as"] = canonical
+        second = _read_rules(canonical, ds, faculty_id, tomorrow=tomorrow, today=today)
+        # the model only wins when the rule reader could not decide, or could not decide fully
+        unclear = result["intent"] == "clarify" or bool(result["missing"])
+        if second["intent"] != "clarify" and not second["missing"] and unclear:
+            second["source"] = source
+            second["notes"].append(f"the model read this as: {canonical}")
+            second["notes"].extend(result["notes"])
+            return second
+
+    result["source"] = source
+    return result
 
 
 def summarise(parsed: dict) -> str:

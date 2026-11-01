@@ -19,6 +19,7 @@ from . import budget
 
 ROOT = Path(__file__).resolve().parents[3]
 PROMPT_FILE = ROOT / "prompts" / "extract_booking.md"
+CHANGE_PROMPT_FILE = ROOT / "prompts" / "change_request.md"
 
 EXTRACT_PROMPT = """You convert a campus venue request into JSON. You do not decide whether
 it is possible, and you never invent room ids, group ids or periods.
@@ -41,17 +42,33 @@ Rules:
 """
 
 
-def load_prompt() -> str:
-    """The prompt lives in the repo (prompts/extract_booking.md), not buried in a string."""
+CHANGE_PROMPT = """You convert a faculty timetable message into a change request. You do
+not decide whether the change is possible.
+
+Return only this JSON object:
+{"intent": "faculty_unavailable" | "move_session" | "add_session" | "clarify",
+ "days": [str], "from_period": int|null, "to_period": int|null,
+ "course_id": str|null, "kind": "lecture"|"tutorial"|"lab"|null,
+ "reason": str|null}
+
+Rules:
+- days must be MON..FRI. \"kal\" means tomorrow.
+- Never invent a course code, a faculty id, a room id or a period.
+- If the message does not clearly ask for one of the three intents, return \"clarify\".
+"""
+
+
+def load_prompt(path: Path | None = None, fallback: str = EXTRACT_PROMPT) -> str:
+    """The prompt lives in the repo (prompts/*.md), not buried in a string."""
     try:
-        text = PROMPT_FILE.read_text(encoding="utf-8")
+        text = (path or PROMPT_FILE).read_text(encoding="utf-8")
     except OSError:
-        return EXTRACT_PROMPT
+        return fallback
     if "```text" in text:
         body = text.split("```text", 1)[1].split("```", 1)[0]
         if body.strip():
             return body.strip()
-    return EXTRACT_PROMPT
+    return fallback
 
 
 @dataclass
@@ -92,7 +109,7 @@ class LLMProvider:
     def available(self) -> bool:
         return False
 
-    def extract(self, text: str, context: dict) -> LLMResult:  # pragma: no cover - interface
+    def extract(self, text: str, context: dict, system_prompt: str | None = None) -> LLMResult:  # pragma: no cover - interface
         return LLMResult(ok=False, provider=self.name, error="no provider configured")
 
 
@@ -116,11 +133,14 @@ class GroqProvider(LLMProvider):
         # A mock transport spends nothing, so the free-tier guard is skipped for it.
         self.spends_quota = transport is None
         self.system_prompt = load_prompt()
+        # the second reader: faculty change requests. Same provider, same budget, same guard.
+        self.change_prompt = load_prompt(CHANGE_PROMPT_FILE, CHANGE_PROMPT)
 
     def available(self) -> bool:
         return bool(self.api_key)
 
-    def _call(self, model: str, text: str, context: dict) -> tuple[str, int]:
+    def _call(self, model: str, text: str, context: dict,
+              system_prompt: str | None = None) -> tuple[str, int]:
         import time
 
         payload = {
@@ -129,7 +149,7 @@ class GroqProvider(LLMProvider):
             "max_tokens": 500,
             "response_format": {"type": "json_object"},
             "messages": [
-                {"role": "system", "content": self.system_prompt},
+                {"role": "system", "content": system_prompt or self.system_prompt},
                 {"role": "user", "content": json.dumps({"request": text, "context": context},
                                                        ensure_ascii=False)},
             ],
@@ -148,7 +168,7 @@ class GroqProvider(LLMProvider):
         content = body["choices"][0]["message"]["content"]
         return content, int((time.time() - started) * 1000)
 
-    def extract(self, text: str, context: dict) -> LLMResult:
+    def extract(self, text: str, context: dict, system_prompt: str | None = None) -> LLMResult:
         import time
 
         started = time.time()
@@ -164,7 +184,7 @@ class GroqProvider(LLMProvider):
                     break                                    # try the next model, not this one
                 try:
                     STATS.attempts += 1
-                    content, ms = self._call(model, text, context)
+                    content, ms = self._call(model, text, context, system_prompt)
                     data = json.loads(content)
                     if not isinstance(data, dict):
                         raise ValueError("model did not return an object")
@@ -186,6 +206,10 @@ class GroqProvider(LLMProvider):
                     break
         return LLMResult(ok=False, provider=self.name, error=last_error,
                          latency_ms=int((time.time() - started) * 1000))
+
+    def read_change(self, text: str, context: dict) -> LLMResult:
+        """Read a faculty change request. Used by POST /api/ai/change-request."""
+        return self.extract(text, context, self.change_prompt)
 
     def selftest(self) -> dict:
         """One tiny call, so a judge can see the key works (or why it does not)."""
