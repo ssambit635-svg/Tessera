@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Icon } from "./Icon";
 import { TileMark } from "./TileMark";
+import BeamWordmarkFooter from "./BeamFooter";
 
 /* ============================================================================
    The chrome for the public long-form pages (/ledger, /seating, /spaces).
@@ -55,31 +56,9 @@ export function SiteHeader({ current }: { current?: string }) {
   );
 }
 
+/** The long-form pages close on the same beam wordmark as the front door. */
 export function SiteFooter() {
-  return (
-    <footer className="site-foot">
-      <div className="site-foot-inner">
-        <div className="rk-footer-brand">
-          <TileMark size={30} />
-          <span>
-            <b>Tessera</b>
-            <i>team Voltryx · Tech Zephyr 4.0</i>
-          </span>
-        </div>
-
-        <span className="site-foot-links">
-          <Link to="/landing">Front door</Link>
-          <Link to="/ledger">Ledger</Link>
-          <Link to="/seating">Seating</Link>
-          <Link to="/spaces">Spaces</Link>
-        </span>
-
-        <span className="site-foot-note">
-          Every number on this page is computed from the committed dataset.
-        </span>
-      </div>
-    </footer>
-  );
+  return <BeamWordmarkFooter brand="Tessera" company="Tessera" cut={0.14} />;
 }
 
 /** Page intro used by all three long-form pages. */
