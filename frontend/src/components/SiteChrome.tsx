@@ -45,7 +45,7 @@ export function SiteHeader({ current }: { current?: string }) {
           <Link className="rk-navlink" to="/landing">
             Back to the front door
           </Link>
-          <Link className="rk-btn solid sm" to="/login">
+          <Link className="rk-btn white sm" to="/login">
             <span className="rk-keycap">
               <Icon name="arrowRight" size={12} />
             </span>

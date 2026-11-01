@@ -117,7 +117,7 @@ export default function Landing() {
             Log in
           </Link>
           <Magnetic>
-            <Link className="rk-btn solid sm" to="/login">
+            <Link className="rk-btn white sm" to="/login">
               <span className="rk-keycap">
                 <Icon name="arrowRight" size={12} />
               </span>
@@ -142,7 +142,7 @@ export default function Landing() {
 
           <div className="rk-cta">
             <Magnetic strength={0.14}>
-              <Link className="rk-btn solid lg" to="/login">
+              <Link className="rk-btn white lg" to="/login">
                 <span className="rk-keycap">
                   <Icon name="arrowRight" size={13} />
                 </span>
