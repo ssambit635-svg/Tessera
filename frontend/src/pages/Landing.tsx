@@ -5,6 +5,7 @@ import { API_BASE } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
 import { GlassStripes } from "../components/GlassStripes";
+import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
 import { TextReveal } from "../components/TextReveal";
 import { plural } from "../lib/format";
@@ -503,39 +504,48 @@ export default function Landing() {
               Sign in
             </Link>
           </Magnetic>
-          <a className="rk-btn outline lg" href={DOCS_URL} target="_blank" rel="noreferrer">
-            API docs
-          </a>
         </div>
-
-        <footer className="rk-footer">
-          <div className="rk-footer-brand">
-            <TileMark size={30} />
-            <span>
-              <b>Tessera</b>
-              <i>team Voltryx · Tech Zephyr 4.0</i>
-            </span>
-          </div>
-
-          <div className="rk-footer-note">
-            dataset <span className="mono">{data.datasetId || "cit-public-v1"}</span>
-            <em>{numbers.sessions} sessions · {numbers.exams} papers · {data.bookings.count} requests decided</em>
-          </div>
-
-          <span className="rk-footer-links">
-            <Link to="/ledger">Ledger</Link>
-            <Link to="/seating">Seating</Link>
-            <Link to="/spaces">Spaces</Link>
-            <Link to="/login">Sign in</Link>
-            <a href="https://github.com/ssambit635-svg/Tessera" target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a href={DOCS_URL} target="_blank" rel="noreferrer">
-              API
-            </a>
-          </span>
-        </footer>
       </section>
+
+      <BeamWordmarkFooter
+        brand="Tessera"
+        company="Tessera"
+        cut={0.14}
+        socials={[
+          {
+            label: "GitHub",
+            href: "https://github.com/ssambit635-svg/Tessera",
+            icon: "github",
+          },
+          {
+            label: "API docs",
+            href: DOCS_URL,
+            icon: (
+              <path
+                d="M9 7.5 4.5 12 9 16.5M15 7.5 19.5 12 15 16.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ),
+          },
+        ]}
+        credits={[
+          {
+            lead: "Built by ",
+            label: "team Voltryx",
+            href: "https://github.com/ssambit635-svg/Tessera",
+            tail: " · Tech Zephyr 4.0",
+          },
+          {
+            lead: "Dataset ",
+            label: data.datasetId || "cit-public-v1",
+            tail: ` · ${numbers.sessions} sessions · ${numbers.exams} papers · ${numbers.hard} hard conflicts`,
+          },
+        ]}
+      />
     </div>
   );
 }
