@@ -12,6 +12,7 @@ import {
   ApiError,
   applyProposal,
   demoLogin,
+  warmApiInBackground,
   loadWorkspace,
   requestMove,
   type LoginResult,
@@ -278,6 +279,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setAuthState("signed-out");
     setStatus("ready");
+    // Snapshot mode usually means the free-tier API is asleep, not broken: wake it in the
+    // background so the next click (sign-in, a booking verdict) is instant.
+    if (result.source.mode === "snapshot") warmApiInBackground();
   }, []);
 
   useEffect(() => {
