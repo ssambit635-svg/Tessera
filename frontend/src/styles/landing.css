@@ -1345,3 +1345,10 @@
     gap: 20px;
   }
 }
+
+/* the long-form cards are links, not buttons: same card, honest semantics */
+.rk-screen-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}

@@ -428,6 +428,62 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ------------------------------------------------------- long-form */}
+      <section className="rk-section" id="longform">
+        <div className="rk-inner">
+          <div className="rk-head">
+            <span className="rk-kicker">05 — The record</span>
+            <TextReveal
+              as="h2"
+              className="rk-h2"
+              dim={0.13}
+              text="Three pages you can read without signing in."
+            />
+            <TextReveal
+              className="rk-lede"
+              dim={0.24}
+              text="The same data the workspace runs on, printed in full: every request with its reason, every paper with its seats, every room with its load."
+            />
+          </div>
+
+          <div className="rk-screens">
+            {[
+              [
+                "The Ledger",
+                `${numbers.bookings.approved} approved · ${numbers.bookings.alternatives} alternative · ${numbers.bookings.rejected} rejected — each row carries the sentence it came from and the rule that decided it.`,
+                "ticket",
+                "/ledger",
+              ],
+              [
+                "The Seating Plan",
+                `${numbers.exams} midsem papers, every cohort measured against the halls it was given, slot by slot.`,
+                "clipboard",
+                "/seating",
+              ],
+              [
+                "The Estate",
+                `${numbers.rooms} rooms sorted by load, the peak hour named, and every closure the solver may never touch.`,
+                "grid",
+                "/spaces",
+              ],
+            ].map(([title, body, icon, to]) => (
+              <Link key={title} className="rk-screen rk-screen-link" to={to}>
+                <span className="rk-screen-top">
+                  <span className="rk-screen-icon">
+                    <Icon name={icon} size={15} />
+                  </span>
+                  <span className="rk-screen-go">
+                    <Icon name="arrowUpRight" size={13} />
+                  </span>
+                </span>
+                <b>{title}</b>
+                <TextReveal className="rk-screen-body" dim={0.26} text={body} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ----------------------------------------------------------- close */}
       <section className="rk-close">
         <span className="rk-close-mark">
@@ -467,6 +523,9 @@ export default function Landing() {
           </div>
 
           <span className="rk-footer-links">
+            <Link to="/ledger">Ledger</Link>
+            <Link to="/seating">Seating</Link>
+            <Link to="/spaces">Spaces</Link>
             <Link to="/login">Sign in</Link>
             <a href="https://github.com/ssambit635-svg/Tessera" target="_blank" rel="noreferrer">
               GitHub
