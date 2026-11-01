@@ -3,7 +3,7 @@ import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { buildings, roomSummary, availabilityWindow } from "../lib/derive";
 import { percent, plural } from "../lib/format";
-import { PHOTO_NOTE, ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
+import { ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
 
 export default function Locations() {
   const { data } = useWorkspace();
@@ -18,7 +18,7 @@ export default function Locations() {
           <h2 className="serif" style={{ fontSize: 34, marginTop: 5 }}>
             Locations.
           </h2>
-          <p>{plural(list.length, "building")} · {plural(data.rooms.length, "space")}. Accessibility notes come straight from the dataset.</p>
+          <p>{plural(list.length, "building")} · {plural(data.rooms.length, "space")}. Accessibility notes come straight from the dataset; photography is illustrative.</p>
         </div>
       </div>
 
@@ -29,7 +29,6 @@ export default function Locations() {
             <article key={building.name} className="location-card">
               <div className="location-media">
                 <img src={roomImage(hero.id, hero.type)} alt={roomImageAlt(hero.name)} loading="lazy" />
-                <span className="photo-note">{PHOTO_NOTE}</span>
                 <span className="annotation">{String(index + 1).padStart(2, "0")} · {building.rooms.length} spaces</span>
               </div>
               <div className="location-body">

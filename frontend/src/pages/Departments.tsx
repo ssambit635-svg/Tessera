@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { departmentStats, facultySummary } from "../lib/derive";
-import { initials, tintFor } from "../lib/persona";
+import { tintFor } from "../lib/persona";
 import { plural } from "../lib/format";
 
 export default function Departments() {
@@ -85,7 +85,7 @@ export default function Departments() {
                       const summary = facultySummary(data, person.id);
                       return (
                         <div key={person.id} className="row gap-10">
-                          <span className={`avatar tone-${tintFor(person.id)}`}>{initials(person.name)}</span>
+                          <span className={`avatar tone-${tintFor(person.id)}`}><Icon name="user" size={13} /></span>
                           <span style={{ display: "flex", flexDirection: "column" }}>
                             <b style={{ fontSize: 12.5, fontFamily: "var(--font-display)", fontWeight: 500 }}>{person.name}</b>
                             <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>

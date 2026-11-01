@@ -5,7 +5,7 @@ import { useUi, dateFromISO } from "../lib/ui";
 import { NAV } from "../lib/nav";
 import { Icon } from "./Icon";
 import { TileMark } from "./TileMark";
-import { initials, tintFor } from "../lib/persona";
+import { tintFor } from "../lib/persona";
 import {
   MONTHS,
   WEEKDAYS_SHORT,
@@ -152,7 +152,7 @@ function NextUp() {
 }
 
 export function Sidebar() {
-  const { data, railCollapsed, setRailCollapsed, layers, toggleLayer, user } = useWorkspace();
+  const { data, source, railCollapsed, setRailCollapsed, layers, toggleLayer, user } = useWorkspace();
   const { mobileNavOpen, setMobileNavOpen } = useUi();
   const location = useLocation();
   const navigate = useNavigate();
@@ -235,7 +235,7 @@ export function Sidebar() {
               aria-label={`Signed in as ${displayUser.name}. Open the sign-in page to switch identity.`}
               title="Switch identity"
             >
-              <span className={`avatar round tone-${tintFor(displayUser.email)}`}>{initials(displayUser.name)}</span>
+              <span className={`avatar round tone-${tintFor(displayUser.email)}`}><Icon name="user" size={13} /></span>
               <span className="who">
                 <b>{displayUser.name}</b>
                 <span>{displayUser.role.replace(/_/g, " ")}</span>
@@ -334,9 +334,11 @@ export function Sidebar() {
             ))}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 4px 0", opacity: 0.5 }}>
-            <Icon name={data?.calendar.days.length ? "database" : "wifi"} size={12} />
-            <span className="mono" style={{ fontSize: 10.5, letterSpacing: "0.08em" }}>
+          <div className="rail-source" title={source.detail} data-source-mode={source.mode}>
+            <span className={`led ${source.mode}`} />
+            <span className="mono">{source.mode === "live" ? "live api" : "snapshot"}</span>
+            <span className="rail-source-sep">·</span>
+            <span className="mono rail-source-week">
               {data?.calendar.festWeek?.toUpperCase() ?? "TEACHING WEEK"}
             </span>
           </div>

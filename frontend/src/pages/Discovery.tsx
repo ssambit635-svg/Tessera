@@ -9,7 +9,7 @@ import {
   roomSummary,
   type RoomMatch,
 } from "../lib/derive";
-import { FEATURE_LABELS, PHOTO_NOTE, ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
+import { FEATURE_LABELS, ROOM_TYPE_LABELS, roomImage, roomImageAlt } from "../lib/persona";
 import { DAY_LONG, MONTHS_SHORT, percent, plural, ratio } from "../lib/format";
 import { dateFromISO } from "../lib/ui";
 import { useUi } from "../lib/ui";
@@ -99,7 +99,7 @@ export default function Discovery() {
           <p className="discovery-lede">
             {data.rooms.length} rooms, laboratories, halls and workshops across{" "}
             {new Set(data.rooms.map((r) => r.building)).size} buildings — filtered by what a booking actually
-            needs: capacity, equipment, access and a real free window.
+            needs: capacity, equipment, access and a real free window. Photography is illustrative.
           </p>
         </div>
         <div className="discovery-aside">
@@ -237,7 +237,6 @@ export default function Discovery() {
         <section className="discovery-feature">
           <button className="disc-hero" onClick={() => setParams({ room: hero.room.id })}>
             <img src={roomImage(hero.room.id, hero.room.type)} alt={roomImageAlt(hero.room.name)} />
-            <span className="photo-note">{PHOTO_NOTE}</span>
             <span className="disc-hero-top">
               <span className="chip lime lg">
                 <Icon name="sparkles" size={11} /> Best match

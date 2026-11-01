@@ -384,8 +384,8 @@ if (LIVE) {
       const err = window.document.querySelector(".sf-error")?.textContent ?? "no error shown";
       return `still on the sign-in page (${err})`;
     }
-    // the badge is the contract: .conn-badge.live only renders while the API is answering
-    return window.document.querySelector(".conn-badge.live")
+    // the rail footnote is the contract: it says "live api" only while the API answers
+    return window.document.querySelector('[data-source-mode="live"]')
       ? ""
       : "signed in but the workspace is not reading live data";
   });

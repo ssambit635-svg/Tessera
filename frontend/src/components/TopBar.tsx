@@ -4,7 +4,7 @@ import { useWorkspace } from "../lib/workspace";
 import { useUi } from "../lib/ui";
 import { EXTRA_ROUTES, findNav } from "../lib/nav";
 import { Icon } from "./Icon";
-import { initials, tintFor } from "../lib/persona";
+import { tintFor } from "../lib/persona";
 
 interface Notice {
   id: string;
@@ -67,13 +67,12 @@ function useNotices(): Notice[] {
 }
 
 export function TopBar() {
-  const { data, source, user, personas, switchPersona, reload, signOut } = useWorkspace();
+  const { user, personas, switchPersona, signOut } = useWorkspace();
   const { setPaletteOpen, setMobileNavOpen } = useUi();
   const location = useLocation();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [sourceOpen, setSourceOpen] = useState(false);
   const notices = useNotices();
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -100,7 +99,6 @@ export function TopBar() {
       if (!wrapRef.current?.contains(event.target as Node)) {
         setNotifOpen(false);
         setProfileOpen(false);
-        setSourceOpen(false);
       }
     };
     document.addEventListener("mousedown", onClick);
@@ -128,53 +126,6 @@ export function TopBar() {
           <span>Search spaces, people, sessions</span>
           <kbd>⌘K</kbd>
         </button>
-
-        <div style={{ position: "relative" }}>
-          <button
-            className={`conn-badge ${source.mode}`}
-            onClick={() => setSourceOpen((v) => !v)}
-            aria-expanded={sourceOpen}
-            title={source.detail}
-          >
-            <span className="led" />
-            {source.mode === "live" ? "Live" : "Offline"}
-            <Icon name="chevronDown" size={11} />
-          </button>
-          {sourceOpen ? (
-            <div className="popover menu" style={{ right: 0, top: "calc(100% + 8px)", width: 300 }}>
-              <div className="menu-label">Where these numbers come from</div>
-              <div style={{ padding: "4px 10px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
-                <span style={{ fontSize: 11.5, color: "var(--text-soft)", lineHeight: 1.5 }}>{source.detail}</span>
-                <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
-                  {source.mode === "live"
-                    ? "Numbers come from the scheduling API. Writes are authenticated."
-                    : "A bundled copy of this week is on screen. No requests are sent."}
-                </span>
-                <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                  {data?.sessions.length ?? 0} sessions across {data?.rooms.length ?? 0} rooms, refreshed{" "}
-                  {data?.generatedAt ? new Date(data.generatedAt).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" }) : "just now"}
-                </span>
-              </div>
-              <div className="menu-sep" />
-              <button
-                onClick={() => {
-                  void reload();
-                  setSourceOpen(false);
-                }}
-              >
-                <Icon name="refresh" size={13} /> Reload workspace
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/settings");
-                  setSourceOpen(false);
-                }}
-              >
-                <Icon name="database" size={13} /> Connection settings
-              </button>
-            </div>
-          ) : null}
-        </div>
 
         <div style={{ position: "relative" }}>
           <button
@@ -235,7 +186,7 @@ export function TopBar() {
         <div style={{ position: "relative" }}>
           <button className="profile-chip" onClick={() => setProfileOpen((v) => !v)} aria-expanded={profileOpen}>
             <span className={`avatar tone-${tintFor(displayUser.email)}`} style={{ width: 28, height: 28, borderRadius: 9 }}>
-              {initials(displayUser.name)}
+              <Icon name="user" size={13} />
             </span>
             <span className="pc-name">
               <b>{displayUser.name.split(" ").slice(0, 2).join(" ")}</b>
@@ -246,7 +197,7 @@ export function TopBar() {
           {profileOpen ? (
             <div className="popover menu" style={{ right: 0, top: "calc(100% + 8px)", width: 288 }}>
               <div style={{ padding: "8px 10px 10px", display: "flex", gap: 10, alignItems: "center" }}>
-                <span className={`avatar lg tone-${tintFor(displayUser.email)}`}>{initials(displayUser.name)}</span>
+                <span className={`avatar lg tone-${tintFor(displayUser.email)}`}><Icon name="user" size={17} /></span>
                 <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <b style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 500 }}>{displayUser.name}</b>
                   <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>

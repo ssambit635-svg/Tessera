@@ -19,7 +19,7 @@ import {
   startOfWeek,
 } from "../lib/format";
 import { availabilityWindow, periodSpan, toneForDepartment } from "../lib/derive";
-import { FEATURE_LABELS, initials, roomImage, roomImageAlt, tintFor, ROOM_TYPE_LABELS } from "../lib/persona";
+import { FEATURE_LABELS,  roomImage, roomImageAlt, tintFor, ROOM_TYPE_LABELS } from "../lib/persona";
 
 export default function Overview() {
   const { data } = useWorkspace();
@@ -246,7 +246,7 @@ export default function Overview() {
                   <Icon name="pin" size={11} /> {session.roomName}
                 </span>
                 <span className="tt-foot">
-                  <span className={`avatar sm tone-${tintFor(session.facultyId)}`}>{initials(session.facultyName)}</span>
+                  <span className={`avatar sm tone-${tintFor(session.facultyId)}`}><Icon name="user" size={11} /></span>
                   <span className="tt-person">{session.facultyName}</span>
                   <span className={`status valid tt-status`}>
                     <Icon name="check" size={9} strokeWidth={2.5} /> ok
