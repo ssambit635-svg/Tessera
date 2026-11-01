@@ -818,9 +818,14 @@
 /* screens */
 .rk-screens {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-top: 48px;
+}
+
+/* the last section hands straight over to the footer — no dead band between them */
+.rk-body > .rk-section:last-of-type {
+  padding-bottom: 72px;
 }
 
 .rk-screen {
@@ -988,40 +993,6 @@
   color: var(--rk-muted);
 }
 
-/* close */
-.rk-close {
-  position: relative;
-  padding: 140px 24px 0;
-  text-align: center;
-  border-top: 1px solid var(--rk-line);
-  background: transparent;
-}
-
-.rk-close h2 {
-  margin: 22px 0 0;
-  font-size: clamp(32px, 4vw, 52px);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  color: var(--rk-white);
-}
-
-.rk-close p {
-  max-width: 46ch;
-  margin: 16px auto 0;
-  font-size: 16.5px;
-  line-height: 1.6;
-  color: var(--rk-muted);
-}
-
-.rk-close .rk-cta {
-  margin-top: 30px;
-}
-
-.rk-close-mark {
-  display: inline-flex;
-  color: var(--rk-red);
-}
-
 .rk-footer {
   display: flex;
   flex-wrap: wrap;
@@ -1102,9 +1073,6 @@
   .rk-ledger {
     margin-left: 0;
     max-width: none;
-  }
-  .rk-close {
-    padding: 96px 20px 0;
   }
   .rk-footer {
     margin-top: 64px;

@@ -441,7 +441,7 @@ export default function Landing() {
               as="h2"
               className="rk-h2"
               dim={0.13}
-              text="Three pages you can read without signing in."
+              text="Four pages you can read without signing in."
             />
             <TextReveal
               className="rk-lede"
@@ -470,6 +470,12 @@ export default function Landing() {
                 "grid",
                 "/spaces",
               ],
+              [
+                "The Numbers",
+                "Every claim on this page, counted: sessions per day, hours by department, the 25 verdicts and the utilisation spread.",
+                "chart",
+                "/numbers",
+              ],
             ].map(([title, body, icon, to]) => (
               <Link key={title} className="rk-screen rk-screen-link" to={to}>
                 <span className="rk-screen-top">
@@ -488,27 +494,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ----------------------------------------------------------- close */}
-      <section className="rk-close">
-        <span className="rk-close-mark">
-          <TileMark size={46} accent={false} />
-        </span>
-        <TextReveal as="h2" dim={0.12} text="Step inside the campus." />
-        <TextReveal
-          dim={0.24}
-          text="Five demo seats, one password, no setup. The board opens on the week that is already solved."
-        />
-        <div className="rk-cta">
-          <Magnetic strength={0.14}>
-            <Link className="rk-btn white lg" to="/login">
-              <span className="rk-keycap">
-                <Icon name="arrowRight" size={13} />
-              </span>
-              Sign in
-            </Link>
-          </Magnetic>
-        </div>
-      </section>
       </div>
 
       <BeamWordmarkFooter

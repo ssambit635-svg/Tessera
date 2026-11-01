@@ -136,6 +136,7 @@ const DEFAULT_COLUMNS: FooterColumn[] = [
       { label: "Ledger", to: "/ledger" },
       { label: "Seating plan", to: "/seating" },
       { label: "Estate", to: "/spaces" },
+      { label: "Numbers", to: "/numbers" },
       { label: "Sign in", to: "/login" },
     ],
   },
