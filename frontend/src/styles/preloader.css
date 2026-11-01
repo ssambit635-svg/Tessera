@@ -1,0 +1,219 @@
+/* ============================================================================
+   The intro curtain — Walbi's opening move, Tessera's dress.
+
+   Dark stage, a bank of thin red meters along the top edge, the wordmark in plain
+   Inter, then the curtain lifts and the page is revealed underneath from below.
+   No glow, no glass, no blur: flat planes and one accent colour.
+   ========================================================================== */
+
+.pre {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: grid;
+  place-items: center;
+  background: #08080a;
+  color: #f4f4f6;
+  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.82s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform;
+}
+
+/* the lift: the curtain clears upward and takes the wordmark with it */
+.pre.is-leaving {
+  transform: translate3d(0, -100%, 0);
+}
+
+/* ------------------------------------------------------------------- meters */
+
+.pre-bars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(2px, 0.4vw, 5px);
+  height: 96px;
+  padding: 0 clamp(8px, 1.6vw, 22px);
+  pointer-events: none;
+}
+
+.pre-bars i {
+  flex: 1;
+  height: 18px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(180deg, #f0506a 0%, #e23a54 42%, #8d1f33 100%);
+  transform-origin: top center;
+  animation-name: pre-meter;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  opacity: 0.92;
+}
+
+.pre-bars i:nth-child(3n) {
+  opacity: 0.6;
+}
+
+.pre-bars i:nth-child(4n + 1) {
+  opacity: 0.78;
+}
+
+/* the bars snap to nothing as the curtain starts to go */
+.pre.is-leaving .pre-bars i {
+  animation: none;
+  transform: scaleY(0);
+  transition: transform 0.34s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.pre.is-leaving .pre-bars i:nth-child(2n) {
+  transition-delay: 0.03s;
+}
+
+.pre.is-leaving .pre-bars i:nth-child(3n) {
+  transition-delay: 0.06s;
+}
+
+@keyframes pre-meter {
+  from {
+    height: 12px;
+  }
+  to {
+    height: 62px;
+  }
+}
+
+/* ------------------------------------------------------------------- centre */
+
+.pre-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 0 24px;
+  width: min(420px, 84vw);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.36s ease-out;
+}
+
+.pre.is-leaving .pre-center {
+  transform: translate3d(0, -26px, 0);
+  opacity: 0;
+}
+
+.pre-word {
+  font-size: clamp(34px, 5vw, 46px);
+  font-weight: 500;
+  letter-spacing: -0.028em;
+  line-height: 1;
+  color: #ffffff;
+  animation: pre-word-in 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes pre-word-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pre-track {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.pre-track span {
+  position: absolute;
+  inset: 0;
+  background: #e23a54;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pre-caption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9c9c9d;
+}
+
+.pre-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #4b4b4e;
+}
+
+.pre-pct {
+  color: #c2c7ca;
+  font-variant-numeric: tabular-nums;
+}
+
+.pre-foot {
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #57575a;
+  transition: opacity 0.3s ease-out;
+}
+
+.pre.is-leaving .pre-foot {
+  opacity: 0;
+}
+
+/* ------------------------------------------------------- what sits underneath */
+
+/* The page is revealed from below as the curtain clears: a top-down uncover plus a
+   short settle. clip-path is used instead of transform so no fixed child inside the
+   app (the top bar, the nav) is re-anchored while it plays. */
+.app-reveal {
+  min-height: 100vh;
+  clip-path: inset(14% 0 0 0);
+  opacity: 0;
+  transition: clip-path 0.82s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.5s ease-out;
+}
+
+.app-reveal.is-open {
+  clip-path: inset(0 0 0 0);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pre {
+    transition: none;
+    transform: none;
+  }
+  .pre.is-leaving {
+    opacity: 0;
+    transition: opacity 0.2s linear;
+  }
+  .pre-bars i,
+  .pre-word {
+    animation: none;
+  }
+  .app-reveal {
+    clip-path: none;
+    opacity: 1;
+    transition: none;
+  }
+}

@@ -24,10 +24,10 @@ import { plural } from "../lib/format";
 const DOCS_URL = `${API_BASE}/docs`;
 
 const NAV_LINKS = [
-  { href: "#product", label: "Product" },
-  { href: "#proof", label: "Proof" },
-  { href: "#screens", label: "Screens" },
-  { href: "#assistant", label: "Assistant" },
+  { href: "#product", label: "Product", icon: "board" },
+  { href: "#proof", label: "Proof", icon: "sigma" },
+  { href: "#screens", label: "Screens", icon: "grid" },
+  { href: "#assistant", label: "Assistant", icon: "sparkles" },
 ];
 
 /**
@@ -111,6 +111,7 @@ export default function Landing() {
   const { data, source } = useWorkspace();
   const navigate = useNavigate();
   const [navSolid, setNavSolid] = useState(false);
+  const [activeTab, setActiveTab] = useState<string | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
 
   /* One rAF-throttled scroll handler: the nav only gains weight once the visitor leaves the
@@ -168,6 +169,26 @@ export default function Landing() {
     };
   }, []);
 
+  /* Which section is on screen. The nav mirrors it: one tab is always open, the rest sit as
+     icons, the way the reference component behaves. */
+  useEffect(() => {
+    const sections = NAV_LINKS.map((link) => document.querySelector(link.href)).filter(
+      (node): node is Element => Boolean(node),
+    );
+    if (!sections.length || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible?.target.id) setActiveTab(`#${visible.target.id}`);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
   const go = (to: string) => navigate(`/login?next=${encodeURIComponent(to)}`);
 
   const perDay = useMemo(
@@ -203,8 +224,18 @@ export default function Landing() {
 
         <nav className="rk-links" aria-label="Landing sections">
           {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href}>
-              {link.label}
+            <a
+              key={link.href}
+              href={link.href}
+              className="rk-tab"
+              data-open={activeTab === link.href ? "true" : "false"}
+              aria-current={activeTab === link.href ? "true" : undefined}
+              onClick={() => setActiveTab(link.href)}
+            >
+              <Icon name={link.icon} size={15} />
+              <span className="rk-tab-label">
+                <span>{link.label}</span>
+              </span>
             </a>
           ))}
         </nav>
