@@ -396,7 +396,7 @@ await interaction("intelligence answers a question", async () => {
   await go("/intelligence");
   const input = window.document.querySelector("input[aria-label='Ask TESSERA']");
   if (!input) return "no question input";
-  const before = window.document.querySelectorAll(".ai-msg.ai").length;
+  const before = window.document.querySelectorAll(".ai-turn.ai").length;
   const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
   setter.call(input, "which labs are free on Monday?");
   input.dispatchEvent(new window.Event("input", { bubbles: true }));
@@ -406,9 +406,9 @@ await interaction("intelligence answers a question", async () => {
   if (!submit || submit.disabled) return "send button stayed disabled";
   click(submit);
   await wait(900);
-  const after = window.document.querySelectorAll(".ai-msg.ai").length;
+  const after = window.document.querySelectorAll(".ai-turn.ai").length;
   if (after <= before) return "no answer appeared in the transcript";
-  const lastText = [...window.document.querySelectorAll(".ai-msg.ai .ai-bubble")].pop()?.textContent ?? "";
+  const lastText = [...window.document.querySelectorAll(".ai-turn.ai .ai-say p")].pop()?.textContent ?? "";
   return lastText.length > 20 ? "" : `answer was empty (${lastText.length} chars)`;
 });
 

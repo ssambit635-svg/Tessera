@@ -120,7 +120,7 @@ function Tile({
   const height = (item.endPeriod - item.startPeriod + 1) * ROW_H - 6;
   const share = 1 / lanes;
   const showMeta = height > 150;
-  const showPhoto = Boolean(photo) && height > 240;
+  const showPhoto = Boolean(photo) && height > 200;
   /* A one-period tile is 66px tall: the code and who teaches it share one line, so the
      title gets the full two lines it needs instead of being squeezed into 1.4. */
   const compact = height <= 92;

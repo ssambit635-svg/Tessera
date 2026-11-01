@@ -608,9 +608,12 @@
   box-shadow: 0 0 0 2.5px rgba(255, 255, 255, 0.4);
 }
 
+/* The photo is the tile's reward for being tall: it takes whatever height the
+   copy above it leaves, so a long booking shows a real picture instead of a 46px sliver. */
 .tile .tile-photo {
-  margin: 6px -9px -7px;
-  height: 46px;
+  margin: 7px -9px -7px;
+  flex: 1 1 auto;
+  min-height: 78px;
   overflow: hidden;
   position: relative;
 }
@@ -626,7 +629,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(20, 20, 22, 0.35), transparent 70%);
+  background: linear-gradient(to top, rgba(20, 20, 22, 0.18), transparent 45%);
 }
 
 .tile.tone-lime { --tile-bg: var(--tint-lime); --tile-ink: #30380b; }
