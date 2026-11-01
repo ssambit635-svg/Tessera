@@ -48,7 +48,11 @@ services:
       - key: WEB_APP_URL
         sync: false
       - key: LLM_PROVIDER
-        value: none          # flip to "groq" after adding the key below
+        value: groq          # the readers ask the model; the kernel still decides validity
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: GROQ_FALLBACK_MODEL
+        value: llama-3.1-8b-instant
       - key: GROQ_API_KEY
         sync: false          # set in the dashboard only — never in this file
 
