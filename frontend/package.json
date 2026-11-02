@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "snapshot": "python3 scripts/make_snapshot.py",
     "smoke": "node scripts/smoke.mjs",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "test:intro": "node scripts/intro-test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist-mono": "^5.3.0",

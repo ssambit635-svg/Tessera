@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { WorkspaceProvider, useWorkspace } from "./lib/workspace";
 import { UiProvider } from "./lib/ui";
@@ -76,49 +76,43 @@ function Gate() {
   );
 }
 
-const INTRO_HOLD_MS = 1000;
-const CURTAIN_MS = 820;
+const REVEAL_MS = 680;
 
-/**
- * The brand beat in front of everything: the curtain holds for one beat (or until the
- * workspace is ready, whichever is longer), then lifts and uncovers the page from below.
- * Nothing renders under a loading curtain, so no route can bounce before auth is known.
- */
+/** The video and workspace load together; neither can reveal the page prematurely. */
 function Intro() {
   const { status } = useWorkspace();
   const ready = status !== "loading";
-  const [held, setHeld] = useState(false);
-  const [gone, setGone] = useState(false);
-
-  useEffect(() => {
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setHeld(true);
-      setGone(true);
-      return;
+  const [reducedMotion] = useState(() => {
+    let savedPreference = false;
+    try {
+      savedPreference = window.localStorage.getItem("tessera.motion") === "reduced";
+    } catch {
+      // Storage can be unavailable in private browsing; the system preference still applies.
     }
-    const timer = window.setTimeout(() => setHeld(true), INTRO_HOLD_MS);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  /* Derived from state that is already committed: the page renders one commit before the
-     curtain starts to lift, so its uncover animation is never swallowed. */
-  const lifted = ready && held;
+    return savedPreference || Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+  });
+  const [complete, setComplete] = useState(reducedMotion);
+  const [gone, setGone] = useState(false);
+  const finishIntro = useCallback(() => setComplete(true), []);
+  const open = ready && complete;
 
   useEffect(() => {
-    if (!lifted) return;
-    const timer = window.setTimeout(() => setGone(true), CURTAIN_MS);
+    if (!open) return;
+    const timer = window.setTimeout(() => setGone(true), reducedMotion ? 0 : REVEAL_MS);
     return () => window.clearTimeout(timer);
-  }, [lifted]);
+  }, [open, reducedMotion]);
 
   return (
     <>
       {ready ? (
-        <div className={`app-reveal ${lifted ? "is-open" : ""}`}>
+        <div className={`app-reveal ${open ? "is-open" : ""} ${reducedMotion ? "is-reduced" : ""}`}>
           <Gate />
         </div>
       ) : null}
-      {gone ? null : <Preloader state={lifted ? "leaving" : "loading"} ready={ready} />}
+      {gone ? null : (
+        <Preloader state={open ? "leaving" : "loading"} ready={ready} complete={complete}
+          reducedMotion={reducedMotion} onComplete={finishIntro} />
+      )}
     </>
   );
 }

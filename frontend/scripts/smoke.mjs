@@ -78,6 +78,13 @@ if (LIVE) {
     return { ok: false, status: 503, text: async () => "{}" };
   };
 }
+// jsdom does not implement media playback. Finish the intro explicitly so route
+// interactions exercise the same opened state without waiting for a video decoder.
+window.HTMLMediaElement.prototype.play = function play() {
+  window.setTimeout(() => this.dispatchEvent(new window.Event("ended")), 0);
+  return Promise.resolve();
+};
+window.HTMLMediaElement.prototype.pause = function pause() {};
 window.Element.prototype.scrollTo = function scrollTo() {};
 window.HTMLElement.prototype.scrollIntoView = function scrollIntoView() {};
 window.matchMedia = () => ({
