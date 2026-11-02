@@ -93,6 +93,6 @@ jobs:
       - name: Smoke the rendered workspace offline
         working-directory: frontend
         run: npm run smoke
-      - name: Test intro playback and fallback lifecycle
+      - name: Test intro assembly and fallback lifecycle
         working-directory: frontend
         run: npm run test:intro
