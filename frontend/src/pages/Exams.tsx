@@ -182,7 +182,7 @@ export default function Exams() {
                     <td className="mono">
                       {exam.invigilators?.length
                         ? exam.invigilators.map((item) => `${item.room_id}: ${item.faculty_id}`).join(", ")
-                        : "Not assigned in this snapshot"}
+                        : "Not assigned in this preview"}
                     </td>
                     <td>
                       <div className="seat-meter" title={ok ? "Enough seats" : "Short of seats"}>
@@ -208,8 +208,7 @@ export default function Exams() {
         <div className="panel-foot">
           <Icon name="shield" size={13} />
           <span>
-            A paper short of seats is a genuine finding, not a formatting gap — the API computes the
-            same number and the evaluator fails the schedule if any cohort does not fit.
+            Seat counts use the exam seating capacity of each room. Any shortfall needs attention.
           </span>
         </div>
       </div>

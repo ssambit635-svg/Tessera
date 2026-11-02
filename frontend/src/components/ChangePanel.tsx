@@ -55,7 +55,7 @@ export function ChangePanel({ compact = false }: { compact?: boolean }) {
           <div className="callout coral" style={{ fontSize: 11 }}>
             <Icon name="alert" size={14} />
             <span>
-              <b>The scheduling API rejected the request.</b> {pending.remoteError}
+              <b>The request could not be completed.</b> {pending.remoteError}
             </span>
           </div>
         ) : null}
@@ -64,7 +64,7 @@ export function ChangePanel({ compact = false }: { compact?: boolean }) {
           <div className={`verdict ${pending.remote.valid ? "valid" : "invalid"}`}>
             <Icon name={pending.remote.valid ? "shield" : "alert"} size={14} />
             <span>
-              <b>{pending.remote.valid ? "Validated by the scheduling API." : "Refused by the scheduling API."}</b>{" "}
+              <b>{pending.remote.valid ? "Checked against campus rules." : "This change conflicts with campus rules."}</b>{" "}
               {pending.remote.valid
                 ? `${plural(pending.remote.moves ?? 0, "session")} modified. ${pending.remote.next ?? ""}`
                 : String(pending.remote.explanation ?? pending.remote.next ?? "The target slot breaks a hard constraint.")}
@@ -76,7 +76,7 @@ export function ChangePanel({ compact = false }: { compact?: boolean }) {
             <span>
               <b>Instant local rule check.</b>{" "}
               {source.mode === "live"
-                ? "The authoritative verdict is computed by the scheduling API when the move is proposed."
+                ? "The final check is made when the move is proposed."
                 : "This preview is computed in the browser — nothing is written to the schedule."}
             </span>
           </div>

@@ -142,7 +142,7 @@ export default function Intelligence() {
           : "No request has been rejected in this workspace.",
         bullets: rejected.map((b) => `${b.request_id} · ${b.title} — ${b.attendance} seats. ${b.decision.reason ?? ""}`),
         actions: rejected.map((b) => ({ label: `${b.request_id} decision`, to: `/bookings?request=${b.request_id}` })),
-        meta: "from /api/bookings decisions",
+        meta: "from booking decisions",
       };
     }
 
@@ -151,12 +151,12 @@ export default function Intelligence() {
       const suggestions = suggestSlots(data, focus.id, 3);
       return {
         ...base,
-        text: `Here are validated alternatives for ${focus.courseId} (${focus.courseTitle}), keeping the faculty and every student group intact:`,
+        text: `For example, here are locally checked alternatives for ${focus.courseId} (${focus.courseTitle}), keeping the faculty and every student group intact:`,
         bullets: suggestions.length
           ? suggestions.map((s) => `${DAY_LONG[s.target.day]} · P${s.target.startPeriod} in ${data.rooms.find((r) => r.id === s.target.roomId)?.name} — ${s.state === "valid" ? "all checks pass" : "warnings only"}`)
           : ["No slot this week satisfies every rule."],
         actions: [{ label: "Visualise the ripple", to: "/ripple" }, { label: "Open the board", to: "/mosaic" }],
-        meta: "local rule check · 10 constraints",
+        meta: "preview · local checks",
       };
     }
 
@@ -164,14 +164,14 @@ export default function Intelligence() {
       const focus = data.sessions[0];
       return {
         ...base,
-        text: `If ${focus.courseId} moves, TESSERA recomputes the room, the faculty hour and every group in the session. The Ripple view draws exactly those connections; the impact panel counts them before anything is applied.`,
+        text: `For example, if ${focus.courseId} moves, TESSERA checks the room, the faculty hour and every group in the session. The Ripple view draws exactly those connections; the impact panel counts them before anything is applied.`,
         bullets: [
           `${focus.courseTitle} · ${focus.facultyName}`,
           `groups affected: ${focus.groupNames.join(", ")}`,
           `room released: ${focus.roomName}`,
         ],
         actions: [{ label: "Open the Ripple Effect", to: "/ripple" }],
-        meta: "impact model · backend remains the authority",
+        meta: "preview · changes require approval",
       };
     }
 
@@ -230,7 +230,7 @@ export default function Intelligence() {
         { label: "Booking decisions", to: "/bookings" },
         { label: "Ripple Effect", to: "/ripple" },
       ],
-      meta: "deterministic · no external model required",
+      meta: "based on the current schedule",
     };
   };
 
@@ -250,7 +250,6 @@ export default function Intelligence() {
         source?: { provider?: string; llm?: string | null };
         missing?: string[];
       };
-      const provider = result.source?.llm ?? result.source?.provider ?? "deterministic";
       const bullets: string[] = [];
       if (result.summary) bullets.push(result.summary);
       if (typeof result.moves === "number") bullets.push(`${result.moves} session(s) would move — minimum-move repair`);
@@ -277,7 +276,7 @@ export default function Intelligence() {
               { label: "Back to the board", to: "/mosaic" },
             ]
           : [{ label: "Open the board", to: "/mosaic" }],
-        meta: `engine-checked · provider: ${provider}${ai?.enabled ? ` · ${ai.budget.requests_today}/${ai.daily_limit} calls today` : " · free tier, budget-guarded"}`,
+        meta: "Checked against campus rules",
       };
       if (result.proposal_id) {
         notify({
@@ -319,7 +318,7 @@ export default function Intelligence() {
             {plural(data.bookings.bookings.length, "venue request")}
           </span>
           <span className={`ai-status ${ai && !ai.enabled ? "quiet" : ""}`}>
-            <i /> {ai?.enabled ? `groq · ${ai.model}` : "deterministic rules"}
+            <i /> {ai?.enabled ? "Assistant ready" : "Campus rules ready"}
           </span>
         </header>
 

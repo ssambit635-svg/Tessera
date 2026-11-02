@@ -74,9 +74,17 @@ if (LIVE) {
 } else {
   window.fetch = async (url) => {
     if (String(url).includes("/health")) return { ok: false, json: async () => ({}) };
+    if (String(url).includes("/api/auth/login")) return { ok: false, status: 401, text: async () => JSON.stringify({ detail: "Invalid credentials" }) };
     return { ok: false, status: 503, text: async () => "{}" };
   };
 }
+// jsdom does not implement media playback. Finish the intro explicitly so route
+// interactions exercise the same opened state without waiting for a video decoder.
+window.HTMLMediaElement.prototype.play = function play() {
+  window.setTimeout(() => this.dispatchEvent(new window.Event("ended")), 0);
+  return Promise.resolve();
+};
+window.HTMLMediaElement.prototype.pause = function pause() {};
 window.Element.prototype.scrollTo = function scrollTo() {};
 window.HTMLElement.prototype.scrollIntoView = function scrollIntoView() {};
 window.matchMedia = () => ({
@@ -165,6 +173,8 @@ if (mounted === "landing") {
     const landed = await waitForMount(LIVE ? 12000 : 6000);
     if (landed !== "login") errors.push(`landing sign-in went to ${landed ?? "nothing"} instead of the sign-in page`);
   }
+  if (!window.document.querySelector('.sf-back[href="/landing"]')) errors.push("sign-in has no way back to the site");
+  if (window.document.querySelector("#name, #staffId")) errors.push("sign-in contains unused identity fields");
   if (!window.document.querySelector(".sf-new button")) errors.push("no demo entry point on the sign-in page");
   click(window.document.querySelector(".sf-new button"));
   const entered = await waitForApp(LIVE ? 12000 : 5000);
@@ -221,6 +231,12 @@ for (const route of routes) {
     }
     if (window.document.querySelector(".app-frame")) errors.push("/login rendered the app shell");
   }
+  if (window.document.querySelector(".app-frame") && !window.document.querySelector('.back-to-site[href="/landing"]')) {
+    errors.push(`${route} is missing its back-to-site link`);
+  }
+  if (["/ledger", "/seating", "/spaces"].includes(route) && !window.document.querySelector('.site-back[href="/landing"]')) {
+    errors.push(`${route} is missing its back-to-site link`);
+  }
   if (/Cannot read propert|is not a function|Minified React error/i.test(body)) {
     errors.push(`${route} rendered an error string`);
   }
@@ -254,6 +270,21 @@ async function ensureSignedIn() {
 }
 
 console.log("\ninteractions");
+await interaction("back-to-site navigation works", async () => {
+  await ensureSignedIn();
+  await go("/bookings");
+  if (!click(window.document.querySelector(".back-to-site"))) return "workspace link missing";
+  await wait(220);
+  if (window.location.pathname !== "/landing") return "workspace link did not reach home";
+  await go("/login");
+  if (!click(window.document.querySelector(".sf-back"))) return "sign-in link missing";
+  await wait(220);
+  if (window.location.pathname !== "/landing") return "sign-in link did not reach home";
+  await go("/ledger");
+  if (!click(window.document.querySelector(".site-back"))) return "public page link missing";
+  await wait(220);
+  return window.location.pathname === "/landing" ? "" : "public page link did not reach home";
+});
 await interaction("sidebar collapses", async () => {
   await ensureSignedIn();
   await go("/");
@@ -389,8 +420,25 @@ await interaction("password sign-in rejects bad credentials", async () => {
   await wait(500);
   const error = window.document.querySelector(".sf-error");
   if (!error) return "no error was shown";
-  return /not match|not reachable|failed/i.test(error.textContent) ? "" : `unexpected error copy: ${error.textContent}`;
+  if (window.document.querySelector(".app-frame")) return "failed sign-in opened the workspace";
+  return /not match|couldn.t|try again/i.test(error.textContent) ? "" : `unexpected error copy: ${error.textContent}`;
 });
+
+if (!LIVE) {
+  await interaction("disabled demo login does not masquerade as a preview", async () => {
+    await go("/login");
+    const originalFetch = window.fetch;
+    window.fetch = async (url, init) => String(url).includes("/api/auth/demo-login")
+      ? { ok: false, status: 403, text: async () => JSON.stringify({ detail: "Demo access is disabled." }) }
+      : originalFetch(url, init);
+    try {
+      click(window.document.querySelector(".sf-new button"));
+      await wait(400);
+      if (window.document.querySelector(".app-frame")) return "permission failure opened a preview";
+      return /disabled/i.test(window.document.querySelector(".sf-error")?.textContent || "") ? "" : "permission failure was not shown";
+    } finally { window.fetch = originalFetch; }
+  });
+}
 
 if (LIVE) {
   await interaction("password sign-in reaches the live API", async () => {

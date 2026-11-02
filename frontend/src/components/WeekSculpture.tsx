@@ -1,11 +1,12 @@
 import { useState, type PointerEvent } from "react";
 import { Link } from "react-router-dom";
-import type { DayCode, SessionEntry } from "../lib/types";
+import type { DayCode, Period, SessionEntry } from "../lib/types";
 
 interface WeekSculptureProps {
   days: DayCode[];
   sessions: SessionEntry[];
   rooms: number;
+  periods: Period[];
 }
 
 const DAY_NAMES: Record<DayCode, string> = {
@@ -19,7 +20,7 @@ const DAY_NAMES: Record<DayCode, string> = {
 };
 
 /** A tactile, lightweight CSS-3D preview of the actual timetable, not a mock dashboard. */
-export function WeekSculpture({ days, sessions, rooms }: WeekSculptureProps) {
+export function WeekSculpture({ days, sessions, rooms, periods }: WeekSculptureProps) {
   const [selectedDay, setSelectedDay] = useState<DayCode | null>(null);
   const activeDay =
     selectedDay && days.includes(selectedDay) ? selectedDay : days[0];
@@ -27,6 +28,8 @@ export function WeekSculpture({ days, sessions, rooms }: WeekSculptureProps) {
   const sample = [...daySessions]
     .sort((a, b) => a.startPeriod - b.startPeriod || a.id.localeCompare(b.id))
     .slice(0, 4);
+
+  const timeFor = (period: number) => periods.find((entry) => entry.id === period)?.start ?? `P${period}`;
 
   const tilt = (event: PointerEvent<HTMLDivElement>) => {
     if (
@@ -107,38 +110,35 @@ export function WeekSculpture({ days, sessions, rooms }: WeekSculptureProps) {
                     <span>
                       <i /> TESSERA / TIMETABLE
                     </span>
-                    <span>•••</span>
+                    <span>WEEKLY OVERVIEW</span>
                   </div>
                   <div className="week-sheet-title">
                     <div>
-                      <small>THE VIEW FOR</small>
+                      <small>YOUR CAMPUS / TEACHING WEEK</small>
                       <strong>
                         {activeDay ? DAY_NAMES[activeDay] : "Your week"}
                       </strong>
                     </div>
                     <span>
                       {String(daySessions.length).padStart(2, "0")}
-                      <small> sessions</small>
+                      <small> scheduled</small>
                     </span>
                   </div>
                   <div className="week-sheet-labels">
-                    <span>PERIOD / SESSION</span>
-                    <span>ROOM</span>
+                    <span>FIRST SESSIONS</span>
+                    <span>{sample.length} OF {daySessions.length}</span>
                   </div>
                   <div className="week-sheet-rows" aria-live="polite">
                     {sample.length ? (
                       sample.map((session, index) => (
                         <div className="week-sheet-row" key={session.id}>
-                          <span className={`week-row-dot dot-${index}`} />
-                          <span className="week-row-period">
-                            P{String(session.startPeriod).padStart(2, "0")}
+                          <span className="week-row-time">{timeFor(session.startPeriod)}</span>
+                          <span className={`week-row-marker dot-${index}`} />
+                          <span className="week-row-content">
+                            <strong>{session.courseTitle}</strong>
+                            <small>{session.facultyName}</small>
                           </span>
-                          <span className="week-row-title">
-                            {session.courseTitle}
-                          </span>
-                          <span className="week-row-room">
-                            {session.roomId}
-                          </span>
+                          <span className="week-row-room">{session.roomId}</span>
                         </div>
                       ))
                     ) : (
@@ -148,7 +148,7 @@ export function WeekSculpture({ days, sessions, rooms }: WeekSculptureProps) {
                     )}
                   </div>
                   <div className="week-sheet-bottom">
-                    <span>AN ORDER TO THE EVERYDAY</span>
+                    <span>EARLIEST SESSIONS · {activeDay ?? "WEEK"}</span>
                     <span>↗</span>
                   </div>
                 </div>
@@ -156,8 +156,8 @@ export function WeekSculpture({ days, sessions, rooms }: WeekSculptureProps) {
               <div className="week-floating-note" aria-hidden="true">
                 <span>✳</span>
                 <div>
-                  <b>Everything in its place.</b>
-                  <small>One beautifully solved week.</small>
+                  <b>{daySessions.length} sessions</b>
+                  <small>on {activeDay ? DAY_NAMES[activeDay] : "this day"}</small>
                 </div>
               </div>
               <div className="week-stage-bottom">
@@ -167,9 +167,9 @@ export function WeekSculpture({ days, sessions, rooms }: WeekSculptureProps) {
             </div>
             <div className="week-controls">
               <div className="week-day-label">
-                <span>EXPLORE A DAY</span>
+                <span>YOUR WEEK, AT A GLANCE</span>
                 <small>
-                  Selected: {activeDay ? DAY_NAMES[activeDay] : "none"}
+                  Choose a day to explore
                 </small>
               </div>
               <div className="week-days" aria-label="Choose a timetable day">
@@ -178,15 +178,16 @@ export function WeekSculpture({ days, sessions, rooms }: WeekSculptureProps) {
                     key={day}
                     type="button"
                     aria-pressed={activeDay === day}
+                    aria-label={`${DAY_NAMES[day]}, ${sessions.filter((entry) => entry.day === day).length} sessions`}
                     onClick={() => setSelectedDay(day)}
                   >
-                    {day}
+                    <span>{day}</span><small>{sessions.filter((entry) => entry.day === day).length}</small>
                   </button>
                 ))}
               </div>
             </div>
             <div className="week-caption">
-              <span>01 / A GLIMPSE, NOT THE WHOLE PICTURE</span>
+              <span>A PREVIEW OF THE CAMPUS TIMETABLE</span>
               <Link to="/login?next=%2Fmosaic">Open the full board ↗</Link>
             </div>
           </div>

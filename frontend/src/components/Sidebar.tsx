@@ -334,9 +334,9 @@ export function Sidebar() {
             ))}
           </div>
 
-          <div className="rail-source" title={source.detail} data-source-mode={source.mode}>
+          <div className="rail-source" title={source.mode === "live" ? "Changes can be saved" : "Preview only — changes are not saved"} data-source-mode={source.mode}>
             <span className={`led ${source.mode}`} />
-            <span className="mono">{source.mode === "live" ? "live api" : "snapshot"}</span>
+            <span className="mono">{source.mode === "live" ? "connected" : "preview only"}</span>
             <span className="rail-source-sep">·</span>
             <span className="mono rail-source-week">
               {data?.calendar.festWeek?.toUpperCase() ?? "TEACHING WEEK"}

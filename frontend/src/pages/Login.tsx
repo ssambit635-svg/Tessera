@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ApiError, demoLogin, loginWithPassword, type LoginResult } from "../lib/api";
 import { useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
@@ -35,10 +35,10 @@ function describeFailure(failure: unknown): string {
   if (failure instanceof ApiError) {
     if (failure.status === 401) return "That email and password do not match an account on this campus.";
     if (failure.status === 0) {
-      return "The scheduling API did not wake up in time. It sleeps on the free tier and can take a minute on the first visit — try once more, or step in with a demo identity (offline preview).";
+      return "We couldn’t connect just yet. Please try again, or explore the preview below.";
     }
     if (failure.status >= 500) {
-      return "Sign-in failed: the scheduling API answered with an error — it is probably still starting up. Wait a second and try again, or step in with a demo identity (offline preview).";
+      return "We couldn’t sign you in right now. Please wait a moment and try again.";
     }
     if (failure.status === 422) return "That does not look like a campus email address.";
     return failure.message;
@@ -54,8 +54,6 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [staffId, setStaffId] = useState("");
   /* The plate sits over the photograph until someone starts filling the form; then the
      photograph steps back and the plate comes forward. `engaged` is sticky so the page
      never jumps while an error is being read. */
@@ -107,10 +105,15 @@ export default function Login() {
     setBusy(personaEmail);
     try {
       await enter(await demoLogin(role, personaEmail));
-    } catch {
-      // No API: step into the labelled snapshot rather than stranding the visitor here.
-      signInLocal({ email: personaEmail, name: label, role });
-      navigate(next, { replace: true });
+    } catch (failure) {
+      // Only an unavailable service can use the clearly labelled offline preview.
+      // Authentication and permission failures must not be disguised as a successful login.
+      if (failure instanceof ApiError && (failure.status === 0 || failure.status >= 500)) {
+        signInLocal({ email: personaEmail, name: label, role });
+        navigate(next, { replace: true });
+      } else {
+        setError(describeFailure(failure));
+      }
     } finally {
       setBusy(null);
     }
@@ -129,9 +132,10 @@ export default function Login() {
         <img
           className="sf-bg"
           src={CAMPUS_PHOTO}
-          alt="The academic block at golden hour: sandstone louvre fins and recessed glass balconies against a pale sky."
+          alt=""
         />
         <span className="sf-bg-veil" />
+        <span className="sf-photo-note">Illustrative photograph</span>
       </figure>
 
       <header className="sf-brand">
@@ -144,6 +148,7 @@ export default function Login() {
         </span>
       </header>
 
+      <Link className="sf-back" to="/landing"><Icon name="arrowLeft" size={14} /> Back to site</Link>
       <main className="sf-stage">
         <div
           className="sf-holder"
@@ -171,35 +176,6 @@ export default function Login() {
             ) : null}
 
             <form onSubmit={submit} noValidate>
-              <div className="sf-pair">
-                <label className="sf-field" htmlFor="name">
-                  <span>Full name</span>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    placeholder="Ananya Rao"
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                  />
-                </label>
-
-                <label className="sf-field" htmlFor="staffId">
-                  <span>Staff / employee ID</span>
-                  <input
-                    id="staffId"
-                    name="staffId"
-                    type="text"
-                    autoComplete="off"
-                    placeholder="CIT-2041"
-                    value={staffId}
-                    onChange={(event) => setStaffId(event.target.value)}
-                    spellCheck={false}
-                  />
-                </label>
-              </div>
-
               <label className="sf-field" htmlFor="email">
                 <span>Campus email</span>
                 <input
@@ -234,7 +210,6 @@ export default function Login() {
                     onClick={() => setReveal((current) => !current)}
                     aria-label={reveal ? "Hide password" : "Show password"}
                     aria-pressed={reveal}
-                    tabIndex={-1}
                   >
                     <Icon name="eye" size={15} strokeWidth={1.6} />
                   </button>
@@ -257,22 +232,19 @@ export default function Login() {
                 {busy === "password" ? (
                   <>
                     <TileSpinner size={17} label="Signing in" />
-                    {waking ? "Waking the solver…" : "Signing in…"}
+                    {waking ? "Getting things ready…" : "Signing in…"}
                   </>
                 ) : (
                   "Sign in"
                 )}
               </button>
 
-              <p className="sf-note">
-                Name and staff ID label this browser session; the campus directory still authenticates with
-                the email above.
-              </p>
+              <p className="sf-note">Use your campus credentials to continue.</p>
             </form>
 
             {waking && busy ? (
               <p className="sf-hint" role="status">
-                Free-tier API is starting up. This can take up to a minute on the first visit.
+                Getting things ready. This can take a moment on the first visit.
               </p>
             ) : null}
 

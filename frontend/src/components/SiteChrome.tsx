@@ -42,8 +42,8 @@ export function SiteHeader({ current }: { current?: string }) {
         </nav>
 
         <div className="site-head-actions">
-          <Link className="rk-navlink" to="/landing">
-            Back to the front door
+          <Link className="rk-navlink site-back" to="/landing">
+            ← Back to site
           </Link>
           <Link className="rk-btn white sm" to="/login">
             <span className="rk-keycap">

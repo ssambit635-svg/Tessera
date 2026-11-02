@@ -11,7 +11,7 @@ import {
   type StripState,
 } from "../lib/derive";
 import { DAY_LONG, formatStampShort, percent, plural } from "../lib/format";
-import { designationFor,  tintFor } from "../lib/persona";
+import { tintFor } from "../lib/persona";
 import type { Faculty } from "../lib/types";
 
 const STRIP_LEGEND: { state: StripState; label: string }[] = [
@@ -125,7 +125,7 @@ export default function People() {
                 <span className={`avatar xl tone-${tintFor(person.id)}`}><Icon name="user" size={22} /></span>
                 <div className="pc-id">
                   <h3>{person.name}</h3>
-                  <span className="pc-role">{designationFor(person.id, person.department)}</span>
+                  <span className="pc-role">Faculty member</span>
                   <span className="pc-dept">
                     {person.department} · {person.id}
                   </span>
@@ -242,7 +242,8 @@ function FacultyDrawer({
   onClose: () => void;
   onOpenSession: (id: string) => void;
 }) {
-  const { data, notify } = useWorkspace();
+  const { data } = useWorkspace();
+  const navigate = useNavigate();
   const strip = facultyStrip(data, faculty.id);
   const summary = facultySummary(data, faculty.id);
   const [sessionId, setSessionId] = useState<string>(summary.classes[0]?.id ?? "");
@@ -257,7 +258,7 @@ function FacultyDrawer({
           <span className={`avatar xl tone-${tintFor(faculty.id)}`}><Icon name="user" size={22} /></span>
           <div style={{ minWidth: 0 }}>
             <h2>{faculty.name}</h2>
-            <div className="pc-role" style={{ marginTop: 2 }}>{designationFor(faculty.id, faculty.department)}</div>
+            <div className="pc-role" style={{ marginTop: 2 }}>Faculty member</div>
             <div className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>
               {faculty.department} · {faculty.id} · max {faculty.maxHoursPerDay} h/day
             </div>
@@ -395,19 +396,7 @@ function FacultyDrawer({
                       ))}
                     </div>
                   </div>
-                  <button
-                    className="btn sm"
-                    disabled={!candidate.compatible || !session}
-                    onClick={() =>
-                      notify({
-                        tone: "info",
-                        title: "Reassignment drafted",
-                        detail: `${candidate.faculty.name} could cover ${session?.courseId}. Faculty reassignment is owned by the scheduling authority — this is a frontend draft, not a booking.`,
-                      })
-                    }
-                  >
-                    Draft
-                  </button>
+                  <span className="chip outline">Preview</span>
                 </div>
               ))}
               {candidates.length === 0 ? <p className="muted" style={{ fontSize: 12 }}>Select a session to see candidates.</p> : null}
@@ -424,17 +413,8 @@ function FacultyDrawer({
         </div>
 
         <div className="drawer-foot">
-          <button
-            className="btn primary"
-            onClick={() =>
-              notify({
-                tone: "info",
-                title: "Modification request opened",
-                detail: "In live mode this would be sent to /api/disruption/move for a second admin to approve.",
-              })
-            }
-          >
-            <Icon name="edit" size={14} /> Request a change
+          <button className="btn primary" onClick={() => { onClose(); navigate("/intelligence"); }}>
+            <Icon name="edit" size={14} /> Discuss a change
           </button>
           <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)", marginLeft: "auto" }}>
             {formatStampShort(new Date().toISOString())}

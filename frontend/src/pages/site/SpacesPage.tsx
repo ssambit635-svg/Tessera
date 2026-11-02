@@ -147,7 +147,7 @@ export default function SpacesPage() {
             <p className="site-body">
               {busiestPeriod.period
                 ? `${busiestPeriod.period.start}–${busiestPeriod.period.end} carries ${busiestPeriod.count} sessions — the point where the estate is closest to its limit.`
-                : "No sessions in the committed snapshot."}
+                : "No sessions in this schedule."}
             </p>
             <div className="peak-bars">
               {byPeriod.map((entry) => (

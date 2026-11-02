@@ -48,7 +48,7 @@ export default function Approvals() {
   const load = useCallback(async () => {
     if (!token) {
       setLoading(false);
-      setError("Sign in live to read the proposal queue. Snapshot mode has no database behind it.");
+      setError("Connect to your workspace to see the proposal queue. Preview changes are not saved.");
       return;
     }
     try {
@@ -56,7 +56,7 @@ export default function Approvals() {
       setRows(result.proposals);
       setError(null);
     } catch (exc) {
-      setError(exc instanceof Error ? exc.message : "Could not reach the proposals endpoint");
+      setError(exc instanceof Error ? exc.message : "Could not load proposals. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ export default function Approvals() {
 
   const runPreview = async (changes: unknown[], label: string) => {
     if (!token) {
-      notify({ tone: "danger", title: "Live sign-in needed", detail: "Repairs are computed by the API, not in the browser." });
+      notify({ tone: "danger", title: "Live sign-in needed", detail: "Connect to your workspace to preview and save a repair." });
       return;
     }
     setBusy("preview");
@@ -161,7 +161,7 @@ export default function Approvals() {
           </h2>
           <p>
             A disruption or a faculty change produces a <em>proposal</em>, never a silent edit. The
-            request is computed by the constraint engine, stored in the database, and applied only
+            request is checked against campus rules, saved as a proposal, and applied only
             when a different administrator approves it.
           </p>
         </div>
@@ -419,9 +419,7 @@ export default function Approvals() {
         <div className="panel-foot">
           <Icon name="shield" size={13} />
           <span>
-            The validity you see is computed by <span className="mono">core/repair.py</span> and{" "}
-            <span className="mono">core/constraints.py</span> — the model, when one is configured, only
-            helps read the sentence.
+            Every proposal is checked against campus rules before a second administrator can approve it.
           </span>
         </div>
       </div>

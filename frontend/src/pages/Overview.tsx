@@ -22,7 +22,7 @@ import { availabilityWindow, periodSpan, toneForDepartment } from "../lib/derive
 import { FEATURE_LABELS,  roomImage, roomImageAlt, tintFor, ROOM_TYPE_LABELS } from "../lib/persona";
 
 export default function Overview() {
-  const { data } = useWorkspace();
+  const { data, source } = useWorkspace();
   const { activeDate } = useUi();
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState<string | null>(null);
@@ -63,10 +63,8 @@ export default function Overview() {
   const conflicts = data.dashboard.conflicts.hard;
   const soft = data.dashboard.soft.total;
 
-  const featured = (["CS-LAB-1", "ELEC-LAB-1", "SH-1"]
-    .map((id) => data.rooms.find((room) => room.id === id))
-    .filter(Boolean) as typeof data.rooms);
-  const collaboration = data.rooms.find((room) => room.id === "MECH-WS") ?? data.rooms[0];
+  const featured = data.rooms.slice(0, 3);
+  const collaboration = data.rooms.find((room) => room.type === "workshop") ?? data.rooms[0];
 
   const alerts = useMemo(() => {
     const list: { tone: string; title: string; detail: string; to: string; icon: string }[] = [];
@@ -176,13 +174,13 @@ export default function Overview() {
           <img src="/media/campus-facade.jpg" alt="Reference photograph of an academic building at golden hour" />
           <div className="hero-figure-labels">
             <span className="annotation">ACADEMIC CORE</span>
-            <span className="annotation annotation-right">EST. 1996</span>
+            <span className="annotation annotation-right">CAMPUS SCHEDULE</span>
           </div>
           <span className="photo-note">Reference imagery · not this campus</span>
           <figcaption>
             <div>
               <span className="eyebrow" style={{ color: "rgba(255,255,255,.6)" }}>
-                Live campus state
+                {source.mode === "live" ? "Campus schedule" : "Schedule preview"}
               </span>
               <div className="hero-figure-stat">
                 {percent(availability.ratio)}
@@ -199,7 +197,7 @@ export default function Overview() {
         <Metric label="Free room-time" value={availability.free} foot={`of ${availability.total} bookable slots`} tone="sage" icon="grid" />
         <Metric label="Active bookings" value={data.bookings.totals.approved + data.bookings.totals.alternatives} foot={`${data.bookings.totals.alternatives} awaiting confirmation`} tone="lime" icon="ticket" />
         <Metric label="Scheduled sessions" value={data.dashboard.counts.sessions} foot={`${data.summary.teaching_hours} teaching hours`} tone="sky" icon="book" />
-        <Metric label="Faculty free" value={facultyNow.free} foot={`of ${facultyNow.total} right now`} tone="sage" icon="people" />
+        <Metric label="Faculty not teaching" value={facultyNow.free} foot={`of ${facultyNow.total} in the first teaching period`} tone="sage" icon="people" />
         <Metric
           label="Proposals awaiting approval"
           value={pendingProposals}
@@ -270,6 +268,7 @@ export default function Overview() {
             <h2 className="serif" style={{ fontSize: 34, marginTop: 4 }}>
               Rooms with a point of view.
             </h2>
+            <p>Photography is illustrative; room details come from the schedule.</p>
           </div>
           <button className="btn sm" onClick={() => navigate("/discovery")}>
             All {data.rooms.length} spaces <Icon name="arrowUpRight" size={13} />
