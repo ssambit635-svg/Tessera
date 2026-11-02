@@ -1,4 +1,4 @@
-/** Regression checks for the intro lifecycle, without depending on a media decoder. */
+/** Regression checks for the assembly intro and reveal lifecycle. */
 import assert from "node:assert/strict";
 import { build } from "esbuild";
 import { JSDOM, VirtualConsole } from "jsdom";
@@ -22,7 +22,7 @@ async function until(fn, message, timeout = 2500) {
     await wait(20);
   }
 }
-async function setup({ delayed = false, reduced = false, saved = false, reject = false, fastTimeout = false } = {}) {
+async function setup({ delayed = false, reduced = false, saved = false, fastTimeout = false } = {}) {
   const consoleErrors = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on("jsdomError", (error) => consoleErrors.push(error.message));
@@ -33,16 +33,15 @@ async function setup({ delayed = false, reduced = false, saved = false, reject =
   const gate = new Promise((resolve) => { release = resolve; });
   if (!delayed) release();
   w.fetch = async () => { await gate; return { ok: false, status: 503, json: async () => ({}), text: async () => "{}" }; };
+  w.AnimationEvent = w.Event; // React otherwise expects a WebKit-prefixed event in jsdom.
   w.matchMedia = () => ({ matches: reduced, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
   w.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
   w.Element.prototype.scrollTo = function () {};
   w.HTMLElement.prototype.scrollIntoView = function () {};
-  w.HTMLMediaElement.prototype.play = function () { return reject ? Promise.reject(new Error("blocked")) : Promise.resolve(); };
-  w.HTMLMediaElement.prototype.pause = function () {};
   if (saved) w.localStorage.setItem("tessera.motion", "reduced");
   if (fastTimeout) {
     const setTimeout = w.setTimeout.bind(w);
-    w.setTimeout = (fn, ms, ...args) => setTimeout(fn, ms === 12000 ? 50 : ms, ...args);
+    w.setTimeout = (fn, ms, ...args) => setTimeout(fn, ms === 3400 ? 50 : ms, ...args);
   }
   w.eval(code);
   return { w, dom, release, consoleErrors };
@@ -52,14 +51,21 @@ function done(t) {
   t.dom.window.close();
 }
 
-// Neither a ready workspace nor a finished video alone may open the site.
+function finishAnimation(t) {
+  const clock = t.w.document.querySelector(".pre-clock");
+  assert(clock, "animation clock not mounted");
+  const event = new t.w.Event("animationend", { bubbles: true });
+  Object.defineProperty(event, "animationName", { value: "pre-clock" });
+  clock.dispatchEvent(event);
+}
+
+// Neither a ready workspace nor the completed assembly alone may open the site.
 {
   const t = await setup({ delayed: true });
-  await until(() => t.w.document.querySelector("video"), "video not mounted");
-  const video = t.w.document.querySelector("video");
-  assert.equal(video.muted, true);
-  assert(video.hasAttribute("playsinline"));
-  video.dispatchEvent(new t.w.Event("ended"));
+  await until(() => t.w.document.querySelector(".pre-clock"), "intro not mounted");
+  assert.equal(t.w.document.querySelectorAll(".pre-piece").length, 25, "brand pieces missing");
+  assert(!t.w.document.querySelector("video"), "old video is still used");
+  finishAnimation(t);
   await until(() => t.w.document.querySelector(".pre-status")?.textContent.includes("Preparing"), "no waiting status");
   assert(!t.w.document.querySelector(".app-reveal.is-open"), "opened before workspace was ready");
   t.release();
@@ -70,25 +76,21 @@ function done(t) {
 {
   const t = await setup();
   await until(() => t.w.document.querySelector(".app-reveal"), "workspace not ready");
-  assert(!t.w.document.querySelector(".app-reveal.is-open"), "opened before video ended");
-  t.w.document.querySelector("video").dispatchEvent(new t.w.Event("ended"));
-  await until(() => t.w.document.querySelector(".app-reveal.is-open"), "ended did not reveal");
+  assert(!t.w.document.querySelector(".app-reveal.is-open"), "opened before animation ended");
+  finishAnimation(t);
+  await until(() => t.w.document.querySelector(".app-reveal.is-open"), "animation end did not reveal");
   done(t);
 }
-for (const mode of ["error", "reject", "timeout", "skip", "system-reduced", "saved-reduced"]) {
-  const t = await setup({ reject: mode === "reject", fastTimeout: mode === "timeout", reduced: mode === "system-reduced", saved: mode === "saved-reduced" });
+for (const mode of ["timeout", "skip", "system-reduced", "saved-reduced"]) {
+  const t = await setup({ fastTimeout: mode === "timeout", reduced: mode === "system-reduced", saved: mode === "saved-reduced" });
   await until(() => t.w.document.querySelector(".pre") || t.w.document.querySelector(".app-reveal.is-open"), "intro did not mount");
-  if (mode === "error") {
-    await until(() => t.w.document.querySelector("video"), "video not mounted");
-    t.w.document.querySelector("video").dispatchEvent(new t.w.Event("error"));
-  }
   if (mode === "skip") {
     await until(() => t.w.document.querySelector(".pre-skip"), "skip not mounted");
     t.w.document.querySelector(".pre-skip").click();
   }
-  if (mode.endsWith("reduced")) assert(!t.w.document.querySelector("video"), "reduced motion still played video");
+  if (mode.endsWith("reduced")) assert(!t.w.document.querySelector(".pre-clock"), "reduced motion still animated");
   await until(() => t.w.document.querySelector(".app-reveal.is-open"), `${mode} did not reveal`);
   await until(() => !t.w.document.querySelector(".pre"), `${mode} splash did not clear`);
   done(t);
 }
-console.log("Intro lifecycle: video completion, delayed workspace, error, blocked autoplay, timeout, skip and reduced motion passed.");
+console.log("Intro lifecycle: assembly completion, delayed workspace, fallback, skip and reduced motion passed.");

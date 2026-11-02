@@ -76,9 +76,9 @@ function Gate() {
   );
 }
 
-const REVEAL_MS = 680;
+const REVEAL_MS = 1050;
 
-/** The video and workspace load together; neither can reveal the page prematurely. */
+/** The assembly and workspace load together; neither can reveal the page prematurely. */
 function Intro() {
   const { status } = useWorkspace();
   const ready = status !== "loading";

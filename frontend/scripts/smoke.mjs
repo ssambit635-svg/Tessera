@@ -78,13 +78,7 @@ if (LIVE) {
     return { ok: false, status: 503, text: async () => "{}" };
   };
 }
-// jsdom does not implement media playback. Finish the intro explicitly so route
-// interactions exercise the same opened state without waiting for a video decoder.
-window.HTMLMediaElement.prototype.play = function play() {
-  window.setTimeout(() => this.dispatchEvent(new window.Event("ended")), 0);
-  return Promise.resolve();
-};
-window.HTMLMediaElement.prototype.pause = function pause() {};
+window.AnimationEvent = window.Event; // React otherwise expects a WebKit-prefixed event in jsdom.
 window.Element.prototype.scrollTo = function scrollTo() {};
 window.HTMLElement.prototype.scrollIntoView = function scrollIntoView() {};
 window.matchMedia = () => ({
@@ -138,6 +132,14 @@ async function waitForMount(maxMs) {
 }
 
 const mounted = await waitForMount(LIVE ? 12000 : 6000);
+// CSS animations don't run in jsdom; finish the intro before exercising the routes.
+const introClock = window.document.querySelector(".pre-clock");
+if (introClock) {
+  const event = new window.Event("animationend", { bubbles: true });
+  Object.defineProperty(event, "animationName", { value: "pre-clock" });
+  introClock.dispatchEvent(event);
+}
+
 if (process.argv.includes("--dump")) {
   console.log("--- first paint text ---\n" + text().slice(0, 1600) + "\n---");
 }

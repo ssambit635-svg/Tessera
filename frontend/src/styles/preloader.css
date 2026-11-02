@@ -1,89 +1,157 @@
-/* The original video plays in full, without cropping the mark on narrow screens. */
+/* Tessera Assembly: the brand mark comes together over a quiet scheduling grid. */
 .pre {
   position: fixed;
   inset: 0;
   z-index: 240;
   overflow: hidden;
-  background: #f2f3f1;
-  color: #10223b;
+  background: #0a0a0b;
+  color: #f4f4f6;
+  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
   opacity: 1;
-  transition: background-color 0.8s ease, color 0.5s ease, opacity 0.68s ease;
+  transition: opacity 0.9s cubic-bezier(.22, 1, .36, 1), visibility 0s linear 0.9s;
 }
 
-/* The video moves from a light logo to a dark shatter tunnel. Match its letterbox. */
-.pre.is-dark {
-  background: #031a25;
-  color: #f5fbfd;
-}
+.pre.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
 
-.pre.is-leaving {
-  opacity: 0;
-  pointer-events: none;
+.pre-grid {
+  position: absolute;
+  inset: -1px;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  background-image: linear-gradient(to right, rgba(255,255,255,.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.055) 1px, transparent 1px);
+  background-size: 10% 16.6667%;
+  transform: scale(1);
+  transition: transform 1.15s cubic-bezier(.22, 1, .36, 1), opacity .9s ease;
+  opacity: .9;
 }
-
-.pre-video {
+.pre.is-leaving .pre-grid { transform: scale(1.26); opacity: 0; }
+.pre-grid::after {
+  content: "";
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  background: radial-gradient(ellipse min(48vw, 430px) min(45vh, 400px) at center, #0a0a0b 10%, rgba(10,10,11,.88) 48%, transparent 100%);
+  pointer-events: none;
 }
+.pre-grid-tile {
+  margin: 5px;
+  border: 1px solid rgba(255,255,255,.085);
+  background: rgba(255,255,255,.018);
+  opacity: 0;
+  animation: pre-tile-in .7s ease both;
+}
+.pre-grid-tile.is-blue { background: rgba(40, 151, 182, .085); border-color: rgba(91,190,205,.12); }
+.pre-grid-tile.is-mint { background: rgba(133, 210, 194, .055); border-color: rgba(133,210,194,.11); }
+@keyframes pre-tile-in { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
 
+.pre-topline, .pre-footer {
+  position: absolute;
+  left: clamp(22px, 4vw, 64px);
+  right: clamp(22px, 4vw, 64px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #777a7d;
+  font: 500 10px/1.4 "Geist Mono Variable", "Geist Mono", monospace;
+  letter-spacing: .12em;
+}
+.pre-topline { top: max(32px, env(safe-area-inset-top)); }
+.pre-topline span:last-child { margin-right: 135px; }
+.pre-footer { bottom: max(34px, env(safe-area-inset-bottom)); }
+.pre-footer-number { color: #a5aaa9; }
 .pre-skip {
   position: absolute;
-  top: max(20px, env(safe-area-inset-top));
-  right: max(20px, env(safe-area-inset-right));
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  padding: 9px 15px;
+  z-index: 2;
+  top: max(22px, env(safe-area-inset-top));
+  right: clamp(22px, 4vw, 64px);
+  padding: 9px 0 9px 12px;
+  border: 0;
   background: transparent;
-  color: inherit;
-  font: 500 12px/1.2 "Inter Variable", "Inter", system-ui, sans-serif;
+  color: #b9babb;
+  font: 500 11px/1.3 "Inter Variable", "Inter", system-ui, sans-serif;
   cursor: pointer;
 }
+.pre-skip span { margin-left: 8px; color: #7acfd4; }
+.pre-skip:hover { color: #fff; }
+.pre-skip:focus-visible { outline: 2px solid #8dd8d9; outline-offset: 4px; }
 
-.pre-skip:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 4px;
-}
-
-.pre-status {
+.pre-content {
   position: absolute;
-  bottom: max(28px, env(safe-area-inset-bottom));
-  left: 0;
-  right: 0;
-  margin: 0;
-  padding: 0 20px;
-  text-align: center;
-  font: 500 12px/1.5 "Inter Variable", "Inter", system-ui, sans-serif;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 75px 20px 90px;
+  transition: transform .9s cubic-bezier(.22, 1, .36, 1), opacity .55s ease;
 }
-
-.pre-sr-only {
+.pre.is-leaving .pre-content { transform: scale(1.06); opacity: 0; }
+.pre-mark-frame {
+  position: relative;
+  width: clamp(200px, 23vw, 248px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  animation: pre-frame-in 1s ease both;
+}
+.pre-corner { position: absolute; width: 12px; height: 12px; opacity: .55; }
+.pre-corner-tl { top: 0; left: 0; border-top: 1px solid #7f8a8b; border-left: 1px solid #7f8a8b; }
+.pre-corner-tr { top: 0; right: 0; border-top: 1px solid #7f8a8b; border-right: 1px solid #7f8a8b; }
+.pre-corner-bl { bottom: 0; left: 0; border-bottom: 1px solid #7f8a8b; border-left: 1px solid #7f8a8b; }
+.pre-corner-br { bottom: 0; right: 0; border-bottom: 1px solid #7f8a8b; border-right: 1px solid #7f8a8b; }
+.pre-mark-assembly { position: relative; width: 76%; aspect-ratio: 1; }
+.pre-piece {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  inset: 0;
+  background: url('/brand/tessera-mark.png') center / contain no-repeat;
+  animation: pre-assemble 1.35s cubic-bezier(.16, 1, .3, 1) both;
+  animation-delay: var(--piece-delay);
 }
-
-.app-reveal {
-  min-height: 100vh;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.68s ease;
+@keyframes pre-assemble {
+  from { opacity: 0; transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-rotation)) scale(.65); }
+  32% { opacity: 1; }
+  to { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
 }
-
-.app-reveal.is-open {
-  opacity: 1;
-  visibility: visible;
+@keyframes pre-frame-in { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
+.pre-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 32px;
+  animation: pre-identity-in .8s .65s cubic-bezier(.22, 1, .36, 1) both;
 }
+@keyframes pre-identity-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.pre-eyebrow { display: flex; align-items: center; gap: 8px; color: #9da6a6; font: 500 9px/1.4 "Geist Mono Variable", "Geist Mono", monospace; letter-spacing: .17em; }
+.pre-eyebrow i { width: 5px; height: 5px; border-radius: 50%; background: #7dd6cf; }
+.pre-wordmark { margin-top: 12px; color: #f7f7f5; font-size: clamp(42px, 5vw, 54px); font-weight: 550; letter-spacing: -.055em; line-height: 1; }
+.pre-period { color: #e23a54; }
+.pre-tagline { margin-top: 12px; color: #8b8e8f; font-size: 12px; letter-spacing: .01em; }
+.pre-status { position: absolute; left: 50%; transform: translateX(-50%); margin: 0; color: #b9c7c7; white-space: nowrap; font: 500 11px/1.4 "Inter Variable", "Inter", system-ui, sans-serif; letter-spacing: 0; }
+.pre-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.pre-clock { position: absolute; width: 1px; height: 1px; pointer-events: none; animation: pre-clock 2.7s linear both; }
+@keyframes pre-clock { from { opacity: 0; } to { opacity: .01; } }
 
-.app-reveal.is-reduced { transition: none; }
+.app-reveal { min-height: 100vh; opacity: 0; visibility: hidden; clip-path: inset(0 0 5% 0); transition: opacity .9s ease, clip-path 1.05s cubic-bezier(.22, 1, .36, 1); }
+.app-reveal.is-open { opacity: 1; visibility: visible; clip-path: inset(0); }
+.app-reveal.is-reduced { transition: none; clip-path: none; }
+.pre.is-reduced { transition: none; }
+.pre.is-reduced .pre-piece, .pre.is-reduced .pre-identity, .pre.is-reduced .pre-mark-frame, .pre.is-reduced .pre-grid-tile { animation: none; opacity: 1; }
 
+@media (max-width: 600px) {
+  .pre-topline span:last-child, .pre-footer-label { display: none; }
+  .pre-grid { grid-template-columns: repeat(10, 1fr); }
+  .pre-grid-tile { margin: 3px; }
+  .pre-footer { justify-content: flex-end; }
+  .pre-content { padding-bottom: 80px; }
+  .pre-status { left: 0; transform: none; }
+}
+@media (max-height: 560px) {
+  .pre-content { flex-direction: row; gap: 38px; padding: 60px 24px; }
+  .pre-mark-frame { width: min(35vh, 200px); }
+  .pre-identity { align-items: flex-start; margin: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .pre, .app-reveal { transition: none; }
+  .pre, .pre-grid, .pre-content, .app-reveal { transition: none; }
+  .pre-piece, .pre-identity, .pre-mark-frame, .pre-grid-tile { animation: none; opacity: 1; }
 }
