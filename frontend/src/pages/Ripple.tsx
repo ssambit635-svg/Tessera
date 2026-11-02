@@ -460,9 +460,7 @@ export default function Ripple() {
           <div className="callout" style={{ fontSize: 11 }}>
             <Icon name="shield" size={14} />
             <span>
-              <b>Where the verdict comes from.</b> The browser previews the rules instantly; the scheduling
-              authority still decides. Approving here only applies a change the API has already accepted — and a
-              second admin is always required.
+              <b>Before anything changes.</b> This is a preview. A proposed move is checked against campus rules and requires approval from a different administrator.
             </span>
           </div>
         </div>

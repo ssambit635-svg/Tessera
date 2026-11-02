@@ -9,7 +9,6 @@ import { WeekSculpture } from "../components/WeekSculpture";
 import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
 import { TextReveal } from "../components/TextReveal";
-import { plural } from "../lib/format";
 
 /* ============================================================================
    /landing — the public front door.
@@ -151,13 +150,12 @@ export default function Landing() {
               </Link>
             </Magnetic>
             <button className="rk-btn outline lg" onClick={() => go("/mosaic")}>
-              See the live board
+              Explore the board
             </button>
           </div>
 
           <p className="rk-cta-note">
-            Five demo seats, one password ·{" "}
-            {source.mode === "live" ? "live scheduling API" : "committed dataset"}
+            {source.mode === "live" ? "Connected to your campus schedule" : "Explore the campus schedule in preview mode"}
           </p>
         </section>
 
@@ -168,7 +166,7 @@ export default function Landing() {
       {/* Everything past the hero shares one dot field, so the pattern is continuous
           across sections instead of restarting at every boundary. */}
       <div className="rk-body">
-      <WeekSculpture days={data.calendar.days.slice(0, 5)} sessions={data.sessions} rooms={numbers.rooms} />
+      <WeekSculpture days={data.calendar.days.slice(0, 5)} sessions={data.sessions} rooms={numbers.rooms} periods={data.calendar.periods} />
       {/* --------------------------------------------------------- product */}
       <section className="rk-section" id="product">
         <div className="rk-inner">
@@ -202,7 +200,7 @@ export default function Landing() {
               {
                 icon: "ticket",
                 title: "Decide every request",
-                body: "All 25 Spectra-week asks, ranked by the institute's own priority order, each answered with a venue and a reason chain — approved, alternative, or rejected.",
+                body: `${data.bookings.count} venue requests, considered against the institute’s priority order, with a clear reason for each decision.`,
                 stats: [
                   ["booking score", `${numbers.bookings.score}/${numbers.bookings.max}`],
                   ["approved", String(numbers.bookings.approved)],
@@ -212,9 +210,9 @@ export default function Landing() {
               {
                 icon: "route",
                 title: "Repair, not rebuild",
-                body: "A room closes or a faculty member travels: the engine moves the fewest sessions possible, re-validates everything, and waits for a second admin to say yes.",
+                body: "When a room closes or a faculty member travels, Tessera proposes a checked repair and waits for a second admin to review it.",
                 stats: [
-                  ["moved by contract", "minimum"],
+                  ["review", "required"],
                   ["awaiting approval", String(numbers.proposals)],
                 ],
                 to: "/approvals",
@@ -255,12 +253,12 @@ export default function Landing() {
                   as="h2"
                   className="rk-statement"
                   dim={0.1}
-                  text="Nothing here was typed by hand."
+                  text="A clearer picture of campus."
                 />
                 <TextReveal
                   className="rk-statement-tail"
                   dim={0.16}
-                  text="Every session, paper and request below was placed by the solver before this page loaded — you are reading the workspace itself."
+                  text="A closer look at the sessions, papers and requests in the current schedule. Every number here comes from the workspace."
                 />
               </div>
 
@@ -288,9 +286,9 @@ export default function Landing() {
 
               <div className="rk-ledger">
                 <div className="rk-ledger-head">
-                  <b>Week 7 · Spectra ’27</b>
+                  <b>Campus schedule</b>
                   <span className="rk-ledger-tag">
-                    <Icon name="check" size={10} /> signed off
+                    <Icon name="check" size={10} /> {source.mode === "live" ? "connected" : "preview"}
                   </span>
                 </div>
 
@@ -315,9 +313,9 @@ export default function Landing() {
                   [
                     String(data.bookings.count),
                     "venue requests decided",
-                    "22 approved · 1 alternative · 2 rejected",
+                    `${numbers.bookings.approved} approved · ${numbers.bookings.alternatives} alternative · ${numbers.bookings.rejected} rejected`,
                   ],
-                  [`${numbers.bookings.score}/${numbers.bookings.max}`, "booking score", "zero priority inversions"],
+                  [`${numbers.bookings.score}/${numbers.bookings.max}`, "booking score", "scored against campus priorities"],
                 ].map(([value, label, note]) => (
                   <div key={label} className="rk-ledger-row">
                     <span>
@@ -358,11 +356,11 @@ export default function Landing() {
           <div className="rk-screens">
             {[
               ["Mosaic Board", "Week, day, room, faculty and group views with drag-to-preview a move before it happens.", "board", "/mosaic"],
-              ["Bookings", "25 requests, the parsed message, the venue, the rule chain behind each verdict.", "ticket", "/bookings"],
+              ["Bookings", `${data.bookings.count} requests, their venues and the reasons behind each decision.`, "ticket", "/bookings"],
               ["Approvals", "Upload a change file, watch the minimal-move repair, then approve or reject it with a reason.", "shield", "/approvals"],
-              ["Examinations", "41 papers by day and slot, seat counts against cohort size, maintenance cells that are hard-blocked.", "clipboard", "/exams"],
+              ["Examinations", `${numbers.exams} papers by day and slot, with seating and room availability.`, "clipboard", "/exams"],
               ["Intelligence", "Hinglish or English in, a checked proposal out — the model reads, the engine decides.", "sparkles", "/intelligence"],
-              ["Operations", "Load a dataset, regenerate, export the exact files the validator reads, inspect the database and the audit trail.", "database", "/operations"],
+              ["Operations", "Load a dataset, generate the timetable, review activity and export the results.", "database", "/operations"],
             ].map(([title, body, icon, to]) => (
               <button key={title} className="rk-screen" onClick={() => go(to)}>
                 <span className="rk-screen-top">
@@ -396,39 +394,24 @@ export default function Landing() {
               <TextReveal
                 className="rk-lede"
                 dim={0.24}
-                text="A sentence is read by a small model on the free tier; whether the change is legal is decided by the constraint kernel, never by the model. When the key is absent or the daily budget is spent, the deterministic parser answers instead — same endpoints, same guarantees."
+                text="Describe what you need in your own words. Tessera helps turn it into a request you can review, while campus rules check what is possible before anything changes."
               />
               <ul className="rk-bullets">
-                <li>
-                  <Icon name="check" size={13} /> {plural(1000, "request")}/day on the 70B model,
-                  counted before every call
-                </li>
-                <li>
-                  <Icon name="check" size={13} /> a rate limit is never retried — it falls back, then
-                  stops
-                </li>
-                <li>
-                  <Icon name="check" size={13} /> the key never leaves the server
-                </li>
+                <li><Icon name="check" size={13} /> Write naturally in English or Hinglish</li>
+                <li><Icon name="check" size={13} /> Review the details before submitting</li>
+                <li><Icon name="check" size={13} /> Campus rules check every proposed change</li>
               </ul>
             </div>
 
-            <div className="rk-chat" aria-hidden="true">
+            <div className="rk-chat">
               <div className="rk-bubble user">
-                “CS101-A-L1 kal subah nahi, Tuesday 3rd period me shift kar do”
+                <span className="rk-ai-head">AN EXAMPLE REQUEST</span>
+                “Kal shaam ek seminar hall chahiye, 100 logon ke liye.”
               </div>
               <div className="rk-bubble ai">
-                <span className="rk-ai-head">
-                  <TileMark size={13} /> TESSERA
-                </span>
-                <p>
-                  Valid. <b>1 session moves</b> — CS101-A-L1 → TUE P3, room unchanged. No hard rule
-                  broken: F33 free, CE-2 free, room fits 50 seats.
-                </p>
-                <div className="rk-tags">
-                  <span>proposal PR-585f9bf2</span>
-                  <span>awaiting a second admin</span>
-                </div>
+                <span className="rk-ai-head"><TileMark size={13} /> TESSERA</span>
+                <p>Start with a sentence. Review the time, attendance and room details before checking availability.</p>
+                <button className="rk-assistant-link" onClick={() => go("/intelligence")}>Explore the assistant <Icon name="arrowUpRight" size={13} /></button>
               </div>
             </div>
           </div>
@@ -475,7 +458,7 @@ export default function Landing() {
               ],
               [
                 "The Numbers",
-                "Every claim on this page, counted: sessions per day, hours by department, the 25 verdicts and the utilisation spread.",
+                "Sessions per day, hours by department, booking decisions and the utilisation spread.",
                 "chart",
                 "/numbers",
               ],
@@ -519,7 +502,7 @@ export default function Landing() {
             icon: "github",
           },
           {
-            label: "API docs",
+            label: "Documentation",
             href: DOCS_URL,
             icon: (
               <path

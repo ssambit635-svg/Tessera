@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useWorkspace } from "../lib/workspace";
 import { useUi } from "../lib/ui";
 import { EXTRA_ROUTES, findNav } from "../lib/nav";
@@ -121,6 +121,7 @@ export function TopBar() {
       </div>
 
       <div className="topbar-actions">
+        <Link className="back-to-site" to="/landing" aria-label="Back to Tessera home" title="Back to Tessera home"><Icon name="arrowLeft" size={14} /><span>Back to site</span></Link>
         <button className="search-trigger" onClick={() => setPaletteOpen(true)} aria-label="Search TESSERA">
           <Icon name="search" size={14} />
           <span>Search spaces, people, sessions</span>

@@ -117,13 +117,13 @@ async function request<T>(
     response = await send(options.timeoutMs ?? 9000);
   } catch (error) {
     // A sleeping instance looks exactly like a dead one. Give it one chance to wake up.
-    if (!options.coldStart) throw new ApiError(0, "The scheduling API is not reachable.", error);
+    if (!options.coldStart) throw new ApiError(0, "We couldn’t connect. Please check your connection and try again.", error);
     const awake = await waitForApi(Date.now() + WAKE_BUDGET_MS);
-    if (!awake) throw new ApiError(0, "The scheduling API is not reachable.", error);
+    if (!awake) throw new ApiError(0, "We couldn’t connect. Please check your connection and try again.", error);
     try {
       response = await send(30_000);
     } catch (retryError) {
-      throw new ApiError(0, "The scheduling API is not reachable.", retryError);
+      throw new ApiError(0, "We couldn’t connect. Please check your connection and try again.", retryError);
     }
   }
 
@@ -139,9 +139,10 @@ async function request<T>(
       body && typeof body === "object" && "detail" in (body as Record<string, unknown>)
         ? (body as Record<string, unknown>).detail
         : body;
-    const explanation = typeof detail === "string" ? detail
+    const explanation = response.status >= 500 ? "Something went wrong. Please try again in a moment."
+      : typeof detail === "string" ? detail
       : detail && typeof detail === "object" && "reason" in detail && typeof detail.reason === "string"
-        ? detail.reason : `Request failed (${response.status})`;
+        ? detail.reason : "We couldn’t complete that request. Please check the details and try again.";
     throw new ApiError(response.status, explanation, detail);
   }
   return body as T;

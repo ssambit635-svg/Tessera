@@ -420,20 +420,17 @@ function NaturalLanguageBooking({
           confidence: result.confidence,
           assumptions: result.assumptions,
           follow_up: result.follow_up,
-          source:
-            typeof result.source === "string"
-              ? result.source
-              : `${result.source.method ?? "parser"}${result.source.model ? ` · ${result.source.model}` : ""}`,
+          source: "Request details",
         });
-        notify({ tone: "ai", title: "Interpreted by the API", detail: "Draft returned by /api/ai/parse." });
+        notify({ tone: "ai", title: "Request understood", detail: "Review the details before continuing." });
       } else {
         const local = localParse(text, data);
-        setDraft({ ...local, mandatory_for_groups: [], source: local.source });
+        setDraft({ ...local, mandatory_for_groups: [], source: "Preview interpretation" });
       }
-    } catch (error) {
+    } catch {
       const local = localParse(text, data);
-      setDraft({ ...local, mandatory_for_groups: [], source: `${local.source} — API parse failed (${error instanceof Error ? error.message : "error"})` });
-      notify({ tone: "warn", title: "Using the local interpreter", detail: "The API could not parse this text; the draft below was built in the browser." });
+      setDraft({ ...local, mandatory_for_groups: [], source: "Local interpretation · please review the details" });
+      notify({ tone: "warn", title: "Using the local interpreter", detail: "We used the local interpreter. Please review the details before continuing." });
     } finally {
       setParsing(false);
     }
@@ -502,20 +499,20 @@ function NaturalLanguageBooking({
       try {
         const result = await createManualEvent(source.token, payload);
         setCreated(result);
-        notify({ tone: "valid", title: "Event created in the API", detail: "The backend accepted this manual event." });
+        notify({ tone: "valid", title: "Event created", detail: "Your event has been added to the schedule." });
       } catch (error) {
         setCheckError(error instanceof ApiError ? error.message : String(error));
-        notify({ tone: "danger", title: "The API refused the event", detail: error instanceof ApiError ? error.message : String(error) });
+        notify({ tone: "danger", title: "Event could not be created", detail: error instanceof ApiError ? error.message : String(error) });
       }
     } else {
       setCreated({
         simulated: true,
-        detail: "Nothing was written. In live mode this button writes one manual event through /api/bookings/manual.",
+        detail: "Nothing was saved. Connect to the live workspace to create an event.",
       });
       notify({
         tone: "info",
         title: "Request preview only",
-        detail: "This is a frontend demonstration. No booking exists until the scheduling authority confirms it.",
+        detail: "This is a preview. No booking will be saved until you connect to the live workspace.",
       });
     }
   };
@@ -565,7 +562,7 @@ function NaturalLanguageBooking({
                     <Icon name="sparkles" size={10} /> {draft.source}
                   </span>
                   <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
-                    {source.mode === "live" ? "Returned by the API" : "Frontend fallback — the API is not reachable"}
+                    {source.mode === "live" ? "Ready to review" : "Preview interpretation — review before submitting"}
                   </span>
                 </div>
                 <button className="btn sm quiet" onClick={() => setDraft(null)}>
@@ -788,7 +785,7 @@ function NaturalLanguageBooking({
                     <div className={`callout ${checked.ok === false ? "coral" : "sage"}`} style={{ fontSize: 11, marginTop: 10 }}>
                       <Icon name="shield" size={13} />
                       <span>
-                        <b>{source.mode === "live" && !checked.simulated ? "API dry run." : "Simulated dry run."}</b>{" "}
+                        <b>{source.mode === "live" && !checked.simulated ? "Availability checked." : "Preview only."}</b>{" "}
                         {String(checked.reason ?? checked.note ?? "")}
                         {Array.isArray(checked.conflicts) && checked.conflicts.length ? ` ${checked.conflicts.join("; ")}` : ""}
                         {Array.isArray(checked.candidates) && checked.candidates.length ?
@@ -815,7 +812,7 @@ function NaturalLanguageBooking({
                       <Icon name="check" size={13} />
                       <span>
                         <b>{(created as { simulated?: boolean }).simulated ? "Nothing was written." : "Created."}</b>{" "}
-                        {String((created as { detail?: string }).detail ?? "The API returned a manual event.")}
+                        {String((created as { detail?: string }).detail ?? "The event was created.")}
                       </span>
                     </div>
                   ) : null}
@@ -839,10 +836,10 @@ function NaturalLanguageBooking({
               <button
                 className={`switch ${confirmedWrite ? "on" : ""}`}
                 aria-pressed={confirmedWrite}
-                aria-label="Allow writing to the API"
+                aria-label="Confirm event creation"
                 onClick={() => setConfirmedWrite((v) => !v)}
               />
-              Allow the API write
+              Confirm I want to create this event
             </label>
           ) : (
             <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>

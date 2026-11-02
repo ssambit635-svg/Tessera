@@ -26,6 +26,7 @@ import "./styles/week.css";
 import "./styles/site.css";
 import "./styles/preloader.css";
 import "./styles/glass.css";
+import "./styles/polish.css";
 
 import App from "./App";
 

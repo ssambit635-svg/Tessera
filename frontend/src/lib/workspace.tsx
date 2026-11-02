@@ -419,7 +419,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         } catch (error) {
           const message =
             error instanceof ApiError
-              ? `${error.message}${error.status ? ` (HTTP ${error.status})` : ""}`
+              ? error.message
               : String(error);
           const enriched: PendingChange = { ...draft, remoteError: message };
           setPending((current) => (current && current.id === draft.id ? enriched : current));
@@ -449,7 +449,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (source.mode === "live" && source.token && pending.remote?.proposal_id) {
       try {
         await applyProposal(source.token, pending.remote.proposal_id);
-        setPending({ ...pending, outcome: "applied", outcomeNote: "Applied through the API" });
+        setPending({ ...pending, outcome: "applied", outcomeNote: "Change applied" });
         notify({
           tone: "valid",
           title: "Proposal applied",

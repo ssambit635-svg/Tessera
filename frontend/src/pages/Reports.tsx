@@ -321,7 +321,7 @@ export default function Reports() {
             </div>
             <div className="detail-item">
               <span className="eyebrow">Source detail</span>
-              <b style={{ fontSize: 12 }}>{source.detail}</b>
+              <b style={{ fontSize: 12 }}>{source.mode === "live" ? "Connected schedule" : "Preview copy"}</b>
               <span className="mono">generated {data.generatedAt.slice(0, 19).replace("T", " ")}</span>
             </div>
             <div className="detail-item">
@@ -331,14 +331,14 @@ export default function Reports() {
             </div>
             <div className="detail-item">
               <span className="eyebrow">Exports</span>
-              <b style={{ fontSize: 12 }}>Owned by the API</b>
-              <span className="mono">{source.mode === "live" ? "download from the API" : "not available offline"}</span>
+              <b style={{ fontSize: 12 }}>Schedule exports</b>
+              <span className="mono">{source.mode === "live" ? "available to download" : "not available offline"}</span>
             </div>
           </div>
           <div className="row gap-8 wrap" style={{ marginTop: 14 }}>
             {source.mode === "live" ? (
               <a className="btn sm" href="/docs" target="_blank" rel="noreferrer">
-                <Icon name="external" size={13} /> Open API docs
+                <Icon name="external" size={13} /> Open documentation
               </a>
             ) : (
               <span className="chip sand">Exports need the scheduling service</span>

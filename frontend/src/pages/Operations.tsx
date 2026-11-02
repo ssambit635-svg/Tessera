@@ -76,7 +76,7 @@ export default function Operations() {
 
   const guard = async (key: string, run: () => Promise<void>) => {
     if (!token) {
-      say({ tone: "warn", title: "Live sign-in needed", detail: "This console drives the API. Snapshot mode cannot write." });
+      say({ tone: "warn", title: "Live sign-in needed", detail: "Connect to your workspace to save changes. Preview mode does not save." });
       return;
     }
     if (!isAdmin) {
@@ -87,7 +87,7 @@ export default function Operations() {
     try {
       await run();
     } catch (exc) {
-      say({ tone: "danger", title: "The API refused", detail: exc instanceof Error ? exc.message : "Unknown error" });
+      say({ tone: "danger", title: "Could not complete the request", detail: exc instanceof Error ? exc.message : "Unknown error" });
     } finally {
       setBusy(null);
       await load();
@@ -149,7 +149,7 @@ export default function Operations() {
       const result = await runAiSelfTest(token);
       say({
         tone: result.ok ? "valid" : "warn",
-        title: result.ok ? "Groq answered" : "Provider did not answer",
+        title: result.ok ? "Assistant is ready" : "Assistant is unavailable",
         detail: result.ok
           ? `${result.model} in ${result.latency_ms} ms. Budget left today: ${result.budget?.remaining_primary ?? "?"}.`
           : `${result.reason ?? result.error ?? "unknown"}. The deterministic parser stays in charge.`,
@@ -165,7 +165,7 @@ export default function Operations() {
             Load, solve, export, prove.
           </h2>
           <p>
-            Every button here calls the scheduling API and is written to the audit trail with your
+            Actions here are recorded in the activity log with your
             name on it. Judges can load their own dataset, regenerate the timetable, and download the
             exact files the validator reads.
           </p>
@@ -257,7 +257,7 @@ export default function Operations() {
           <div className="panel-head">
             <div>
               <div className="eyebrow">Exports</div>
-              <h3 style={{ marginTop: 3 }}>schedule.json, served by the API</h3>
+              <h3 style={{ marginTop: 3 }}>Schedule exports</h3>
             </div>
           </div>
           <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -281,8 +281,7 @@ export default function Operations() {
             <div className="callout" style={{ fontSize: 11.5 }}>
               <Icon name="info" size={13} />
               <span>
-                Downloads are authenticated: the browser asks the API with your token, so the bytes
-                come from the same writer the automated validator runs against.
+                Downloads are generated from the current schedule and available to authorised users.
               </span>
             </div>
           </div>
@@ -336,7 +335,7 @@ export default function Operations() {
           <div className="panel-head">
             <div>
               <div className="eyebrow">AI provider</div>
-              <h3 style={{ marginTop: 3 }}>Groq free tier, with a hard daily budget</h3>
+              <h3 style={{ marginTop: 3 }}>Assistant availability</h3>
             </div>
             <span className={`status ${ai?.enabled ? "valid" : "warning"}`} style={{ marginLeft: "auto" }}>
               {ai?.enabled ? ai.mode : "deterministic"}
@@ -374,14 +373,13 @@ export default function Operations() {
                 <p style={{ fontSize: 11.5, color: "var(--muted)", margin: 0 }}>{ai.note}</p>
                 <div className="row gap-8">
                   <button className="btn sm" onClick={() => void onSelfTest()} disabled={busy !== null}>
-                    <Icon name="play" size={12} /> {busy === "selftest" ? "Calling Groq…" : "Test the key"}
+                    <Icon name="play" size={12} /> {busy === "selftest" ? "Checking…" : "Check availability"}
                   </button>
                 </div>
                 <div className="callout" style={{ fontSize: 11.5 }}>
                   <Icon name="shield" size={13} />
                   <span>
-                    The budget counter is stored in the database, so a restart cannot reset it. When the
-                    free quota is gone the assistant falls back to the deterministic parser and says so.
+                    When the assistant is unavailable, requests can still be interpreted using campus rules.
                   </span>
                 </div>
               </>

@@ -96,7 +96,7 @@ export default function NumbersPage() {
         <SiteIntro
           kicker="Numbers"
           title="Every claim, counted."
-          lede="Nothing on this page is a projection. Each figure is derived in the browser from the same JSON the scheduling engine solved, so the numbers a judge reads here are the numbers the API serves."
+          lede="A closer look at the current schedule: sessions, spaces, decisions and the patterns that connect them."
         />
 
         <section className="num-strip" aria-label="Headline figures">
@@ -214,25 +214,12 @@ export default function NumbersPage() {
         <section className="num-method">
           <h2>How to check any of this yourself</h2>
           <ol>
-            <li>
-              <b>Load the dataset.</b> The committed bundle is the hackathon's own{" "}
-              <span className="mono">cit_public.json</span>; the API validates it before it replaces anything.
-            </li>
-            <li>
-              <b>Solve.</b> <span className="mono">POST /api/timetable/generate</span> runs CP-SAT over hard
-              constraints only, then minimises soft penalty. 189 sessions in the committed week.
-            </li>
-            <li>
-              <b>Validate.</b> <span className="mono">POST /api/timetable/validate</span> re-checks the
-              written file — the same call the reports screen reads, so a claim cannot drift from the data.
-            </li>
-            <li>
-              <b>Repeat it.</b> Export <span className="mono">schedule.json</span> from the operations
-              console and diff it against what this page shows.
-            </li>
+            <li><b>Explore.</b> See the schedule through the lens of rooms, people and groups.</li>
+            <li><b>Check.</b> Review the rules and decisions behind the current timetable.</li>
+            <li><b>Review.</b> Open Reports and Operations in the workspace for details and exports.</li>
           </ol>
           <p className="num-source">
-            Data source: {source.mode === "live" ? "live API" : "committed dataset"} ·{" "}
+            Data source: {source.mode === "live" ? "connected schedule" : "preview copy"} ·{" "}
             {plural(data.faculty.length, "faculty member")} · {plural(data.groups.length, "cohort")}
           </p>
         </section>

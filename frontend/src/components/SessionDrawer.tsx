@@ -200,10 +200,10 @@ export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClo
               {source.token ? (
                 <button className="chip outline" onClick={() => setAskExplain(true)} disabled={askExplain && !explained && !explainError}>
                   <Icon name="shield" size={10} />
-                  {explained ? "checked by the API" : askExplain ? "asking the engine…" : "ask the engine"}
+                  {explained ? "checked by Tessera" : askExplain ? "asking the engine…" : "ask the engine"}
                 </button>
               ) : (
-                <span className="chip outline">live sign-in for the API check</span>
+                <span className="chip outline">connect to check this session</span>
               )}
             </div>
             {explained ? (
@@ -229,7 +229,7 @@ export function SessionDrawer({ sessionId, onClose }: { sessionId: string; onClo
               <p className="muted" style={{ fontSize: 11.5 }}>{explainError}</p>
             ) : (
               <p className="muted" style={{ fontSize: 11.5 }}>
-                The API can replay the exact constraints that placed this session — room type, capacity,
+                Tessera can show the constraints that placed this session — room type, capacity,
                 accessibility, faculty hours and group freedom — and name the soft costs it paid.
               </p>
             )}

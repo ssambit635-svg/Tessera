@@ -1,31 +1,8 @@
 /** Presentation-only metadata: never scheduling truth.
  *
- * The dataset carries no portraits, designations or expertise strings, so the interface
- * derives them deterministically. Nothing here influences a booking, a move or a validity
+ * The dataset carries no portraits, so the interface uses neutral visual treatments. Nothing here influences a booking, a move or a validity
  * verdict — that belongs to the backend.
  */
-
-const DESIGNATIONS: Record<string, string[]> = {
-  Professor: ["Professor", "Professor", "Associate Professor", "Assistant Professor"],
-  Associate: ["Associate Professor", "Assistant Professor", "Assistant Professor"],
-};
-
-const DESIGNATION_CYCLE = [
-  "Professor",
-  "Associate Professor",
-  "Assistant Professor",
-  "Assistant Professor",
-  "Professor of Practice",
-  "Associate Professor",
-];
-
-export function designationFor(facultyId: string, department: string): string {
-  const n = Number(facultyId.replace(/\D/g, "")) || 1;
-  if (department === "MA" || department === "PH") {
-    return DESIGNATIONS.Professor[n % 2];
-  }
-  return DESIGNATION_CYCLE[n % DESIGNATION_CYCLE.length];
-}
 
 /** Two initials, e.g. "Dr. Ananya Mishra" -> "AM". */
 export function initials(name: string): string {
