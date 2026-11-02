@@ -146,6 +146,16 @@ if (mounted === "landing") {
   if (window.document.querySelectorAll(".rk-ledger-row").length < 4)
     errors.push("the proof ledger is not reading the workspace");
   if (!/189/.test(text())) errors.push("the landing page is not reading real dataset numbers");
+  const dayButtons = [...window.document.querySelectorAll(".week-days button")];
+  if (dayButtons.length < 2 || dayButtons[0].getAttribute("aria-pressed") !== "true") {
+    errors.push("the interactive week has no default day");
+  } else {
+    click(dayButtons[1]);
+    await wait(100);
+    if (dayButtons[1].getAttribute("aria-pressed") !== "true" || !/Tuesday/.test(window.document.querySelector(".week-sheet-title")?.textContent || "")) {
+      errors.push("the interactive week did not update for Tuesday");
+    }
+  }
   const signIn = [...window.document.querySelectorAll(".rk-hero .rk-cta a")].find((a) =>
     /sign in/i.test(a.textContent || ""),
   );
@@ -442,3 +452,4 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`\nsmoke passed — every route rendered in ${LIVE ? "live" : "snapshot"} mode`);
+window.close();

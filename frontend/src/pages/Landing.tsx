@@ -5,6 +5,7 @@ import { API_BASE } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
 import { GlassStripes } from "../components/GlassStripes";
+import { WeekSculpture } from "../components/WeekSculpture";
 import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
 import { TextReveal } from "../components/TextReveal";
@@ -138,7 +139,7 @@ export default function Landing() {
             <span>Your week,</span> <span>solved.</span>
           </h1>
 
-          <p className="rk-sub">{numbers.sessions} sessions. {numbers.exams} exams. Zero clashes.</p>
+          <p className="rk-sub">{numbers.sessions} sessions. {numbers.exams} exams. One beautifully organised campus.</p>
 
           <div className="rk-cta">
             <Magnetic strength={0.14}>
@@ -160,12 +161,14 @@ export default function Landing() {
           </p>
         </section>
 
+        <a href="#week" className="rk-hero-scroll"><span>SCROLL TO EXPLORE</span><span aria-hidden="true">↓</span></a>
         <div className="rk-hero-bottom" aria-hidden="true" />
       </div>
 
       {/* Everything past the hero shares one dot field, so the pattern is continuous
           across sections instead of restarting at every boundary. */}
       <div className="rk-body">
+      <WeekSculpture days={data.calendar.days.slice(0, 5)} sessions={data.sessions} rooms={numbers.rooms} />
       {/* --------------------------------------------------------- product */}
       <section className="rk-section" id="product">
         <div className="rk-inner">
@@ -494,6 +497,15 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className="week-close" aria-labelledby="week-close-title">
+        <div className="rk-inner week-close-inner">
+          <div className="week-close-meta"><span>THE WORK BEHIND THE WEEK</span><span>FIN / 06</span></div>
+          <div className="week-close-content">
+            <div><p className="rk-kicker">Ready when you are</p><h2 id="week-close-title">Make room for <em>better weeks.</em></h2></div>
+            <div className="week-close-action"><p>See how a little more order can make space for everything else.</p><Link className="rk-btn white lg" to="/login">Explore Tessera <Icon name="arrowUpRight" size={15} /></Link></div>
+          </div>
+        </div>
+      </section>
       </div>
 
       <BeamWordmarkFooter
