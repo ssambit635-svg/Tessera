@@ -207,17 +207,28 @@ The pipeline generates the baseline, applies the sample disruption to that basel
 ### Tests
 
 ```bash
-# Backend, from the repository root with .venv activated
+# Backend, from the repository root (after step 1 of the quickstart)
 cd api && python -m pytest tests -q
 
-# Frontend, from another terminal at the repository root
-cd frontend && npm ci && npm run build && npm run smoke
+# Frontend, from another terminal (after npm ci from the quickstart)
+cd frontend && npm run build && npm run smoke
 
 # From the repository root
 python tools/check_secrets.py
 ```
 
 The last documented full backend run passed **115 tests**. Frontend smoke uses jsdom and a snapshot by default; it is not a substitute for testing the deployed app on real browsers. See [docs/CORE_TEST_REPORT.md](docs/CORE_TEST_REPORT.md) for measured results and limitations.
+
+### Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the same checks on every push and pull request. It needs no secrets, because it exercises the deterministic path with `LLM_PROVIDER=none`:
+
+- `tools/check_secrets.py`, then the backend test suite.
+- The organiser validator on both committed exports, failing on any hard violation.
+- An API smoke test (health, demo login, validation, bookings) and the validation reports kept as build artifacts.
+- The frontend typecheck, production build, offline smoke and intro tests on Node 22.
+
+Reproduce a single check locally with the commands above; CI adds nothing you cannot run yourself.
 
 ## Known limitations & submission checks
 

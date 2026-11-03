@@ -1,0 +1,12 @@
+# Text files are normalised to LF so the committed exports and generated
+# reports stay byte-identical across platforms (see .editorconfig).
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.pdf binary
