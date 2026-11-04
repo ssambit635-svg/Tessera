@@ -5,7 +5,8 @@ import { API_BASE } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
 import { GlassStripes } from "../components/GlassStripes";
-import { WeekSculpture } from "../components/WeekSculpture";
+import { RadiantField } from "../components/RadiantField";
+import { ProductFilm } from "../components/ProductFilm";
 import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
 import { TextReveal } from "../components/TextReveal";
@@ -28,6 +29,7 @@ import { TextReveal } from "../components/TextReveal";
 const DOCS_URL = `${API_BASE}/docs`;
 
 const NAV_LINKS = [
+  { href: "#film", label: "Film", icon: "play" },
   { href: "#product", label: "Product", icon: "board" },
   { href: "#proof", label: "Proof", icon: "sigma" },
   { href: "#screens", label: "Screens", icon: "grid" },
@@ -129,16 +131,21 @@ export default function Landing() {
 
       {/* ------------------------------------------------------------ hero */}
       <div className="rk-stage">
-        <GlassStripes stripeCount={18} angle={34} pointerStrength={0.4} />
+        <RadiantField />
 
         <section className="rk-hero">
           <p className="rk-eyebrow">Tech Zephyr 4.0 · Team Voltryx</p>
 
           <h1 className="rk-title">
-            <span>Your week,</span> <span>solved.</span>
+            <span>One campus. One week.</span>
+            <span className="rk-title-dim">Zero clashes.</span>
           </h1>
 
-          <p className="rk-sub">{numbers.sessions} sessions. {numbers.exams} exams. One beautifully organised campus.</p>
+          <p className="rk-sub">
+            {numbers.sessions} sessions, {numbers.exams} exams and {data.bookings.count} venue requests,
+            placed across {numbers.rooms} rooms by a solver that holds every rule — and explains every
+            decision it makes.
+          </p>
 
           <div className="rk-cta">
             <Magnetic strength={0.14}>
@@ -166,12 +173,18 @@ export default function Landing() {
       {/* Everything past the hero shares one dot field, so the pattern is continuous
           across sections instead of restarting at every boundary. */}
       <div className="rk-body">
-      <WeekSculpture days={data.calendar.days.slice(0, 5)} sessions={data.sessions} rooms={numbers.rooms} periods={data.calendar.periods} />
+      <ProductFilm
+        src="/media/tessera-product-film.mp4"
+        poster="/media/tessera-product-film.jpg"
+        duration="0:29"
+        stats={{ sessions: numbers.sessions, rooms: numbers.rooms, faculty: numbers.faculty }}
+      />
+
       {/* --------------------------------------------------------- product */}
       <section className="rk-section" id="product">
         <div className="rk-inner">
           <div className="rk-head">
-            <span className="rk-kicker">01 — The product</span>
+            <span className="rk-kicker">02 — The product</span>
             <TextReveal
               as="h2"
               className="rk-h2"
@@ -246,7 +259,7 @@ export default function Landing() {
         <div className="rk-inner">
           <div className="rk-proof-split">
             <div>
-              <span className="rk-kicker">02 — The proof</span>
+              <span className="rk-kicker">03 — The proof</span>
 
               <div className="rk-statement-block">
                 <TextReveal
@@ -339,7 +352,7 @@ export default function Landing() {
       <section className="rk-section" id="screens">
         <div className="rk-inner">
           <div className="rk-head">
-            <span className="rk-kicker">03 — The screens</span>
+            <span className="rk-kicker">04 — The screens</span>
             <TextReveal
               as="h2"
               className="rk-h2"
@@ -384,7 +397,7 @@ export default function Landing() {
         <div className="rk-inner">
           <div className="rk-split">
             <div>
-              <span className="rk-kicker">04 — The assistant</span>
+              <span className="rk-kicker">05 — The assistant</span>
               <TextReveal
                 as="h2"
                 className="rk-h2"
@@ -422,7 +435,7 @@ export default function Landing() {
       <section className="rk-section" id="longform">
         <div className="rk-inner">
           <div className="rk-head">
-            <span className="rk-kicker">05 — The record</span>
+            <span className="rk-kicker">06 — The record</span>
             <TextReveal
               as="h2"
               className="rk-h2"
