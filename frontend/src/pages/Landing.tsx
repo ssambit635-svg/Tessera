@@ -11,7 +11,7 @@ import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
 import { TextReveal } from "../components/TextReveal";
 import { useLandingTheme } from "../lib/useLandingTheme";
-import { ScreenIndex, ScreenWindows } from "../components/ScreenWindows";
+import { ScreenIndex, ScreenStage } from "../components/ScreenWindows";
 
 /* ============================================================================
    /landing — the public front door.
@@ -395,10 +395,7 @@ export default function Landing() {
           </div>
         </div>
 
-        <ScreenWindows
-          counts={{ bookings: data.bookings.count, exams: numbers.exams }}
-          onOpen={go}
-        />
+        <ScreenStage onOpen={go} />
 
         <div className="rk-inner">
           <ScreenIndex
