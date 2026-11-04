@@ -335,14 +335,16 @@
   color: #d2d4d8;
 }
 
+/* One typeface, one weight, three short beats. The second line is the same
+   Inter as the first — quieter ink, never a second font. */
 .rk-title {
   margin: 0;
-  max-width: 15ch;
+  max-width: 24ch;
   font-family: var(--rk-sans);
-  font-size: clamp(44px, 6.4vw, 76px);
+  font-size: clamp(46px, 7.4vw, 104px);
   font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.035em;
+  line-height: 0.96;
+  letter-spacing: -0.045em;
   color: var(--rk-white);
   text-wrap: balance;
 }
@@ -351,14 +353,58 @@
   display: block;
 }
 
+.rk-title-dim {
+  color: #85878d;
+}
+
 .rk-sub {
-  margin: 24px 0 0;
-  max-width: 54ch;
-  font-size: 18px;
-  line-height: 1.45;
+  margin: 28px 0 0;
+  max-width: 58ch;
+  font-size: 17.5px;
+  line-height: 1.5;
   letter-spacing: -0.011em;
-  color: #e6e6e6;
+  color: #d9dbe0;
   text-wrap: pretty;
+}
+
+/* ----------------------------------------------------------- the hero art */
+
+/* The ribbon field sits under the sentence, black until the page opens. The
+   wrapper's radial mask is what spreads: a soft circle grows from nothing to
+   past the corners on load, so the red arrives instead of appearing. `--reveal`
+   is written from one rAF loop (see SpreadReveal); the mask feather is the gap
+   between the two stops. */
+.rk-hero-art {
+  --reveal: 0%;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 46%,
+    #000 calc(var(--reveal) - 28%),
+    transparent var(--reveal)
+  );
+  mask-image: radial-gradient(
+    circle at 50% 46%,
+    #000 calc(var(--reveal) - 28%),
+    transparent var(--reveal)
+  );
+}
+
+.spread-reveal {
+  position: absolute;
+  inset: 0;
+}
+
+/* a vignette so the corners stay blacker than the light */
+.rk-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(118% 88% at 50% 46%, transparent 38%, rgba(0, 0, 0, 0.5) 100%);
 }
 
 .rk-cta {
@@ -383,6 +429,312 @@
   margin-top: -96px;
   pointer-events: none;
   background: linear-gradient(180deg, transparent, var(--rk-bg) 78%);
+}
+
+/* ---------------------------------------------------------------- the film */
+
+/* The demo sits in a real macOS terminal window: traffic lights, the tab title
+   with its size, a prompt, and the process log under the pane. The pane holds
+   the capture, uncut, black around it. */
+.film {
+  position: relative;
+  padding: 118px 24px 128px;
+}
+
+.film-head {
+  max-width: 720px;
+  margin: 0 auto 46px;
+  text-align: center;
+}
+
+.film-title {
+  margin: 0;
+  font-family: var(--rk-sans);
+  font-size: clamp(30px, 4.2vw, 52px);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.038em;
+  color: var(--rk-white);
+  text-wrap: balance;
+}
+
+.film-title span {
+  color: #85878d;
+}
+
+.film-lede {
+  margin: 20px auto 0;
+  max-width: 60ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #b6b8be;
+  text-wrap: pretty;
+}
+
+.film-window {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0b0b0d;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.07) inset,
+    0 24px 60px -40px rgba(0, 0, 0, 0.9),
+    0 70px 130px -70px rgba(0, 0, 0, 0.95);
+}
+
+.film-chrome {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #2c2c30 0%, #212124 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.65);
+}
+
+.film-lights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.film-light {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.35) inset;
+}
+
+.film-light.close { background: #ff5f57; }
+.film-light.min { background: #febc2e; }
+.film-light.zoom { background: #28c840; }
+
+.film-chrome-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--rk-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: #a8a8b0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.film-chrome-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.film-rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rk-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  color: #b6b6be;
+}
+
+.film-rec i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 0 0 7px rgba(255, 95, 87, 0.85);
+  animation: film-rec 2.6s ease-in-out infinite;
+}
+
+@keyframes film-rec {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.film-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #dcdce2;
+  cursor: pointer;
+  transition: background var(--rk-ease), border-color var(--rk-ease);
+}
+
+.film-play:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.film-play:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.film-prompt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  background: #0a0a0c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: var(--rk-mono);
+  font-size: 12px;
+  line-height: 1;
+  color: #e2e2e8;
+}
+
+.film-prompt-path { color: #7fd6a5; }
+
+.film-prompt-cmd { color: #e2e2e8; }
+
+.film-caret {
+  width: 7px;
+  height: 13px;
+  background: #e2e2e8;
+  animation: film-caret 1.15s steps(1, end) infinite;
+}
+
+@keyframes film-caret {
+  0%, 49% { opacity: 0.9; }
+  50%, 100% { opacity: 0; }
+}
+
+.film-pane {
+  position: relative;
+  background: #000;
+  line-height: 0;
+}
+
+.film-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  object-fit: cover;
+}
+
+.film-log {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #0a0a0c;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: var(--rk-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: #8c8c94;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.film-log-ok {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3ddc84;
+  box-shadow: 0 0 6px rgba(61, 220, 132, 0.7);
+}
+
+.film-log-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.film-log-sep { color: #4b4b52; }
+
+.film-log-spacer { flex: 1; }
+
+.film-log-dim { color: #5f5f66; }
+
+.film-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(1120px, 100%);
+  margin: 18px auto 0;
+  font-size: 12.5px;
+  color: #9d9fa5;
+}
+
+.film-caption span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.film-caption-dim {
+  font-family: var(--rk-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: #6f7074;
+  text-align: right;
+}
+
+@media (max-width: 860px) {
+  .film {
+    padding: 84px 18px 96px;
+  }
+  .film-head {
+    margin-bottom: 34px;
+  }
+  .film-log {
+    font-size: 9.5px;
+  }
+  .film-caption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .film-caption-dim {
+    text-align: left;
+  }
+}
+
+@media (max-width: 620px) {
+  .film-chrome-title {
+    font-size: 11px;
+  }
+  .film-rec {
+    display: none;
+  }
+  .film-log {
+    gap: 7px;
+    padding: 9px 12px;
+  }
+  .film-log-stats,
+  .film-log-spacer,
+  .film-log-dim {
+    display: none;
+  }
+  .film-prompt {
+    padding: 10px 12px;
+    font-size: 10.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-rec i,
+  .film-caret {
+    animation: none;
+  }
 }
 
 /* --------------------------------------------------------------- sections */

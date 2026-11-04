@@ -155,6 +155,15 @@ npm run dev
 
 Open <http://localhost:5173>. Vite proxies API requests to port 8000 by default. If your API runs elsewhere, set `TESSERA_API` when starting Vite. The frontend can also render the bundled snapshot when the API is offline, but writes then remain previews.
 
+The public front door (`/landing`) opens on black, then a single ring of light spreads out of the centre and keeps sending slow rings outward behind the headline. Below it, the demo is a **real recording** of the running app — sign-in, a session opened off the board, live room filtering, the assistant answering, and the reports — played inside a macOS terminal window. The film is committed at `frontend/public/media/tessera-product-film.mp4`; to re-record it after a UI change, run the dev server and then:
+
+```bash
+cd frontend
+CHROME_PATH=/path/to/chrome npm run film   # add FFMPEG=/path/to/ffmpeg if it is not on PATH
+```
+
+The script drives a real browser through the session, captures frames from Chrome's screencast stream, and rebuilds the take with ffmpeg. With `prefers-reduced-motion`, the hero shows the settled frame and the film can be paused from its title bar.
+
 ### Configuration
 
 Copy [`.env.example`](.env.example) to `.env` (the setup script does this without overwriting an existing file). Environment variables take precedence over `.env`.
