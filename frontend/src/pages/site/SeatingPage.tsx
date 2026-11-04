@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useWorkspace } from "../../lib/workspace";
 import { SiteFooter, SiteHeader, SiteIntro } from "../../components/SiteChrome";
+import { useLandingTheme } from "../../lib/useLandingTheme";
 import { Icon } from "../../components/Icon";
 import { DAY_LONG } from "../../lib/format";
 import type { DayCode } from "../../lib/types";
@@ -15,6 +16,7 @@ import type { DayCode } from "../../lib/types";
    ========================================================================== */
 
 export default function SeatingPage() {
+  const { theme } = useLandingTheme();
   const { data } = useWorkspace();
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -62,7 +64,7 @@ export default function SeatingPage() {
   );
 
   return (
-    <div className="landing site">
+    <div className="landing site" data-theme={theme}>
       <SiteHeader current="/seating" />
 
       <main className="site-wrap">

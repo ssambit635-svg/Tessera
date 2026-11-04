@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Icon } from "./Icon";
 import { TileMark } from "./TileMark";
 import BeamWordmarkFooter from "./BeamFooter";
+import { useLandingTheme } from "../lib/useLandingTheme";
 
 /* ============================================================================
    The chrome for the public long-form pages (/ledger, /seating, /spaces).
@@ -18,6 +19,8 @@ const PAGES = [
 ];
 
 export function SiteHeader({ current }: { current?: string }) {
+  const { light, toggle } = useLandingTheme();
+
   return (
     <header className="site-head">
       <div className="site-head-inner">
@@ -42,6 +45,16 @@ export function SiteHeader({ current }: { current?: string }) {
         </nav>
 
         <div className="site-head-actions">
+          <button
+            type="button"
+            className="rk-theme"
+            onClick={toggle}
+            aria-label={light ? "Switch to the black page" : "Switch to the cream page"}
+            aria-pressed={light}
+            title={light ? "Black page" : "Cream page"}
+          >
+            <Icon name={light ? "moon" : "sun"} size={17} />
+          </button>
           <Link className="rk-navlink site-back" to="/landing">
             ← Back to site
           </Link>
