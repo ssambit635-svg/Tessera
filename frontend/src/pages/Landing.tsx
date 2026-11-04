@@ -11,6 +11,7 @@ import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
 import { TextReveal } from "../components/TextReveal";
 import { useLandingTheme } from "../lib/useLandingTheme";
+import { ScreenIndex, ScreenWindows } from "../components/ScreenWindows";
 
 /* ============================================================================
    /landing — the public front door.
@@ -376,7 +377,7 @@ export default function Landing() {
       </section>
 
       {/* --------------------------------------------------------- screens */}
-      <section className="rk-section" id="screens">
+      <section className="rk-section rk-screens-section" id="screens">
         <div className="rk-inner">
           <div className="rk-head">
             <span className="rk-kicker">04 — The screens</span>
@@ -392,30 +393,19 @@ export default function Landing() {
               text="Sign in with any demo seat — the whole workspace is this one app."
             />
           </div>
+        </div>
 
-          <div className="rk-screens">
-            {[
-              ["Mosaic Board", "Week, day, room, faculty and group views with drag-to-preview a move before it happens.", "board", "/mosaic"],
-              ["Bookings", `${data.bookings.count} requests, their venues and the reasons behind each decision.`, "ticket", "/bookings"],
-              ["Approvals", "Upload a change file, watch the minimal-move repair, then approve or reject it with a reason.", "shield", "/approvals"],
-              ["Examinations", `${numbers.exams} papers by day and slot, with seating and room availability.`, "clipboard", "/exams"],
-              ["Intelligence", "Hinglish or English in, a checked proposal out — the model reads, the engine decides.", "sparkles", "/intelligence"],
-              ["Operations", "Load a dataset, generate the timetable, review activity and export the results.", "database", "/operations"],
-            ].map(([title, body, icon, to]) => (
-              <button key={title} className="rk-screen" onClick={() => go(to)}>
-                <span className="rk-screen-top">
-                  <span className="rk-screen-icon">
-                    <Icon name={icon} size={15} />
-                  </span>
-                  <span className="rk-screen-go">
-                    <Icon name="arrowUpRight" size={13} />
-                  </span>
-                </span>
-                <b>{title}</b>
-                <TextReveal className="rk-screen-body" dim={0.26} text={body} />
-              </button>
-            ))}
-          </div>
+        <ScreenWindows
+          counts={{ bookings: data.bookings.count, exams: numbers.exams }}
+          onOpen={go}
+        />
+
+        <div className="rk-inner">
+          <ScreenIndex
+            counts={{ bookings: data.bookings.count, exams: numbers.exams }}
+            onOpen={go}
+          />
+
         </div>
       </section>
 
