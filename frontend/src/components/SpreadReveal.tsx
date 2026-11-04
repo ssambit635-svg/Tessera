@@ -19,7 +19,7 @@ import { useEffect, useRef, type ReactNode } from "react";
    ========================================================================== */
 
 /** how long the circle takes to reach past the corners — slow on purpose */
-const SPREAD_MS = 5200;
+const SPREAD_MS = 3000;
 /** start fully outside the mask so the first frame is pure black */
 const FROM = 0;
 const TO = 106;
