@@ -4,15 +4,17 @@ import { Icon } from "./Icon";
    The screens — one composed scene, not a row of cards.
 
    Reference read, translated literally: a single wide stage, softly rounded and
-   cropped, filled with a hot out-of-focus light; one assistant window sitting in
-   the middle of it, mid-conversation, with a code block running out of the
-   bottom of the frame; and the app's other surfaces drifting at the edges —
-   two sliders, an account chip, two search windows half out of shot. Everything
-   is frosted glass over the same light, everything is cropped by the frame.
+   cropped, filled with a hot out-of-focus light; one assistant window standing
+   in front of it, mid-conversation — its title bar rising out of the frame's
+   top edge, its body a sheet of dark glass that thins out until the code block
+   dissolves into the light with no bottom edge at all; and the app's other
+   surfaces drifting at the edges — two sliders, an account chip, two search
+   windows half out of shot, all cropped by the frame.
 
    All of it is one stage: the light, the windows and the chips share a single
-   coordinate space and scale together, so on a phone the scene simply gets
-   smaller rather than falling into three separate blocks.
+   coordinate space (an em is one percent of the stage's width) and scale
+   together, so on a phone the scene simply gets smaller rather than falling
+   into three separate blocks.
    ========================================================================== */
 
 export interface ScreenCounts {
@@ -31,7 +33,7 @@ export function screenLinks({ bookings, exams }: ScreenCounts) {
   ] as const;
 }
 
-/* a window bar: three muted dots, a centred title, a plus */
+/* a window bar: three dark dots, a centred title with its selector caret, a plus */
 function Bar({ title }: { title: string }) {
   return (
     <div className="rk-panel-bar">
@@ -54,44 +56,73 @@ function Bar({ title }: { title: string }) {
   );
 }
 
+/* a text cursor, as in a focused search field */
+function Caret() {
+  return <i className="rk-caret" aria-hidden="true" />;
+}
+
+/* two sliders, hanging off the right edge: a spectrum and a grey-to-violet ramp */
 function Sliders() {
   return (
-    <div className="rk-panel is-sliders" aria-hidden="true">
+    <div className="rk-panel is-sliders">
       <div className="rk-slider">
         <span>Load</span>
-        <i className="rk-slider-track is-warm">
-          <b style={{ left: "88%" }} />
+        <i className="rk-slider-track is-hue">
+          <b style={{ left: "60%" }} />
         </i>
       </div>
       <div className="rk-slider">
         <span>Balance</span>
         <i className="rk-slider-track is-violet">
-          <b style={{ left: "32%" }} />
+          <b style={{ left: "45%" }} />
         </i>
       </div>
     </div>
   );
 }
 
-function SearchLeft() {
+/* the sign-in field, also running off the right edge */
+function Chip() {
   return (
-    <div className="rk-panel is-search-left" aria-hidden="true">
-      <div className="rk-panel-bar is-plain">
-        <span className="rk-bar-caret">
-          <Icon name="chevronLeft" size={9} />
-          <Icon name="chevronRight" size={9} />
+    <div className="rk-chip">
+      <span className="rk-chip-field">
+        <span className="rk-chip-go">
+          <Icon name="arrowRight" size={8} strokeWidth={2.4} />
         </span>
-        <span className="rk-bar-title is-left">Search for sessions…</span>
+        <Caret />
+        dean@cit.edu
+      </span>
+    </div>
+  );
+}
+
+/* a swatch grid: one warm row, two violet rows, fading to the right */
+function Dots() {
+  return (
+    <div className="rk-dots">
+      {Array.from({ length: 12 }, (_, k) => (
+        <i key={k} />
+      ))}
+    </div>
+  );
+}
+
+/* the command search, twice: a blurred copy behind, the sharp one in front */
+function SearchLeft({ ghost = false }: { ghost?: boolean }) {
+  return (
+    <div className={ghost ? "rk-panel is-search-left is-ghost" : "rk-panel is-search-left"}>
+      <div className="rk-panel-bar is-plain">
+        <span className="rk-bar-title is-left">
+          <Caret />
+          Search for sessions and rooms…
+        </span>
       </div>
       <div className="rk-search-body">
         <span className="rk-search-label">Favourites</span>
         <span className="rk-search-row">
           <i className="rk-row-glyph" />
           Exam seating
-        </span>
-        <span className="rk-search-row">
-          <i className="rk-row-glyph is-b" />
-          Hall B · free 14:00
+          <em>Mosaic</em>
         </span>
       </div>
     </div>
@@ -100,17 +131,22 @@ function SearchLeft() {
 
 function SearchRight() {
   return (
-    <div className="rk-panel is-search-right" aria-hidden="true">
-      <div className="rk-panel-bar is-plain">
-        <span className="rk-bar-caret">
-          <Icon name="arrowLeft" size={10} />
+    <div className="rk-panel is-search-right">
+      <div className="rk-panel-bar is-photos">
+        <span className="rk-bar-back">
+          <Icon name="arrowLeft" size={10} strokeWidth={2} />
         </span>
-        <span className="rk-bar-title is-left">Search for rooms…</span>
+        <span className="rk-bar-title is-left">
+          <Caret />
+          Search for rooms…
+        </span>
       </div>
       <div className="rk-search-body">
-        <span className="rk-search-label">Grid items&nbsp;&nbsp;3</span>
+        <span className="rk-search-label">
+          Grid items <b>3</b>
+        </span>
         <div className="rk-tiles">
-          <i className="rk-tile is-a" />
+          <i className="rk-tile is-a is-on" />
           <i className="rk-tile is-b" />
           <i className="rk-tile is-c" />
         </div>
@@ -122,77 +158,88 @@ function SearchRight() {
 export function ScreenStage({ onOpen }: { onOpen: (to: string) => void }) {
   return (
     <div className="rk-screens-stage">
-      {/* the out-of-focus app behind everything: three soft bodies of light */}
-      <div className="rk-stage-bloom" aria-hidden="true">
-        <span className="rk-bloom is-a" />
-        <span className="rk-bloom is-b" />
-        <span className="rk-bloom is-c" />
-        <span className="rk-bloom is-d" />
-        <span className="rk-bloom is-e" />
-        <span className="rk-bloom-grain" />
-        <span className="rk-bloom-vignette" />
+      {/* the frame: the light and the windows that are cropped by the picture's edge */}
+      <div className="rk-stage-frame" aria-hidden="true">
+        <div className="rk-stage-bloom">
+          <span className="rk-bloom is-a" />
+          <span className="rk-bloom is-b" />
+          <span className="rk-bloom is-c" />
+          <span className="rk-bloom is-d" />
+          <span className="rk-bloom is-e" />
+          <span className="rk-bloom-grain" />
+          <span className="rk-bloom-vignette" />
+        </div>
+
+        <div className="rk-stage-scene">
+          <Sliders />
+          <Chip />
+          <Dots />
+          <span className="rk-toggle">
+            <b />
+          </span>
+          <SearchLeft ghost />
+          <SearchLeft />
+          <SearchRight />
+        </div>
       </div>
 
-      <div className="rk-stage-scene">
+      {/* the assistant window stands in front of the frame: its title bar rises
+          out of the top edge, and its body dissolves into the light before it
+          reaches a bottom edge — so it is not clipped with the rest */}
+      <div className="rk-stage-scene is-front">
         <button
           type="button"
-          className="rk-panel is-assistant"
+          className="rk-window is-assistant"
           onClick={() => onOpen("/intelligence")}
           aria-label="Open the Tessera assistant"
         >
-          <Bar title="Tessera Assistant" />
-          <div className="rk-panel-body">
-            <p className="rk-msg">
-              <span className="rk-msg-avatar" aria-hidden="true">
-                <Icon name="people" size={11} />
+          <span className="rk-window-sheet" aria-hidden="true" />
+          <span className="rk-window-glass">
+            <Bar title="Tessera Assistant" />
+            <span className="rk-window-body">
+              <span className="rk-msg">
+                <span className="rk-msg-avatar" aria-hidden="true">
+                  <Icon name="people" size={11} />
+                </span>
+                Create a timetable for Spectra week that fits every rule.
               </span>
-              Create a timetable for Spectra week that fits every rule.
-            </p>
-            <p className="rk-msg">
-              <span className="rk-msg-avatar is-mark" aria-hidden="true">
-                <img src="/brand/tessera-mark.png" alt="" width={13} height={13} />
+              <span className="rk-msg">
+                <span className="rk-msg-avatar is-mark" aria-hidden="true">
+                  <img src="/brand/tessera-mark.png" alt="" width={13} height={13} />
+                </span>
+                Sure. Let&apos;s start off with creating these files:
               </span>
-              Sure. Let&apos;s start off with creating these files:
-            </p>
-            <pre className="rk-code" aria-hidden="true">
-              <code>
-                <span className="c-key">import</span> {"{ solve }"}{" "}
-                <span className="c-key">from</span> <span className="c-str">&quot;@tessera/engine&quot;</span>;
-                {"\n"}
-                <span className="c-key">import</span> {"{ explain }"}{" "}
-                <span className="c-key">from</span> <span className="c-str">&quot;@tessera/ledger&quot;</span>;
-                {"\n\n"}
-                <span className="c-key">const</span> rules = {"{"}
-                {"\n  "}hard: [<span className="c-str">&quot;room-fit&quot;</span>,{" "}
-                <span className="c-str">&quot;no-clash&quot;</span>],{"\n  "}soft: [
-                <span className="c-str">&quot;compactness&quot;</span>,{" "}
-                <span className="c-str">&quot;lane-balance&quot;</span>],{"\n"}
-                {"}"};
-                {"\n\n"}
-                <span className="c-key">const</span> week = <span className="c-key">await</span> solve({"{"}
-                {"\n  "}sessions: <span className="c-num">189</span>,{"\n  "}rooms:{" "}
-                <span className="c-num">27</span>,{"\n  "}faculty: <span className="c-num">40</span>,{"\n  "}
-                rules,{"\n"}
-                {"}"});
-                {"\n\n"}week.decisions.forEach(explain);
-                {"\n"}week.writeTo(<span className="c-str">&quot;spectra-week.json&quot;</span>);
-              </code>
-            </pre>
-          </div>
-        </button>
-
-        <Sliders />
-
-        <div className="rk-chip" aria-hidden="true">
-          <span className="rk-chip-avatar">
-            <Icon name="people" size={8} />
+              <pre className="rk-code" aria-hidden="true">
+                <code>
+                  <span className="c-key">import</span> {"{ "}solve{" }"} <span className="c-key">from</span>{" "}
+                  <span className="c-str">&quot;@tessera/engine&quot;</span>
+                  {"\n"}
+                  <span className="c-key">import</span> {"{ "}explain{" }"} <span className="c-key">from</span>{" "}
+                  <span className="c-str">&quot;@tessera/ledger&quot;</span>
+                  {"\n\n"}
+                  <span className="c-key">const</span> week = <span className="c-key">await</span>{" "}
+                  <span className="c-type">solve</span>({"{"}
+                  {"\n  "}sessions: <span className="c-num">189</span>,
+                  {"\n  "}rooms: <span className="c-num">27</span>,
+                  {"\n  "}faculty: <span className="c-num">40</span>,
+                  {"\n  "}rules: <span className="c-type">Rules</span>.of(
+                  {"\n    "}<span className="c-type">Hard</span>(<span className="c-str">&quot;room-fit&quot;</span>),{" "}
+                  <span className="c-type">Hard</span>(<span className="c-str">&quot;no-clash&quot;</span>),
+                  {"\n    "}<span className="c-type">Soft</span>(<span className="c-str">&quot;compactness&quot;</span>),{" "}
+                  <span className="c-type">Soft</span>(<span className="c-str">&quot;lane-balance&quot;</span>),
+                  {"\n  "}),
+                  {"\n"}
+                  {"}"});
+                  {"\n\n"}
+                  week.decisions.forEach(<span className="c-type">explain</span>);
+                  {"\n"}
+                  week.writeTo(<span className="c-str">&quot;spectra-week.json&quot;</span>);
+                  {"\n"}
+                </code>
+              </pre>
+            </span>
           </span>
-          dean@cit.edu
-        </div>
-
-        <div className="rk-panel is-peek" aria-hidden="true" />
-        <SearchLeft />
-        <SearchRight />
+        </button>
       </div>
     </div>
   );

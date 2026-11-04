@@ -153,16 +153,6 @@
   --rk-serif: #a8505a;
 }
 
-/* on paper the windows close up a little: they are the product, and the product
-   is a dark app, so they should read as dark glass rather than pale glass */
-.landing[data-theme="light"] .rk-window {
-  background: linear-gradient(180deg, rgba(40, 29, 34, 0.92) 0%, rgba(12, 9, 11, 0.95) 100%);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.16) inset,
-    0 44px 90px -36px rgba(64, 42, 30, 0.55),
-    0 0 70px -26px rgba(226, 88, 96, 0.45);
-}
-
 /* devices: keep their own light in the dark, whatever the page is wearing */
 /* On paper the ribbons have to whisper: same glass, one stop quieter, so the
    black sentence stays the loudest thing on the screen. */
@@ -1603,14 +1593,21 @@
 .rk-screens-stage {
   position: relative;
   width: min(1240px, 100%);
-  margin: 54px auto 0;
+  /* room above for the assistant window, which stands 5.11em proud of the frame */
+  margin: clamp(96px, 54px + 5.2vw, 120px) auto 0;
   aspect-ratio: 1240 / 570;
+  container-type: inline-size;
+}
+
+/* the frame of the picture: everything inside it is cropped by its edge */
+.rk-stage-frame {
+  position: absolute;
+  inset: 0;
   border-radius: 16px;
   border: 1px solid var(--rk-line);
   background: #170610;
   overflow: hidden;
   isolation: isolate;
-  container-type: inline-size;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.06) inset,
     0 60px 120px -70px rgba(0, 0, 0, 0.95);
@@ -1618,6 +1615,11 @@
 
 /* --------------------------------------------------------------- the light */
 
+/* Read off the reference: the light is one bright card, out of focus, lying
+   diagonally across the frame from the upper left to the bottom edge, hottest
+   just under the assistant window; a pink haze on the right; and the corners
+   fall away into dark red (top left), near-black (bottom left) and plum
+   (bottom right). */
 .rk-stage-bloom {
   font-size: 1cqw;
   position: absolute;
@@ -1625,80 +1627,75 @@
   z-index: 0;
   overflow: hidden;
   background:
-    radial-gradient(120% 150% at 18% 40%, #5c0f22 0%, transparent 60%),
-    radial-gradient(70% 110% at 78% 26%, #52102f 0%, transparent 58%),
-    linear-gradient(268deg, rgba(10, 2, 6, 0.72) 0%, transparent 34%),
-    linear-gradient(100deg, #170509 0%, #34081a 44%, #1c0611 100%);
+    radial-gradient(40% 42% at 100% 100%, rgba(30, 14, 32, 0.6) 0%, transparent 100%),
+    linear-gradient(96deg, #4c1019 0%, #3e0c1a 36%, #2b1420 72%, #2c1a27 100%);
 }
 
-/* three bodies of light, as if a blurred screenshot were back there */
 .rk-bloom {
   position: absolute;
   display: block;
   border-radius: 50%;
-  filter: blur(5.161em);
+  filter: blur(3em);
   will-change: transform;
 }
 
+/* the card itself. In the photo it is a bright rectangle lying in perspective:
+   its left corner sits at (9%, 48%), one edge climbs away at 28 degrees, the
+   other falls away at 27, and the far side dims with distance. Drawn as a
+   polygon, then blurred — the blur is what gives it the soft hard edge. */
 .rk-bloom.is-a {
-  left: -2%;
-  top: 0%;
-  width: 58%;
-  height: 116%;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 246, 243, 1) 0%,
-    rgba(255, 196, 198, 0.95) 22%,
-    rgba(255, 106, 130, 0.85) 48%,
-    rgba(190, 24, 58, 0.45) 74%,
-    transparent 100%
-  );
+  inset: 0;
+  border-radius: 0;
 }
 
-/* the second, tighter core: the white card that is out of focus in the middle */
+.rk-bloom.is-a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(8.5% 47%, 58% -9%, 82% -9%, 81% 25%, 76.5% 58%, 73.5% 75%, 68.5% 92%, 65% 110%, 63.5% 110%);
+  background:
+    linear-gradient(90deg, rgba(120, 20, 60, 0) 48%, rgba(120, 20, 60, 0.55) 100%),
+    linear-gradient(180deg, rgba(205, 72, 112, 0.9) 0%, rgba(255, 150, 170, 0.96) 28%, #ffbcc6 55%, #ffc6ce 100%);
+}
+
+/* the white heart of it: a long core lying along the card, under the window */
 .rk-bloom.is-d {
-  left: 12%;
-  top: 34%;
-  width: 26%;
-  height: 58%;
-  background: radial-gradient(closest-side, rgba(255, 255, 252, 0.9) 0%, rgba(255, 214, 214, 0.55) 46%, transparent 100%);
+  left: 10%;
+  top: 56%;
+  width: 55%;
+  height: 28%;
+  transform: rotate(22deg);
+  background: radial-gradient(closest-side, #fffdfb 0%, rgba(255, 238, 240, 0.92) 40%, rgba(255, 220, 226, 0.5) 72%, transparent 100%);
 }
 
-.rk-bloom.is-b {
-  right: -2%;
-  top: -16%;
-  width: 48%;
-  height: 120%;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 138, 172, 0.7) 0%,
-    rgba(150, 26, 84, 0.5) 50%,
-    transparent 88%
-  );
+/* the left corner, nearly as bright as the core */
+.rk-bloom.is-e {
+  left: 6%;
+  top: 30%;
+  width: 20%;
+  height: 26%;
+  background: radial-gradient(closest-side, rgba(255, 214, 220, 0.9) 0%, rgba(255, 150, 170, 0.5) 60%, transparent 100%);
 }
 
+/* the spill off the bottom edge */
 .rk-bloom.is-c {
-  left: 24%;
-  bottom: -46%;
-  width: 62%;
-  height: 110%;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 196, 196, 0.5) 0%,
-    rgba(206, 46, 74, 0.42) 46%,
-    transparent 84%
-  );
+  left: 42%;
+  top: 78%;
+  width: 28%;
+  height: 40%;
+  background: radial-gradient(closest-side, rgba(255, 196, 206, 0.9) 0%, rgba(240, 110, 136, 0.55) 55%, transparent 100%);
+}
+
+/* the haze beyond the card's far edge, on the right */
+.rk-bloom.is-b {
+  left: 62%;
+  top: -18%;
+  width: 40%;
+  height: 100%;
+  background: radial-gradient(closest-side, rgba(220, 120, 156, 0.7) 0%, rgba(160, 56, 100, 0.42) 55%, transparent 100%);
 }
 
 /* film grain: this is what makes it read as a photograph rather than a gradient */
-.rk-bloom.is-e {
-  right: -14%;
-  top: -34%;
-  width: 62%;
-  height: 84%;
-  background: radial-gradient(closest-side, rgba(255, 176, 196, 0.42) 0%, rgba(206, 58, 104, 0.26) 52%, transparent 92%);
-}
-
 .rk-bloom-grain {
   position: absolute;
   inset: 0;
@@ -1708,13 +1705,16 @@
   background-size: 14.516em 14.516em;
 }
 
-/* corners fall away, so the stage sits into the page instead of being a slab */
+/* the corners fall away: near-black at the bottom left, plum at the bottom
+   right, a little darker along the top and the right edge */
 .rk-bloom-vignette {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(104% 92% at 40% 44%, transparent 22%, rgba(9, 2, 5, 0.8) 100%),
-    linear-gradient(180deg, rgba(8, 2, 4, 0.66) 0%, transparent 26%, transparent 70%, rgba(8, 2, 4, 0.58) 100%);
+    radial-gradient(40% 48% at 6% 100%, rgba(9, 2, 4, 0.96) 0%, rgba(9, 2, 4, 0.5) 50%, transparent 100%),
+    radial-gradient(34% 40% at 100% 104%, rgba(18, 8, 20, 0.7) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(8, 2, 4, 0.5) 0%, transparent 18%),
+    linear-gradient(270deg, rgba(10, 4, 8, 0.55) 0%, transparent 22%);
 }
 
 /* --------------------------------------------------------------- the glass */
@@ -1727,6 +1727,13 @@
      of that width — so the whole picture scales like a photograph instead of
      breaking apart as the frame narrows */
   font-size: 1cqw;
+}
+
+/* the layer in front of the frame: only the assistant window lives here, so it
+   can rise above the frame's top edge instead of being cropped with the rest */
+.rk-stage-scene.is-front {
+  z-index: 2;
+  pointer-events: none;
 }
 
 .rk-panel {
@@ -1748,32 +1755,99 @@
   overflow: hidden;
 }
 
-/* the assistant window: the centre of the picture */
-.rk-panel.is-assistant {
+/* ------------------------------------------------- the assistant window */
+
+/* The centre of the picture. Measured off the reference: it starts 29.4% in
+   and is 41.2% wide; its bar sits 5.11em above the frame; and it has no bottom
+   — a sheet of near-black glass that is 80% solid under the bar and thins out
+   until the last lines of code dissolve into the light. The button is the hit
+   target and carries the focus ring; the glass inside it is masked. */
+.rk-window {
+  position: absolute;
   z-index: 3;
-  left: 35%;
-  top: 1.4%;
-  width: 31.5%;
-  height: 64%;
+  left: 29.4%;
+  top: -5.11em;
+  width: 41.2%;
+  height: 30em;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0.93em;
+  background: none;
+  color: #f2eef0;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
-  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.rk-panel.is-assistant:hover {
-  border-color: rgba(255, 150, 164, 0.42);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.14) inset,
-    0 2.419em 5.645em -1.774em rgba(0, 0, 0, 0.9),
-    0 0 4.032em -1.452em rgba(255, 90, 116, 0.6);
-}
-
-.rk-panel.is-assistant:focus-visible {
+.rk-window:focus-visible {
   outline: 2px solid #fff;
-  outline-offset: 3px;
+  outline-offset: 4px;
+}
+
+.rk-window-glass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 38em;
+  border-radius: 0.93em;
+  overflow: hidden;
+  /* the conversation itself fades later than the glass under it, which is why
+     the last lines of code are still legible over the light */
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 36%, rgba(0, 0, 0, 0.82) 62%, rgba(0, 0, 0, 0.5) 80%, transparent 95%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 36%, rgba(0, 0, 0, 0.82) 62%, rgba(0, 0, 0, 0.5) 80%, transparent 95%);
+}
+
+/* the sheet of glass under the conversation: 80% black beneath the bar, a half
+   through the middle, gone by nine tenths — the measured curve of the reference */
+.rk-window-sheet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 38em;
+  border-radius: 0.93em;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  background: rgba(3, 1, 2, 0.82);
+  transition: border-color 0.3s ease-in-out;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 12%,
+    rgba(0, 0, 0, 0.66) 28%,
+    rgba(0, 0, 0, 0.62) 50%,
+    rgba(0, 0, 0, 0.5) 62%,
+    rgba(0, 0, 0, 0.26) 75%,
+    rgba(0, 0, 0, 0.12) 85%,
+    transparent 93%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 12%,
+    rgba(0, 0, 0, 0.66) 28%,
+    rgba(0, 0, 0, 0.62) 50%,
+    rgba(0, 0, 0, 0.5) 62%,
+    rgba(0, 0, 0, 0.26) 75%,
+    rgba(0, 0, 0, 0.12) 85%,
+    transparent 93%
+  );
+}
+
+.rk-window:hover .rk-window-sheet {
+  border-color: rgba(255, 170, 184, 0.34);
+  border-top-color: rgba(255, 210, 218, 0.42);
 }
 
 /* a window bar */
 .rk-panel-bar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.645em;
@@ -1784,40 +1858,62 @@
   background: rgba(255, 255, 255, 0.035);
 }
 
+/* the assistant's bar is solid, near black — the one opaque thing in the picture */
+.rk-window .rk-panel-bar {
+  height: 4.27em;
+  padding: 0 1.2em;
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  background: #050405;
+}
+
 .rk-bar-dots {
   display: flex;
-  gap: 0.323em;
+  gap: 0.93em;
 }
 
 .rk-bar-dots i {
-  width: 0.565em;
-  height: 0.565em;
+  width: 0.93em;
+  height: 0.93em;
   border-radius: 50%;
-  background: rgba(16, 8, 12, 0.62);
-  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.18);
+  background: #313132;
 }
 
 .rk-bar-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   display: inline-flex;
   align-items: center;
-  gap: 0.323em;
-  margin: 0 auto;
-  font-size: 0.887em;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: rgba(255, 255, 255, 0.82);
+  gap: 0.5em;
+  transform: translate(-50%, -50%);
+  font-size: 1.21em;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: #ececee;
   white-space: nowrap;
 }
 
 .rk-bar-title b {
   display: inline-flex;
   flex-direction: column;
-  margin-top: -0.242em;
-  color: rgba(255, 255, 255, 0.42);
+  margin-top: -0.12em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.rk-bar-title b svg {
+  width: 0.72em;
+  height: 0.72em;
+}
+
+.rk-bar-title b svg + svg {
+  margin-top: -0.22em;
 }
 
 .rk-bar-title.is-left {
+  position: static;
+  transform: none;
   margin: 0;
+  font-size: 0.887em;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.6);
 }
@@ -1827,33 +1923,42 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .rk-bar-plus {
   margin-left: auto;
 }
 
+.rk-bar-plus svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
 /* the conversation */
-.rk-panel-body {
+.rk-window-body {
+  display: flex;
   flex: 1;
   min-height: 0;
-  padding: 0.968em 1.129em 0;
-  display: flex;
   flex-direction: column;
-  gap: 0.887em;
+  padding: 1.39em 1.3em 0;
   overflow: hidden;
 }
 
 .rk-msg {
   display: flex;
   align-items: flex-start;
-  gap: 0.726em;
+  gap: 1.15em;
   margin: 0;
-  font-size: 0.968em;
-  line-height: 1.42;
-  letter-spacing: -0.005em;
+  font-size: 1.21em;
+  line-height: 1.38;
+  letter-spacing: -0.008em;
   color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.rk-msg + .rk-msg {
+  margin-top: 1.4em;
 }
 
 .rk-msg-avatar {
@@ -1861,229 +1966,407 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 1.452em;
-  height: 1.452em;
+  width: 1.54em;
+  height: 1.54em;
+  margin-top: -0.08em;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.09);
-  color: rgba(255, 255, 255, 0.75);
+  background: radial-gradient(circle at 50% 32%, #b4aeb1 0%, #5a5356 48%, #241e21 100%);
+  color: rgba(255, 255, 255, 0.82);
   overflow: hidden;
 }
 
+.rk-msg-avatar svg {
+  width: 0.85em;
+  height: 0.85em;
+}
+
 .rk-msg-avatar.is-mark {
-  border-radius: 0.403em;
-  border-color: rgba(255, 122, 142, 0.35);
-  background: radial-gradient(circle at 50% 45%, rgba(226, 58, 84, 0.5), rgba(60, 12, 22, 0.8));
-  box-shadow: 0 0 0.806em -0.161em rgba(255, 78, 104, 0.65);
+  border-radius: 0.38em;
+  background: radial-gradient(circle at 50% 50%, rgba(214, 44, 72, 0.95) 0%, rgba(96, 18, 34, 0.96) 42%, #1a0a11 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 120, 140, 0.18) inset,
+    0 0 0.9em -0.1em rgba(255, 60, 90, 0.7);
 }
 
 .rk-msg-avatar img {
   display: block;
-  width: 1.048em;
-  height: 1.048em;
+  width: 0.9em;
+  height: 0.9em;
 }
 
-/* the code block: dark well, syntax in four quiet inks */
+/* the code block: a faint lift on the glass, syntax in three quiet inks */
 .rk-code {
   flex: 1;
   min-height: 0;
-  margin: 0;
-  padding: 0.806em 0.968em;
-  border-radius: 0.565em;
-  background: rgba(9, 4, 7, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0.84em 0 0 3.25em;
+  padding: 0.62em 0.93em 1em;
+  border-radius: 0.74em;
+  background: rgba(255, 255, 255, 0.04);
   font-family: var(--rk-mono);
-  font-size: 0.685em;
-  line-height: 1.66;
-  letter-spacing: 0.005em;
-  color: rgba(236, 226, 230, 0.82);
+  font-size: 0.93em;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0;
+  color: rgba(255, 240, 244, 0.8);
   overflow: hidden;
   white-space: pre;
 }
 
-.rk-code .c-key { color: #f19db0; }
-.rk-code .c-str { color: #a9d8b6; }
-.rk-code .c-num { color: #f0c98a; }
+.rk-code .c-key { color: rgba(255, 232, 238, 0.52); }
+.rk-code .c-type { color: #f0948e; }
+.rk-code .c-num { color: #f0948e; }
+.rk-code .c-str { color: rgba(255, 230, 236, 0.72); }
 
-/* two sliders, hanging at the right edge */
+/* ------------------------------------------------------------ the satellites */
+
+/* the small glass is darker than the reference's first read suggests: near
+   black where no light is behind it, lit only where the card is */
+.rk-panel {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(26, 10, 16, 0.66) 0%, rgba(12, 4, 8, 0.74) 100%);
+}
+
+.rk-caret {
+  display: inline-block;
+  flex: none;
+  width: 1px;
+  height: 1.1em;
+  margin-right: 0.12em;
+  background: rgba(255, 255, 255, 0.85);
+  vertical-align: -0.18em;
+}
+
+/* two sliders, hanging off the right edge */
 .rk-panel.is-sliders {
   z-index: 4;
-  left: 85.5%;
-  top: 25%;
-  width: 13%;
-  gap: 0.726em;
-  padding: 0.726em 0.806em 0.806em;
-  border-radius: 0.645em;
+  left: 89.6%;
+  top: 22%;
+  width: 16%;
+  padding: 0.5em 0.9em 1.2em;
+  border-radius: 0.6em;
 }
 
 .rk-slider {
   display: flex;
   flex-direction: column;
-  gap: 0.403em;
+  gap: 0.3em;
+}
+
+.rk-slider + .rk-slider {
+  margin-top: 0.5em;
 }
 
 .rk-slider span {
-  font-size: 0.726em;
-  letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.62);
+  font-size: 1.07em;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .rk-slider-track {
   position: relative;
   display: block;
-  height: 0.323em;
+  height: 0.93em;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
-.rk-slider-track.is-warm {
-  background: linear-gradient(90deg, #f6c37a, #f08098 45%, #e2466b 100%);
+.rk-slider-track.is-hue {
+  background: linear-gradient(90deg, #e84a3c 0%, #f0a030 16%, #e8d848 30%, #58c05c 46%, #2fb8b0 58%, #2f7fe6 72%, #9a4fe0 86%, #e84a9a 100%);
 }
 
 .rk-slider-track.is-violet {
-  background: linear-gradient(90deg, #8a7df0, #b9a6ff 60%, #e6dcff 100%);
+  background: linear-gradient(90deg, #6e6670 0%, #8a6a9e 55%, #a07ad0 100%);
 }
 
 .rk-slider-track b {
   position: absolute;
   top: 50%;
-  width: 0.726em;
-  height: 0.726em;
-  margin-left: -0.363em;
+  width: 1.05em;
+  height: 1.05em;
+  margin-left: -0.52em;
   border-radius: 50%;
+  border: 0.18em solid #fff;
+  box-sizing: border-box;
   transform: translateY(-50%);
-  background: radial-gradient(circle at 35% 30%, #ffffff, #d9d2e4 70%);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  background: rgba(40, 20, 60, 0.4);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* the account chip */
+/* the sign-in field: a dark bar with a bordered input running off the edge */
 .rk-chip {
   position: absolute;
   z-index: 4;
-  left: 76.5%;
-  top: 44.5%;
-  display: inline-flex;
+  left: 78.3%;
+  top: 41.6%;
+  display: flex;
   align-items: center;
-  gap: 0.645em;
-  width: 20%;
-  height: 2.419em;
-  padding: 0 0.806em;
-  border-radius: 0.645em;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg, rgba(46, 28, 36, 0.62), rgba(22, 12, 17, 0.72));
-  box-shadow: 0 1.613em 3.226em -1.774em rgba(0, 0, 0, 0.85);
+  width: 30%;
+  height: 2.7em;
+  padding: 0 0 0 1.3em;
+  border-radius: 0.55em 0 0 0.55em;
+  background: rgba(16, 6, 10, 0.82);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
   backdrop-filter: blur(1.452em);
   -webkit-backdrop-filter: blur(1.452em);
-  font-family: var(--rk-mono);
-  font-size: 0.806em;
-  letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.8);
+}
+
+.rk-chip-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  flex: 1;
+  height: 2.2em;
+  padding: 0 0.85em;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-right: 0;
+  border-radius: 0.45em 0 0 0.45em;
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 1.1em;
+  letter-spacing: -0.005em;
+  color: rgba(255, 255, 255, 0.82);
   white-space: nowrap;
 }
 
-.rk-chip-avatar {
+.rk-chip-go {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 1.21em;
-  height: 1.21em;
+  width: 1.2em;
+  height: 1.2em;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #cdb9c3, #6b4c5c 75%, #3a2531 100%);
-  color: rgba(20, 10, 14, 0.75);
+  background: rgba(190, 128, 170, 0.78);
+  color: rgba(20, 8, 14, 0.9);
 }
 
-/* the two search windows, cropped by the frame */
+.rk-chip-go svg {
+  width: 0.75em;
+  height: 0.75em;
+}
+
+/* the swatch grid under the field */
+.rk-dots {
+  position: absolute;
+  z-index: 4;
+  left: 87.6%;
+  top: 52.7%;
+  display: grid;
+  grid-template-columns: repeat(4, 1em);
+  gap: 1.93em 2.25em;
+}
+
+.rk-dots i {
+  display: block;
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  background: #6e3f8e;
+}
+
+.rk-dots i:nth-child(1) { background: #7a4a3c; }
+.rk-dots i:nth-child(2) { background: #74463b; }
+.rk-dots i:nth-child(3) { background: #6a4139; }
+.rk-dots i:nth-child(4) { background: #553536; }
+.rk-dots i:nth-child(5) { background: #7a419f; }
+.rk-dots i:nth-child(6) { background: #743f8d; }
+.rk-dots i:nth-child(7) { background: #653a78; }
+.rk-dots i:nth-child(8) { background: #563a5b; }
+.rk-dots i:nth-child(9) { background: #753c8c; }
+.rk-dots i:nth-child(10) { background: #6b3c7a; }
+.rk-dots i:nth-child(11) { background: #5c3760; }
+.rk-dots i:nth-child(12) { background: #4c3249; }
+
+/* the toggle at the left edge */
+.rk-toggle {
+  position: absolute;
+  z-index: 4;
+  left: 1.7%;
+  top: 71.8%;
+  display: block;
+  width: 4.65em;
+  height: 2.5em;
+  border-radius: 999px;
+  background: #574f66;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+.rk-toggle b {
+  position: absolute;
+  top: 50%;
+  right: 0.32em;
+  width: 1.86em;
+  height: 1.86em;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle at 40% 35%, #b3a5b1, #8f7d8e 70%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+/* the command search, cropped by the bottom edge; and its blurred twin behind */
 .rk-panel.is-search-left {
   z-index: 3;
-  left: 12.5%;
-  top: 71%;
-  width: 19.5%;
+  left: 3.6%;
+  top: 81.7%;
+  width: 30.5%;
   height: auto;
-  border-radius: 0.645em;
+  border-radius: 0.65em;
 }
 
-/* the panel behind it, only its top edge in shot */
-.rk-panel.is-peek {
+.rk-panel.is-search-left.is-ghost {
   z-index: 2;
-  left: 10.5%;
-  top: 66.5%;
-  width: 17%;
-  height: 9%;
-  border-radius: 0.645em;
-  opacity: 0.9;
-}
-
-.rk-panel.is-search-right {
-  z-index: 3;
-  left: 72%;
-  top: 73%;
-  width: 30%;
-  height: auto;
-  border-radius: 0.645em;
+  left: 8.5%;
+  top: 68.4%;
+  width: 26%;
+  opacity: 0.62;
+  filter: blur(0.2em);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .rk-panel-bar.is-plain {
-  height: 2.097em;
+  height: 3.6em;
   gap: 0.484em;
+  padding: 0 1.2em;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  background: none;
+}
+
+.rk-bar-title.is-left {
+  font-size: 1.3em;
+  letter-spacing: -0.008em;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .rk-search-body {
-  padding: 0.726em 0.806em;
+  padding: 0.95em 1.2em 1.2em;
   display: flex;
   flex-direction: column;
-  gap: 0.565em;
+  gap: 0.75em;
 }
 
 .rk-search-label {
-  font-size: 0.685em;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.98em;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.rk-search-label b {
+  margin-left: 0.6em;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.34);
 }
 
 .rk-search-row {
   display: flex;
   align-items: center;
-  gap: 0.565em;
-  font-size: 0.766em;
-  color: rgba(255, 255, 255, 0.72);
+  gap: 0.7em;
+  font-size: 1.1em;
+  color: rgba(255, 255, 255, 0.86);
   white-space: nowrap;
   overflow: hidden;
 }
 
-.rk-row-glyph {
-  flex: none;
-  width: 0.726em;
-  height: 0.726em;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.28);
+.rk-search-row em {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.42);
 }
 
-.rk-row-glyph.is-b {
+.rk-row-glyph {
+  flex: none;
+  width: 1.3em;
+  height: 1.3em;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
+  background: radial-gradient(circle at 42% 38%, #9b8aa8 0%, #4a3858 55%, #2a1e33 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+/* the photo search, tinted violet, cropped by the right and bottom edges */
+.rk-panel.is-search-right {
+  z-index: 3;
+  left: 72.6%;
+  top: 67.4%;
+  width: 36%;
+  height: auto;
+  border-radius: 0.65em 0 0 0;
+  border-right: 0;
+}
+
+.rk-panel-bar.is-photos {
+  height: 4.65em;
+  gap: 1em;
+  padding: 0 1.6em;
+  border-bottom: 1px solid rgba(172, 132, 230, 0.55);
+  background: rgba(96, 50, 118, 0.3);
+}
+
+.rk-bar-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2em;
+  height: 2em;
+  border-radius: 0.5em;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.rk-bar-back svg {
+  width: 1em;
+  height: 1em;
+}
+
+.rk-panel.is-search-right .rk-bar-title.is-left {
+  font-size: 1.4em;
+}
+
+.rk-panel.is-search-right .rk-search-body {
+  padding: 1.3em 1.6em 0;
+  gap: 0.9em;
+}
+
+.rk-panel.is-search-right .rk-search-label {
+  font-size: 1.1em;
 }
 
 .rk-tiles {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.484em;
+  grid-template-columns: repeat(3, 11.3em);
+  gap: 0.74em;
 }
 
 .rk-tile {
   display: block;
-  height: 5em;
-  border-radius: 0.403em;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  /* the reference's grid is photographs, not swatches: mute them and let them
-     blur a little so they read as out-of-focus images */
-  filter: saturate(0.72) brightness(0.88) blur(0.032em);
-  box-shadow: inset 0 0 1.452em rgba(0, 0, 0, 0.55);
+  height: 9.5em;
+  border-radius: 0.55em;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* the reference's grid is photographs: a planet, a nebula, a sunset — stand
+     them in with soft gradients and let them blur a little */
+  filter: saturate(0.9) blur(0.03em);
+  box-shadow: inset 0 0 1.452em rgba(0, 0, 0, 0.5);
 }
 
-.rk-tile.is-a { background: radial-gradient(120% 120% at 30% 20%, #f0b6a8, #a4465c 55%, #3a1a28); }
-.rk-tile.is-b { background: radial-gradient(120% 120% at 40% 30%, #9a8ff0, #4b3fae 55%, #1d1533); }
-.rk-tile.is-c { background: radial-gradient(120% 120% at 30% 25%, #f2cd9a, #b06a35 55%, #2b1a12); }
+.rk-tile.is-on {
+  border: 0.14em solid rgba(176, 128, 240, 0.9);
+}
+
+.rk-tile.is-a {
+  background:
+    radial-gradient(42% 42% at 62% 66%, #f0b070 0%, #c0603a 30%, #7a3020 55%, rgba(30, 12, 14, 0) 72%),
+    radial-gradient(120% 120% at 20% 10%, #3a1a22 0%, #120609 60%, #0a0406 100%);
+}
+
+.rk-tile.is-b {
+  background:
+    linear-gradient(118deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 20%, rgba(236, 72, 150, 0.85) 36%, rgba(236, 72, 150, 0) 46%, rgba(70, 60, 220, 0.8) 54%, rgba(70, 60, 220, 0) 64%, rgba(170, 60, 200, 0.7) 76%, rgba(170, 60, 200, 0) 88%),
+    linear-gradient(118deg, #0b0a16 0%, #2a1f5c 40%, #140f2a 70%, #0b0a16 100%);
+}
+
+.rk-tile.is-c {
+  background:
+    radial-gradient(60% 60% at 30% 36%, #ffd27a 0%, #f07a3a 34%, #b02a2a 60%, rgba(40, 10, 10, 0) 80%),
+    linear-gradient(180deg, #3a0f14 0%, #1a0608 100%);
+}
 
 /* -------------------------------------------------------- the index below */
 
@@ -2191,16 +2474,15 @@
   .rk-screens-stage { aspect-ratio: 3 / 2; }
   .rk-stage-scene { font-size: 13px; }
   .rk-panel.is-sliders,
-  .rk-panel.is-peek,
+  .rk-panel.is-search-left.is-ghost,
+  .rk-toggle,
+  .rk-dots,
   .rk-chip { display: none; }
-  .rk-panel.is-assistant {
+  .rk-window {
     left: 11%;
-    top: 10%;
+    top: -4.4em;
     width: 78%;
-    height: auto;
   }
-  .rk-panel.is-assistant .rk-panel-body { flex: none; overflow: visible; }
-  .rk-panel.is-assistant .rk-code { flex: 0 0 auto; }
   .rk-panel.is-search-left { left: 6%; top: 80%; width: 36%; height: auto; }
   .rk-panel.is-search-right { left: 56%; top: 76%; width: 50%; height: auto; }
 }
@@ -2213,7 +2495,7 @@
 
 @media (max-width: 860px) {
   .rk-screens-section { padding: 96px 20px 72px; }
-  .rk-screens-stage { margin-top: 40px; }
+  .rk-screens-stage { margin-top: 104px; }
   .rk-screen-index { grid-template-columns: minmax(0, 1fr); }
   .rk-index-row {
     grid-template-columns: 26px minmax(0, 1fr) 18px;
@@ -2230,25 +2512,40 @@
   /* a phone gets the assistant window alone, in flow, so nothing is cut off */
   .rk-screens-stage {
     aspect-ratio: auto;
+    margin-top: 40px;
     border-radius: 14px;
     padding: 16px 14px;
   }
-  .rk-stage-scene { position: relative; inset: auto; font-size: 13px; }
+  .rk-stage-frame { border-radius: 14px; }
+  .rk-stage-scene:not(.is-front) { font-size: 13px; }
+  .rk-stage-scene.is-front {
+    position: relative;
+    inset: auto;
+    font-size: 13px;
+  }
   .rk-panel.is-search-left,
   .rk-panel.is-search-right { display: none; }
-  .rk-panel.is-assistant {
+  .rk-window {
     position: relative;
     left: auto;
     top: auto;
     width: 100%;
     height: auto;
-    backdrop-filter: none;
-    background: rgba(22, 11, 16, 0.78);
+    display: block;
   }
-  .rk-msg { font-size: 12.5px; }
+  .rk-window-sheet { height: 100%; }
+  .rk-window-glass {
+    position: relative;
+    height: auto;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 40%, rgba(0, 0, 0, 0.55) 78%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 40%, rgba(0, 0, 0, 0.55) 78%, transparent 100%);
+  }
+  .rk-window-body { flex: none; overflow: visible; }
+  .rk-code { flex: none; margin-left: 0; }
+  .rk-msg { white-space: normal; font-size: 12.5px; }
   .rk-code { font-size: 9.4px; }
-  .rk-panel-bar { height: 32px; }
-  .rk-bar-title { font-size: 11.5px; }
+  .rk-panel-bar { height: 40px; }
+  .rk-bar-title { font-size: 12px; }
 }
 
 
