@@ -28,8 +28,9 @@
   width: min(1160px, calc(100% - 32px));
   border: 1px solid var(--rk-line);
   border-radius: var(--rk-r-xl);
-  background: rgba(10, 10, 11, 0.88);
-  backdrop-filter: blur(18px);
+  background: var(--rk-nav-bg);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
 }
 
 .site-head-inner {
@@ -58,13 +59,13 @@
 }
 
 .site-nav-link:hover {
-  color: var(--rk-white);
-  background: rgba(255, 255, 255, 0.055);
+  color: var(--rk-ink);
+  background: var(--rk-sheen);
 }
 
 .site-nav-link[data-current="true"] {
-  color: var(--rk-white);
-  background: rgba(255, 255, 255, 0.07);
+  color: var(--rk-ink);
+  background: var(--rk-sheen);
 }
 
 .site-head-actions {
@@ -86,7 +87,7 @@
   font-weight: 600;
   line-height: 1.03;
   letter-spacing: -0.035em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   text-wrap: balance;
 }
 
@@ -125,7 +126,7 @@
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -182,12 +183,12 @@
 }
 
 .ledger-filters button[data-on="true"] {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--rk-white);
+  background: var(--rk-sheen-strong);
+  color: var(--rk-ink);
 }
 
 .ledger-filters button:hover {
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .ledger-note {
@@ -208,7 +209,7 @@
 }
 
 .ledger-item[data-open="true"] {
-  background: rgba(255, 255, 255, 0.022);
+  background: var(--rk-sheen);
 }
 
 .ledger-row {
@@ -227,7 +228,7 @@
 }
 
 .ledger-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--rk-sheen);
 }
 
 .ledger-id {
@@ -320,7 +321,7 @@
 
 .ledger-item[data-open="true"] .ledger-chevron {
   transform: rotate(180deg);
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .ledger-detail {
@@ -425,7 +426,7 @@
   padding: 9px 10px;
   border: 1px solid var(--rk-line);
   border-radius: var(--rk-r-md);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--rk-sheen);
   font-family: inherit;
   cursor: pointer;
   text-align: left;
@@ -435,7 +436,7 @@
 .seating-cell b {
   font-size: 16px;
   font-weight: 600;
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .seating-cell i {
@@ -492,7 +493,7 @@
 }
 
 .paper-row:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--rk-sheen);
 }
 
 .paper-name {
@@ -541,7 +542,7 @@
   flex: 1;
   height: 3px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--rk-sheen-strong);
   overflow: hidden;
 }
 
@@ -618,7 +619,7 @@
   position: relative;
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--rk-sheen-strong);
   overflow: hidden;
 }
 
@@ -736,7 +737,7 @@
   font-size: clamp(26px, 3vw, 38px);
   font-weight: 600;
   letter-spacing: -0.03em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .site-close p {
@@ -926,7 +927,7 @@
   font-size: clamp(26px, 3vw, 34px);
   font-weight: 600;
   letter-spacing: -0.03em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -994,7 +995,7 @@
 .num-bar-track {
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--rk-sheen);
   overflow: hidden;
 }
 
@@ -1023,7 +1024,7 @@
 .num-caption a {
   color: var(--rk-fg);
   text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.3);
+  text-decoration-color: var(--rk-rule);
   text-underline-offset: 2px;
 }
 
@@ -1047,7 +1048,7 @@
 .num-outcome-value {
   font-size: 15px;
   font-weight: 600;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1094,7 +1095,7 @@
   font-size: clamp(22px, 2.4vw, 30px);
   font-weight: 600;
   letter-spacing: -0.03em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .num-method ol {

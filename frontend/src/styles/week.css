@@ -15,11 +15,11 @@
   white-space: nowrap;
 }
 .rk-hero-scroll span:last-child {
-  color: var(--rk-white);
+  color: var(--rk-ink);
   font-size: 17px;
 }
 .rk-hero-scroll:hover {
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 .rk-hero-scroll:focus-visible,
 .week-days button:focus-visible,
@@ -75,7 +75,7 @@
 .week-copy h2 em,
 .week-close h2 em {
   display: block;
-  color: #d9a6a8;
+  color: var(--rk-serif, #d9a6a8);
   font-family: "Instrument Serif", Georgia, serif;
   font-size: 1.13em;
   font-weight: 400;
@@ -379,7 +379,7 @@
   background: rgba(255, 255, 255, 0.06);
 }
 .week-days button[aria-pressed="true"] {
-  color: var(--rk-white);
+  color: var(--rk-ink);
   background: #302125;
   border-color: rgba(226, 58, 84, 0.35);
 }

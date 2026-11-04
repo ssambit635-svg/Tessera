@@ -8,12 +8,39 @@
       name="description"
       content="TESSERA connects campus spaces, faculty, student groups and time in one intelligent scheduling workspace."
     />
-    <meta name="theme-color" content="#111112" />
-    <link rel="icon" href="/brand/tessera-mark-128.png" type="image/png" sizes="128x128" />
-    <link rel="apple-touch-icon" href="/brand/tessera-mark-128.png" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0a0a0b" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- The mark, in the tab and on the home screen: the glass T on the paper it
+         is cut from. All sizes come from the same 404px source art. -->
+    <link rel="icon" href="/icons/icon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/icons/icon-48.png" type="image/png" sizes="48x48" />
+    <link rel="icon" href="/icons/icon-96.png" type="image/png" sizes="96x96" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Theme before first paint: the landing opens black unless the visitor has
+         asked for the cream page, and a reload must not flash the other one. -->
+    <script>
+      (function () {
+        try {
+          var light = window.localStorage.getItem("tessera.theme") === "light";
+          var root = document.documentElement;
+          root.dataset.theme = light ? "light" : "dark";
+          root.style.colorScheme = light ? "light" : "dark";
+          if (light) root.style.backgroundColor = "#f4f1e8";
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", light ? "#f4f1e8" : "#0a0a0b");
+        } catch (e) {
+          /* storage blocked: the page simply opens in its default dress */
+        }
+      })();
+    </script>
+
     <meta property="og:title" content="TESSERA — Intelligent campus scheduling" />
     <meta property="og:description" content="Spaces, people and time — in sync." />
+    <meta property="og:image" content="/icons/icon-512.png" />
   </head>
   <body>
     <div id="root"></div>

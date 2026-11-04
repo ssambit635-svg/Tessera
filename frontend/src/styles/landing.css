@@ -20,10 +20,51 @@
   --rk-faint: #6f7074;
   --rk-line: rgba(255, 255, 255, 0.09);
   --rk-line-strong: rgba(255, 255, 255, 0.16);
-  --rk-white: #ffffff;
+
+  /* Two inks. `--rk-ink` is the loudest tone on the page — headlines, the white
+     pill button, focus rings — and `--rk-on-ink` is the colour that sits on top
+     of it. Keeping the pair explicit is what lets the button invert, rather than
+     turn into a grey slab, when the page goes to paper. */
+  --rk-ink: #ffffff;
+  --rk-on-ink: #0a0a0b;
+  --rk-ink-hover: #e6e6e6;
+
+  /* chrome */
+  --rk-nav-bg: #101011;
+  --rk-nav-solid: #0c0c0d;
+  --rk-navlink: rgba(244, 244, 246, 0.72);
+  --rk-dim: #85878d;
+  --rk-panel: rgba(255, 255, 255, 0.014);
+  --rk-sheen: rgba(255, 255, 255, 0.04);
+  --rk-sheen-strong: rgba(255, 255, 255, 0.09);
+  --rk-rule: rgba(255, 255, 255, 0.28);
+  --rk-bubble: #232325;
+  --rk-bubble-ai: #0e0e0f;
+
+  /* the dot field, the record scene's plate, the hero's two scrims */
+  --rk-dot: rgba(255, 255, 255, 0.085);
+  --rk-pool: rgba(255, 255, 255, 0.03);
+  --rk-stage: #08080a;
+  --rk-stage-clear: rgba(8, 8, 10, 0);
+  --rk-scrim-rgb: 0, 0, 0;
+  --rk-scrim-a1: 0.38;
+  --rk-scrim-a2: 0.2;
+  --rk-scrim-a3: 0.05;
+  --rk-vignette-rgb: 0, 0, 0;
+  --rk-vignette-a: 0.5;
+  --rk-shadow-rgb: 0, 0, 0;
+
+  /* keycaps — a key is a hairline and a whisper of fill, nothing more */
+  --rk-key-border: rgba(255, 255, 255, 0.05);
+  --rk-key-bg: rgba(255, 255, 255, 0.014);
+  --rk-key-edge: rgba(255, 255, 255, 0.035);
+  --rk-key-ink: rgba(255, 255, 255, 0.2);
+
   --rk-red: #e23a54;
   --rk-red-soft: #a3253a;
   --rk-navy: #16233f;
+  /* the serif interlude's warm accent — pale on black, deeper on paper */
+  --rk-serif: #d9a6a8;
 
   /* type */
   --rk-sans: "Inter Variable", "Inter", "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -43,11 +84,116 @@
   font-feature-settings: "cv05" 1, "ss01" 1;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+  color-scheme: dark;
+  transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+/* ------------------------------------------------------------------ paper */
+
+/* The second dress: the same page on the cream the mark is cut from (#F4F1E8,
+   lifted from the brand tile's facets) with the ink inverted. Black and red stay
+   the default — this only ever arrives when the visitor asks for it, and the
+   choice rides on `data-theme`, written before first paint by the head script in
+   index.html so a reload never flashes the dark page first.
+
+   Everything that is a *device* — the terminal capture, the ribbon panel with
+   the ledger on it — keeps its dark tokens here, so it stays a lit object on
+   paper instead of turning into a pale ghost of itself. */
+.landing[data-theme="light"] {
+  color-scheme: light;
+
+  --rk-bg: #f4f1e8;
+  --rk-bg-raised: #fbf8f0;
+  --rk-bg-card: #fffdf7;
+  --rk-bg-hover: #ffffff;
+  --rk-fg: #23241f;
+  --rk-fg-soft: #4b473e;
+  --rk-muted: #6c675b;
+  --rk-faint: #7c7669;
+  --rk-line: rgba(32, 29, 22, 0.13);
+  --rk-line-strong: rgba(32, 29, 22, 0.24);
+
+  --rk-ink: #191a1c;
+  --rk-on-ink: #fbf8f0;
+  --rk-ink-hover: #2e3033;
+
+  --rk-nav-bg: rgba(251, 248, 240, 0.92);
+  --rk-nav-solid: rgba(249, 245, 236, 0.98);
+  --rk-navlink: rgba(35, 36, 31, 0.74);
+  --rk-dim: #8b8475;
+  --rk-panel: rgba(32, 29, 22, 0.028);
+  --rk-sheen: rgba(32, 29, 22, 0.04);
+  --rk-sheen-strong: rgba(32, 29, 22, 0.075);
+  --rk-rule: rgba(32, 29, 22, 0.32);
+  --rk-bubble: #ffffff;
+  --rk-bubble-ai: #faf6ed;
+
+  --rk-dot: rgba(32, 29, 22, 0.14);
+  --rk-pool: rgba(255, 255, 255, 0.6);
+  --rk-stage: #f4f1e8;
+  --rk-stage-clear: rgba(244, 241, 232, 0);
+  --rk-scrim-rgb: 244, 241, 232;
+  --rk-scrim-a1: 0.62;
+  --rk-scrim-a2: 0.44;
+  --rk-scrim-a3: 0.12;
+  --rk-vignette-rgb: 122, 105, 76;
+  --rk-vignette-a: 0.26;
+  --rk-shadow-rgb: 60, 50, 32;
+
+  --rk-key-border: rgba(32, 29, 22, 0.09);
+  --rk-key-bg: rgba(255, 253, 247, 0.6);
+  --rk-key-edge: rgba(255, 255, 255, 0.9);
+  --rk-key-ink: rgba(32, 29, 22, 0.26);
+
+  /* the red goes a shade deeper so it still holds weight on cream */
+  --rk-red: #c62a42;
+  --rk-red-soft: #8e2338;
+  --rk-serif: #a8505a;
+}
+
+/* devices: keep their own light in the dark, whatever the page is wearing */
+/* On paper the ribbons have to whisper: same glass, one stop quieter, so the
+   black sentence stays the loudest thing on the screen. */
+.landing[data-theme="light"] .rk-hero-art {
+  opacity: 0.72;
+  filter: sepia(0.42) saturate(0.86) contrast(0.9) brightness(1.04);
+}
+
+.landing[data-theme="light"] .rk-hero-scroll {
+  color: rgba(35, 36, 31, 0.62);
+}
+
+.landing[data-theme="light"] .rk-hero-scroll span:last-child {
+  color: var(--rk-ink);
+}
+
+.landing[data-theme="light"] .rk-stage {
+  background: var(--rk-bg);
+}
+
+.landing[data-theme="light"] .rk-nav {
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+}
+
+.landing[data-theme="light"] .film-window,
+.landing[data-theme="light"] .rk-stage-card {
+  --rk-fg: #f4f4f6;
+  --rk-fg-soft: #c2c7ca;
+  --rk-muted: #9c9c9d;
+  --rk-faint: #6f7074;
+  --rk-dim: #85878d;
+  --rk-ink: #ffffff;
+  --rk-line: rgba(255, 255, 255, 0.09);
+  --rk-line-strong: rgba(255, 255, 255, 0.16);
+  --rk-sheen: rgba(255, 255, 255, 0.04);
+  --rk-sheen-strong: rgba(255, 255, 255, 0.09);
+  color: var(--rk-fg);
 }
 
 .landing ::selection {
-  background: var(--rk-white);
-  color: #0a0a0b;
+  background: var(--rk-ink);
+  color: var(--rk-on-ink);
 }
 
 .landing .mono {
@@ -80,16 +226,16 @@
   height: 68px;
   padding: 0 12px 0 22px;
   border-radius: var(--rk-r-xl);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #101011;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 10px 30px -18px rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--rk-line);
+  background: var(--rk-nav-bg);
+  box-shadow: 0 1px 0 var(--rk-sheen) inset, 0 10px 30px -18px rgba(var(--rk-shadow-rgb), 0.9);
   transition: background var(--rk-ease), border-color var(--rk-ease), box-shadow var(--rk-ease);
 }
 
 .rk-nav.solid {
-  background: #0c0c0d;
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.07) inset, 0 18px 44px -12px rgba(0, 0, 0, 0.85);
+  background: var(--rk-nav-solid);
+  border-color: var(--rk-line-strong);
+  box-shadow: 0 1px 0 0 var(--rk-sheen-strong) inset, 0 18px 44px -12px rgba(var(--rk-shadow-rgb), 0.85);
 }
 
 .rk-brand {
@@ -132,7 +278,7 @@
   height: 44px;
   padding: 0 12px;
   border-radius: var(--rk-r-md);
-  color: rgba(244, 244, 246, 0.72);
+  color: var(--rk-navlink);
   font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
@@ -153,8 +299,8 @@
 }
 
 .rk-links a:hover {
-  color: var(--rk-white);
-  background: rgba(255, 255, 255, 0.055);
+  color: var(--rk-ink);
+  background: var(--rk-sheen);
 }
 
 /* the expandable tab: the label column goes 0fr → 1fr, so it opens to its own width
@@ -180,8 +326,8 @@
 }
 
 .rk-tab[data-open="true"] {
-  color: var(--rk-white);
-  background: rgba(255, 255, 255, 0.07);
+  color: var(--rk-ink);
+  background: var(--rk-sheen);
   padding: 0 14px;
 }
 
@@ -214,8 +360,43 @@
 }
 
 .rk-navlink:hover {
-  color: var(--rk-white);
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--rk-ink);
+  background: var(--rk-sheen);
+}
+
+/* the theme switch: a plain key in the nav, no pill, no label */
+.rk-theme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--rk-r-md);
+  border: 1px solid transparent;
+  background: none;
+  color: var(--rk-muted);
+  cursor: pointer;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.rk-theme:hover {
+  color: var(--rk-ink);
+  background: var(--rk-sheen);
+  border-color: var(--rk-line);
+}
+
+.rk-theme:focus-visible {
+  outline: 2px solid var(--rk-ink);
+  outline-offset: 2px;
+}
+
+.rk-theme svg {
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rk-theme:hover svg {
+  transform: rotate(-24deg);
 }
 
 /* the white pill button, reference's Download button */
@@ -244,23 +425,23 @@
 }
 
 .rk-btn.white {
-  background: var(--rk-white);
-  color: #0a0a0b;
+  background: var(--rk-ink);
+  color: var(--rk-on-ink);
 }
 
 .rk-btn.white:hover {
-  background: #e6e6e6;
+  background: var(--rk-ink-hover);
 }
 
 .rk-btn.outline {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--rk-sheen);
   color: var(--rk-fg);
   border-color: var(--rk-line-strong);
 }
 
 .rk-btn.outline:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.26);
+  background: var(--rk-sheen-strong);
+  border-color: var(--rk-line-strong);
 }
 
 .rk-btn .rk-keycap {
@@ -271,8 +452,8 @@
   height: 22px;
   margin-left: -4px;
   border-radius: var(--rk-r-sm);
-  background: #0a0a0b;
-  color: var(--rk-white);
+  background: var(--rk-on-ink);
+  color: var(--rk-ink);
 }
 
 .rk-btn.sm {
@@ -292,7 +473,7 @@
 .rk-links a:focus-visible,
 .rk-card:focus-visible,
 .rk-screen:focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid var(--rk-ink);
   outline-offset: 2px;
 }
 
@@ -318,9 +499,9 @@
   inset: 40px -20px 40px;
   background: radial-gradient(
     58% 54% at 50% 46%,
-    rgba(0, 0, 0, 0.38) 0%,
-    rgba(0, 0, 0, 0.2) 48%,
-    rgba(0, 0, 0, 0.05) 76%,
+    rgba(var(--rk-scrim-rgb), var(--rk-scrim-a1)) 0%,
+    rgba(var(--rk-scrim-rgb), var(--rk-scrim-a2)) 48%,
+    rgba(var(--rk-scrim-rgb), var(--rk-scrim-a3)) 76%,
     transparent 92%
   );
   pointer-events: none;
@@ -332,7 +513,7 @@
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #d2d4d8;
+  color: var(--rk-fg-soft);
 }
 
 /* One typeface, one weight, three short beats. The second line is the same
@@ -345,7 +526,7 @@
   font-weight: 600;
   line-height: 0.96;
   letter-spacing: -0.045em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   text-wrap: balance;
 }
 
@@ -354,7 +535,7 @@
 }
 
 .rk-title-dim {
-  color: #85878d;
+  color: var(--rk-dim);
 }
 
 .rk-sub {
@@ -363,7 +544,7 @@
   font-size: 17.5px;
   line-height: 1.5;
   letter-spacing: -0.011em;
-  color: #d9dbe0;
+  color: var(--rk-fg-soft);
   text-wrap: pretty;
 }
 
@@ -404,7 +585,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(118% 88% at 50% 46%, transparent 38%, rgba(0, 0, 0, 0.5) 100%);
+  background: radial-gradient(118% 88% at 50% 46%, transparent 38%, rgba(var(--rk-vignette-rgb), var(--rk-vignette-a)) 100%);
 }
 
 .rk-cta {
@@ -419,7 +600,7 @@
 .rk-cta-note {
   margin: 18px 0 0;
   font-size: 13px;
-  color: #b9bbc0;
+  color: var(--rk-muted);
 }
 
 /* the hero is a statement, not a screenshot: art, one sentence, two doors */
@@ -454,12 +635,12 @@
   font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.038em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   text-wrap: balance;
 }
 
 .film-title span {
-  color: #85878d;
+  color: var(--rk-dim);
 }
 
 .film-lede {
@@ -467,7 +648,7 @@
   max-width: 60ch;
   font-size: 16px;
   line-height: 1.55;
-  color: #b6b8be;
+  color: var(--rk-muted);
   text-wrap: pretty;
 }
 
@@ -670,7 +851,7 @@
   width: min(1120px, 100%);
   margin: 18px auto 0;
   font-size: 12.5px;
-  color: #9d9fa5;
+  color: var(--rk-muted);
 }
 
 .film-caption span {
@@ -683,7 +864,7 @@
   font-family: var(--rk-mono);
   font-size: 10.5px;
   letter-spacing: 0.05em;
-  color: #6f7074;
+  color: var(--rk-faint);
   text-align: right;
 }
 
@@ -743,17 +924,23 @@
    field. Left column is the sentence and one door; the keyboard is decoration
    at a whisper of contrast, faded out where it would run into the copy. */
 
+/* No plate, and therefore no edge. This scene sits straight on the page: the
+   dot field runs through it unbroken, so there is no horizontal line where a
+   band starts and stops. The only depth cue is one wide pool of light behind
+   the keycaps, feathered out to nothing well inside the section. */
 .rk-kb-section {
   position: relative;
   padding: 132px 24px;
-  background: linear-gradient(
-    180deg,
-    rgba(8, 8, 10, 0) 0%,
-    #08080a 7%,
-    #08080a 95%,
-    rgba(8, 8, 10, 0) 100%
-  );
+  background: none;
   overflow: hidden;
+}
+
+.rk-kb-section::before {
+  content: "";
+  position: absolute;
+  inset: -12% -14%;
+  pointer-events: none;
+  background: radial-gradient(56% 50% at 62% 44%, var(--rk-pool) 0%, transparent 70%);
 }
 
 .rk-kb {
@@ -775,7 +962,7 @@
   font-weight: 600;
   line-height: 1.16;
   letter-spacing: -0.028em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .rk-kb-lede {
@@ -784,7 +971,7 @@
   font-size: clamp(16px, 1.4vw, 19px);
   line-height: 1.34;
   letter-spacing: -0.015em;
-  color: #8e9096;
+  color: var(--rk-muted);
 }
 
 .rk-kb-cta {
@@ -825,10 +1012,10 @@
   min-width: 0;
   min-height: 0;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.014);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-  color: rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--rk-key-border);
+  background: var(--rk-key-bg);
+  box-shadow: inset 0 1px 0 var(--rk-key-edge);
+  color: var(--rk-key-ink);
   font-family: var(--rk-sans);
   font-size: 15px;
   font-weight: 500;
@@ -854,20 +1041,20 @@
   min-height: 104px;
   padding: 13px 14px 14px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.085);
-  background: #0a0a0c;
+  border: 1px solid var(--rk-line);
+  background: var(--rk-bg-card);
   color: inherit;
   text-decoration: none;
   transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 .rk-kb-card:hover {
-  background: #121214;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--rk-bg-hover);
+  border-color: var(--rk-line-strong);
 }
 
 .rk-kb-card:focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid var(--rk-ink);
   outline-offset: 2px;
 }
 
@@ -884,20 +1071,20 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #c6c8cd;
+  border: 1px solid var(--rk-line);
+  color: var(--rk-fg-soft);
 }
 
 .rk-kb-card-copy {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.4;
-  color: #8f9197;
+  color: var(--rk-muted);
   letter-spacing: -0.005em;
 }
 
 .rk-kb-card-copy b {
-  color: var(--rk-white);
+  color: var(--rk-ink);
   font-weight: 600;
 }
 
@@ -964,7 +1151,7 @@
 .rk-body {
   position: relative;
   background-color: var(--rk-bg);
-  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.085) 1px, transparent 1.7px);
+  background-image: radial-gradient(circle at 1px 1px, var(--rk-dot) 1px, transparent 1.7px);
   background-size: 26px 26px;
 }
 
@@ -998,7 +1185,7 @@
   content: "";
   width: 18px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--rk-rule);
 }
 
 .rk-h2 {
@@ -1008,7 +1195,7 @@
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.03em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   text-wrap: balance;
 }
 
@@ -1061,7 +1248,7 @@
   margin-bottom: 20px;
   border-radius: var(--rk-r-lg);
   border: 1px solid var(--rk-line);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--rk-sheen);
   color: var(--rk-fg-soft);
 }
 
@@ -1122,7 +1309,7 @@
 }
 
 .rk-card:hover .rk-card-go {
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 /* proof — the "what else can it do" section: a statement with its tail faded
@@ -1132,7 +1319,7 @@
   border-top: 1px solid var(--rk-line);
   border-bottom: 1px solid var(--rk-line);
   /* a hair lighter than the page, but translucent so the dot field reads through */
-  background: rgba(255, 255, 255, 0.014);
+  background: var(--rk-panel);
   padding: 128px 24px;
 }
 
@@ -1159,7 +1346,7 @@
 }
 
 .rk-statement b .rk-word {
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .rk-statement span .rk-word {
@@ -1168,7 +1355,7 @@
 
 .rk-statement b {
   font-weight: 600;
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .rk-statement span {
@@ -1209,7 +1396,7 @@
 }
 
 .rk-product-note a:hover {
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 /* the ribbon stage the object floats over */
@@ -1371,7 +1558,7 @@
   font-size: 19px;
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1435,7 +1622,7 @@
   height: 30px;
   border-radius: var(--rk-r-lg);
   border: 1px solid var(--rk-line);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--rk-sheen);
   color: var(--rk-fg-soft);
 }
 
@@ -1447,7 +1634,7 @@
 
 .rk-screen:hover .rk-screen-go {
   opacity: 1;
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 .rk-screen b {
@@ -1517,13 +1704,13 @@
 .rk-bubble.user {
   align-self: flex-end;
   max-width: 92%;
-  background: #232325;
+  background: var(--rk-bubble);
   border: 1px solid var(--rk-line);
   color: var(--rk-fg);
 }
 
 .rk-bubble.ai {
-  background: #0e0e0f;
+  background: var(--rk-bubble-ai);
   border: 1px solid var(--rk-line);
   color: var(--rk-fg-soft);
 }
@@ -1533,7 +1720,7 @@
 }
 
 .rk-bubble.ai b {
-  color: var(--rk-white);
+  color: var(--rk-ink);
   font-weight: 600;
 }
 
@@ -1558,7 +1745,7 @@
   padding: 3px 8px;
   border-radius: var(--rk-r-sm);
   border: 1px solid var(--rk-line);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--rk-sheen);
   font-family: var(--rk-mono);
   font-size: 11px;
   color: var(--rk-muted);
@@ -1590,7 +1777,7 @@
 }
 
 .rk-footer-links a:hover {
-  color: var(--rk-white);
+  color: var(--rk-ink);
 }
 
 /* --------------------------------------------------------------- responsive */
@@ -1797,7 +1984,7 @@
   line-height: 1.28;
   letter-spacing: -0.025em;
   font-weight: 600;
-  color: var(--rk-white);
+  color: var(--rk-ink);
   text-wrap: pretty;
 }
 

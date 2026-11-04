@@ -10,6 +10,7 @@ import { ProductFilm } from "../components/ProductFilm";
 import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
 import { TextReveal } from "../components/TextReveal";
+import { useLandingTheme } from "../lib/useLandingTheme";
 
 /* ============================================================================
    /landing — the public front door.
@@ -41,6 +42,10 @@ export default function Landing() {
   const navigate = useNavigate();
   const [navSolid, setNavSolid] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  /* The cream page is the same page with the ink inverted: one attribute on the
+     root of this view, one persisted choice, and the browser chrome repainted to
+     match. Leaving /landing puts the app's own wash back. */
+  const { theme, light, toggle } = useLandingTheme();
 
   /* One rAF-throttled scroll handler: the nav only gains weight once the visitor leaves the
      fold. Nothing else listens to scroll. */
@@ -87,7 +92,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="landing">
+    <div className="landing" data-theme={theme}>
       <header className={`rk-nav ${navSolid ? "solid" : ""}`}>
         <Link to="/landing" className="rk-brand" aria-label="Tessera home">
           <span className="ld-mark">
@@ -115,6 +120,16 @@ export default function Landing() {
         </nav>
 
         <div className="rk-nav-actions">
+          <button
+            type="button"
+            className="rk-theme"
+            onClick={toggle}
+            aria-label={light ? "Switch to the black page" : "Switch to the cream page"}
+            aria-pressed={light}
+            title={light ? "Black page" : "Cream page"}
+          >
+            <Icon name={light ? "moon" : "sun"} size={17} />
+          </button>
           <Link className="rk-navlink" to="/login">
             Log in
           </Link>
@@ -133,7 +148,16 @@ export default function Landing() {
       <div className="rk-stage">
         {/* The reference's ribbon field, uncovered from the centre on open. */}
         <SpreadReveal className="rk-hero-art">
-          <GlassStripes stripeCount={18} angle={34} pointerStrength={0.4} />
+          <GlassStripes
+            stripeCount={18}
+            angle={34}
+            pointerStrength={0.4}
+            colors={
+              light
+                ? { background: "#f4f1e8", shadow: "#b9606f", midtone: "#e8697c", highlight: "#fff6f1" }
+                : undefined
+            }
+          />
         </SpreadReveal>
 
         <section className="rk-hero">

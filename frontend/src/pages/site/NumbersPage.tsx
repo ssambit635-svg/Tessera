@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useWorkspace } from "../../lib/workspace";
 import { SiteFooter, SiteHeader, SiteIntro } from "../../components/SiteChrome";
+import { useLandingTheme } from "../../lib/useLandingTheme";
 import { Icon } from "../../components/Icon";
 import { DAY_LONG, percent, plural, ratio } from "../../lib/format";
 import type { Tone } from "../../lib/derive";
@@ -44,6 +45,7 @@ function Bar({
 }
 
 export default function NumbersPage() {
+  const { theme } = useLandingTheme();
   const { data, source } = useWorkspace();
 
   const perDay = useMemo(() => {
@@ -89,7 +91,7 @@ export default function NumbersPage() {
   const bandPeak = Math.max(1, ...buckets);
 
   return (
-    <div className="landing site">
+    <div className="landing site" data-theme={theme}>
       <SiteHeader current="/numbers" />
 
       <div className="site-wrap">

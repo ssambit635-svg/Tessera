@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useWorkspace } from "../../lib/workspace";
 import { SiteFooter, SiteHeader, SiteIntro } from "../../components/SiteChrome";
+import { useLandingTheme } from "../../lib/useLandingTheme";
 import { Icon } from "../../components/Icon";
 
 /* ============================================================================
@@ -11,6 +12,7 @@ import { Icon } from "../../components/Icon";
    ========================================================================== */
 
 export default function SpacesPage() {
+  const { theme } = useLandingTheme();
   const { data } = useWorkspace();
 
   const rows = useMemo(() => {
@@ -52,7 +54,7 @@ export default function SpacesPage() {
   const unused = rows.filter((row) => row.sessions === 0).length;
 
   return (
-    <div className="landing site">
+    <div className="landing site" data-theme={theme}>
       <SiteHeader current="/spaces" />
 
       <main className="site-wrap">

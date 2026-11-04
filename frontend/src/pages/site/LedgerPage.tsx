@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useWorkspace } from "../../lib/workspace";
 import { SiteFooter, SiteHeader, SiteIntro } from "../../components/SiteChrome";
+import { useLandingTheme } from "../../lib/useLandingTheme";
 import { Icon } from "../../components/Icon";
 import { DAY_LONG } from "../../lib/format";
 import type { BookingStatus } from "../../lib/types";
@@ -28,6 +29,7 @@ const FILTERS = [
 ] as const;
 
 export default function LedgerPage() {
+  const { theme } = useLandingTheme();
   const { data } = useWorkspace();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["id"]>("all");
   const [open, setOpen] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export default function LedgerPage() {
   const seats = data.rooms.reduce((sum, room) => sum + room.capacity, 0);
 
   return (
-    <div className="landing site">
+    <div className="landing site" data-theme={theme}>
       <SiteHeader current="/ledger" />
 
       <main className="site-wrap">
