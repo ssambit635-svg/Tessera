@@ -129,6 +129,22 @@ function SearchLeft({ ghost = false }: { ghost?: boolean }) {
   );
 }
 
+/* a room, as a card: its name, what it holds, and a seat map filled to the
+   share of seats already taken at that hour */
+function RoomTile({ name, note, taken, on = false }: { name: string; note: string; taken: number; on?: boolean }) {
+  return (
+    <span className={on ? "rk-tile is-room is-on" : "rk-tile is-room"}>
+      <b>{name}</b>
+      <span>{note}</span>
+      <i className="rk-seats">
+        <b style={{ height: `${taken}%` }} />
+      </i>
+    </span>
+  );
+}
+
+/* the room search in the corner: what the reference has as a photo grid is,
+   in this app, rooms free at an hour */
 function SearchRight() {
   return (
     <div className="rk-panel is-search-right">
@@ -143,12 +159,12 @@ function SearchRight() {
       </div>
       <div className="rk-search-body">
         <span className="rk-search-label">
-          Grid items <b>3</b>
+          Free at 14:00 <b>3</b>
         </span>
         <div className="rk-tiles">
-          <i className="rk-tile is-a is-on" />
-          <i className="rk-tile is-b" />
-          <i className="rk-tile is-c" />
+          <RoomTile name="Hall B" note="300 seats · exams" taken={85} on />
+          <RoomTile name="LH-1" note="120 seats · projector" taken={40} />
+          <RoomTile name="Lab 3" note="40 seats · lab PCs" taken={60} />
         </div>
       </div>
     </div>
