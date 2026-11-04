@@ -5,7 +5,7 @@ import { API_BASE } from "../lib/api";
 import { Icon } from "../components/Icon";
 import { TileMark } from "../components/TileMark";
 import { GlassStripes } from "../components/GlassStripes";
-import { RadiantField } from "../components/RadiantField";
+import { SpreadReveal } from "../components/SpreadReveal";
 import { ProductFilm } from "../components/ProductFilm";
 import BeamWordmarkFooter from "../components/BeamFooter";
 import { Magnetic } from "../components/Magnetic";
@@ -131,7 +131,10 @@ export default function Landing() {
 
       {/* ------------------------------------------------------------ hero */}
       <div className="rk-stage">
-        <RadiantField />
+        {/* The reference's ribbon field, uncovered from the centre on open. */}
+        <SpreadReveal className="rk-hero-art">
+          <GlassStripes stripeCount={18} angle={34} pointerStrength={0.4} />
+        </SpreadReveal>
 
         <section className="rk-hero">
           <p className="rk-eyebrow">Tech Zephyr 4.0 · Team Voltryx</p>

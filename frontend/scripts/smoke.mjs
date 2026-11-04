@@ -152,20 +152,23 @@ if (process.argv.includes("--dump") && mounted === "landing") {
 // A first visit opens the public landing page, which offers the way in.
 if (mounted !== "landing") errors.push("a first visit did not open the landing page");
 if (mounted === "landing") {
-  if (!/your week,\s*solved/i.test(text())) errors.push("the landing page is missing its headline");
+  if (!/one campus\.\s*one week/i.test(text()) || !/zero clashes/i.test(text()))
+    errors.push("the landing page is missing its headline");
   if (window.document.querySelectorAll(".rk-ledger-row").length < 4)
     errors.push("the proof ledger is not reading the workspace");
   if (!/189/.test(text())) errors.push("the landing page is not reading real dataset numbers");
-  const dayButtons = [...window.document.querySelectorAll(".week-days button")];
-  if (dayButtons.length < 2 || dayButtons[0].getAttribute("aria-pressed") !== "true") {
-    errors.push("the interactive week has no default day");
-  } else {
-    click(dayButtons[1]);
-    await wait(100);
-    if (dayButtons[1].getAttribute("aria-pressed") !== "true" || !/Tuesday/.test(window.document.querySelector(".week-sheet-title")?.textContent || "")) {
-      errors.push("the interactive week did not update for Tuesday");
-    }
-  }
+  // The ribbon field is revealed from the centre on load; the wrapper carries the mask.
+  const art = window.document.querySelector(".rk-hero-art .glass-stripes");
+  if (!art) errors.push("the hero art is missing its ribbon field");
+  if (!window.document.querySelector(".rk-hero-art")) errors.push("the hero art has no reveal wrapper");
+  // The week sculpture is gone: the demo is a real recording in a terminal window.
+  const film = window.document.querySelector("#film video");
+  if (!film) errors.push("the landing film is missing");
+  if (film && !(film.getAttribute("src") || film.querySelector("source")))
+    errors.push("the landing film has no source");
+  if (!window.document.querySelector(".film-chrome .film-lights"))
+    errors.push("the landing film is not framed in its terminal window");
+  if (!window.document.querySelector(".film-head h2")) errors.push("the film section has no heading");
   const signIn = [...window.document.querySelectorAll(".rk-hero .rk-cta a")].find((a) =>
     /sign in/i.test(a.textContent || ""),
   );

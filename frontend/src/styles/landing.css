@@ -367,19 +367,34 @@
   text-wrap: pretty;
 }
 
-/* --------------------------------------------------------- the radiant field */
+/* ----------------------------------------------------------- the hero art */
 
-/* The stage is black first; the canvas paints the light that spreads out of the
-   centre on open, then keeps sending hairline rings outward. It never takes
-   pointer events and never sits above the sentence. */
-.radiant-field {
+/* The ribbon field sits under the sentence, black until the page opens. The
+   wrapper's radial mask is what spreads: a soft circle grows from nothing to
+   past the corners on load, so the red arrives instead of appearing. `--reveal`
+   is written from one rAF loop (see SpreadReveal); the mask feather is the gap
+   between the two stops. */
+.rk-hero-art {
+  --reveal: 0%;
   position: absolute;
   inset: 0;
   z-index: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
   pointer-events: none;
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 46%,
+    #000 calc(var(--reveal) - 28%),
+    transparent var(--reveal)
+  );
+  mask-image: radial-gradient(
+    circle at 50% 46%,
+    #000 calc(var(--reveal) - 28%),
+    transparent var(--reveal)
+  );
+}
+
+.spread-reveal {
+  position: absolute;
+  inset: 0;
 }
 
 /* a vignette so the corners stay blacker than the light */
