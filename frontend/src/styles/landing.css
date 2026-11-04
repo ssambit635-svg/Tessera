@@ -737,6 +737,225 @@
   }
 }
 
+/* ------------------------------------------------------- the record scene */
+
+/* Reference scene, rebuilt: the four long-form pages float over a real keycap
+   field. Left column is the sentence and one door; the keyboard is decoration
+   at a whisper of contrast, faded out where it would run into the copy. */
+
+.rk-kb-section {
+  position: relative;
+  padding: 132px 24px;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 10, 0) 0%,
+    #08080a 7%,
+    #08080a 95%,
+    rgba(8, 8, 10, 0) 100%
+  );
+  overflow: hidden;
+}
+
+.rk-kb {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 56px;
+  align-items: center;
+}
+
+.rk-kb-copy {
+  position: relative;
+  z-index: 2;
+}
+
+.rk-kb-title {
+  margin: 0;
+  font-family: var(--rk-sans);
+  font-size: clamp(21px, 1.9vw, 25px);
+  font-weight: 600;
+  line-height: 1.16;
+  letter-spacing: -0.028em;
+  color: var(--rk-white);
+}
+
+.rk-kb-lede {
+  margin: 4px 0 0;
+  max-width: 24ch;
+  font-size: clamp(16px, 1.4vw, 19px);
+  line-height: 1.34;
+  letter-spacing: -0.015em;
+  color: #8e9096;
+}
+
+.rk-kb-cta {
+  margin-top: 34px;
+}
+
+/* --- the keycaps ---------------------------------------------------------- */
+
+.rk-kb-stage {
+  position: relative;
+  min-height: 540px;
+}
+
+.rk-kb-board {
+  position: absolute;
+  inset: -46px -300px -46px -20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 100%);
+}
+
+.rk-kb-row {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* a real keyboard is not a grid: the modifiers are wider than the letters */
+.rk-kb-key {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.014);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.2);
+  font-family: var(--rk-sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+
+/* --- the four pages ------------------------------------------------------- */
+
+.rk-kb-cards {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 86px;
+}
+
+.rk-kb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 104px;
+  padding: 13px 14px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  background: #0a0a0c;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.rk-kb-card:hover {
+  background: #121214;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.rk-kb-card:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* the reference's stagger: one empty column first, then a wide card under it */
+.rk-kb-card.is-0 { grid-column: 2; }
+.rk-kb-card.is-1 { grid-column: 3; }
+.rk-kb-card.is-2 { grid-column: 1 / span 2; }
+.rk-kb-card.is-3 { grid-column: 3; }
+
+.rk-kb-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #c6c8cd;
+}
+
+.rk-kb-card-copy {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #8f9197;
+  letter-spacing: -0.005em;
+}
+
+.rk-kb-card-copy b {
+  color: var(--rk-white);
+  font-weight: 600;
+}
+
+
+@media (max-width: 1024px) {
+  .rk-kb {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 44px;
+  }
+  .rk-kb-stage {
+    min-height: 460px;
+  }
+  .rk-kb-cards {
+    margin-top: 60px;
+  }
+}
+
+@media (max-width: 860px) {
+  .rk-kb-section {
+    padding: 92px 20px;
+  }
+  .rk-kb-board {
+    inset: -30px -60px -30px -10px;
+  }
+  .rk-kb-card.is-0,
+  .rk-kb-card.is-1,
+  .rk-kb-card.is-2,
+  .rk-kb-card.is-3 {
+    grid-column: auto;
+  }
+  .rk-kb-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .rk-kb-card.is-2 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 620px) {
+  .rk-kb-stage {
+    min-height: 0;
+  }
+  .rk-kb-board {
+    display: none;
+  }
+  .rk-kb-cards {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 8px;
+  }
+  .rk-kb-card.is-2 {
+    grid-column: auto;
+  }
+  .rk-kb-cta {
+    width: 100%;
+  }
+}
+
 /* --------------------------------------------------------------- sections */
 
 /* --------------------------------------------------------------------- dots */

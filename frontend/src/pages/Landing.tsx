@@ -435,63 +435,98 @@ export default function Landing() {
       </section>
 
       {/* ------------------------------------------------------- long-form */}
-      <section className="rk-section" id="longform">
-        <div className="rk-inner">
-          <div className="rk-head">
+      {/* The reference's keyboard scene: the record printed in full, with the four
+          pages floating over a real keycap field instead of a card row. */}
+      <section className="rk-kb-section" id="longform" aria-labelledby="longform-title">
+        <div className="rk-inner rk-kb">
+          <div className="rk-kb-copy">
             <span className="rk-kicker">06 — The record</span>
-            <TextReveal
-              as="h2"
-              className="rk-h2"
-              dim={0.13}
-              text="Four pages you can read without signing in."
-            />
-            <TextReveal
-              className="rk-lede"
-              dim={0.24}
-              text="The same data the workspace runs on, printed in full: every request with its reason, every paper with its seats, every room with its load."
-            />
+            <h2 className="rk-kb-title" id="longform-title">
+              It’s not about the timetable.
+            </h2>
+            <p className="rk-kb-lede">It’s about trusting every decision that built it.</p>
+            <Link className="rk-btn white rk-kb-cta" to="/ledger">
+              <span className="rk-keycap">
+                <Icon name="grid" size={12} />
+              </span>
+              Read the record
+            </Link>
           </div>
 
-          <div className="rk-screens">
-            {[
-              [
-                "The Ledger",
-                `${numbers.bookings.approved} approved · ${numbers.bookings.alternatives} alternative · ${numbers.bookings.rejected} rejected — each row carries the sentence it came from and the rule that decided it.`,
-                "ticket",
-                "/ledger",
-              ],
-              [
-                "The Seating Plan",
-                `${numbers.exams} midsem papers, every cohort measured against the halls it was given, slot by slot.`,
-                "clipboard",
-                "/seating",
-              ],
-              [
-                "The Estate",
-                `${numbers.rooms} rooms sorted by load, the peak hour named, and every closure the solver may never touch.`,
-                "grid",
-                "/spaces",
-              ],
-              [
-                "The Numbers",
-                "Sessions per day, hours by department, booking decisions and the utilisation spread.",
-                "chart",
-                "/numbers",
-              ],
-            ].map(([title, body, icon, to]) => (
-              <Link key={title} className="rk-screen rk-screen-link" to={to}>
-                <span className="rk-screen-top">
-                  <span className="rk-screen-icon">
-                    <Icon name={icon} size={15} />
+          <div className="rk-kb-stage">
+            <div className="rk-kb-board" aria-hidden="true">
+              {[
+                [["esc", 1.35], ["F1", 1], ["F2", 1], ["F3", 1], ["F4", 1], ["F5", 1], ["F6", 1]],
+                [["±", 1], ["!", 1], ["@", 1], ["#", 1], ["$", 1], ["%", 1], ["^", 1]],
+                [["§", 1], ["1", 1], ["2", 1], ["3", 1], ["4", 1], ["5", 1], ["6", 1]],
+                [["⇥", 1.4], ["Q", 1], ["W", 1], ["E", 1], ["R", 1], ["T", 1], ["Y", 1]],
+                [["⇪", 1.7], ["A", 1], ["S", 1], ["D", 1], ["F", 1], ["G", 1], ["H", 1]],
+                [["⇧", 2.2], ["Z", 1], ["X", 1], ["C", 1], ["V", 1], ["B", 1], ["N", 1]],
+              ].map((row, rowIndex) => (
+                <div className="rk-kb-row" key={`row-${rowIndex}`}>
+                  {row.map(([key, width]) => (
+                    <span
+                      className="rk-kb-key"
+                      key={`${rowIndex}-${key}`}
+                      style={{ flexGrow: width as number }}
+                    >
+                      {key}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="rk-kb-cards">
+              {[
+                {
+                  title: "The Ledger",
+                  lead: "Decided.",
+                  body: "Every request, with its reason.",
+                  detail: `${numbers.bookings.approved} approved · ${numbers.bookings.alternatives} alternative · ${numbers.bookings.rejected} rejected`,
+                  icon: "ticket",
+                  to: "/ledger",
+                },
+                {
+                  title: "The Seating Plan",
+                  lead: "Seated.",
+                  body: "Every paper, with its seats.",
+                  detail: `${numbers.exams} midsem papers, slot by slot`,
+                  icon: "clipboard",
+                  to: "/seating",
+                },
+                {
+                  title: "The Estate",
+                  lead: "Loaded.",
+                  body: "Every room, with its load.",
+                  detail: `${numbers.rooms} rooms, ranked by the peak hour`,
+                  icon: "grid",
+                  to: "/spaces",
+                },
+                {
+                  title: "The Numbers",
+                  lead: "Counted.",
+                  body: "Every hour, accounted for.",
+                  detail: "Sessions, departments, utilisation",
+                  icon: "chart",
+                  to: "/numbers",
+                },
+              ].map((card, index) => (
+                <Link
+                  key={card.title}
+                  className={`rk-kb-card is-${index}`}
+                  to={card.to}
+                  aria-label={`${card.title} — ${card.lead} ${card.body} ${card.detail}`}
+                >
+                  <span className="rk-kb-card-icon">
+                    <Icon name={card.icon} size={16} strokeWidth={1.5} />
                   </span>
-                  <span className="rk-screen-go">
-                    <Icon name="arrowUpRight" size={13} />
-                  </span>
-                </span>
-                <b>{title}</b>
-                <TextReveal className="rk-screen-body" dim={0.26} text={body} />
-              </Link>
-            ))}
+                  <p className="rk-kb-card-copy">
+                    <b>{card.lead}</b> {card.body}
+                  </p>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
