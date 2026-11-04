@@ -60,11 +60,6 @@
   --rk-key-edge: rgba(255, 255, 255, 0.035);
   --rk-key-ink: rgba(255, 255, 255, 0.2);
 
-  /* the light the screens float in: a hot core, the red burning out of it */
-  --rk-bloom-hot: rgba(255, 226, 230, 0.95);
-  --rk-bloom-mid: rgba(255, 88, 112, 0.8);
-  --rk-bloom-soft: rgba(255, 140, 158, 0.5);
-  --rk-bloom-deep: rgba(168, 20, 52, 0.6);
 
   --rk-red: #e23a54;
   --rk-red-soft: #a3253a;
@@ -151,10 +146,6 @@
   --rk-key-edge: rgba(255, 255, 255, 0.9);
   --rk-key-ink: rgba(32, 29, 22, 0.26);
 
-  --rk-bloom-hot: rgba(255, 252, 248, 0.95);
-  --rk-bloom-mid: rgba(238, 148, 146, 0.62);
-  --rk-bloom-soft: rgba(246, 190, 180, 0.5);
-  --rk-bloom-deep: rgba(206, 118, 112, 0.34);
 
   /* the red goes a shade deeper so it still holds weight on cream */
   --rk-red: #c62a42;
@@ -1596,411 +1587,509 @@
 /* screens */
 /* ------------------------------------------------------------- the screens */
 
-/* The product as objects in front of you: one real window in front, two drifting
-   behind, over a hot light. The stage is full width and its light is masked at
-   both ends, so it dissolves into the page instead of stopping on a line. */
+/* One composed scene, not a row of cards.
+
+   A single wide stage, cropped and softly rounded, filled with the out-of-focus
+   light of an app that is not quite in shot. In it: the assistant window, mid
+   conversation, with a code block running to the bottom of the frame; two
+   sliders; an account chip; two search windows cut off by the edges. Every
+   surface is the same frosted glass over the same light, and every position is
+   a percentage of the stage, so the whole picture scales as one object. */
 .rk-screens-section {
   position: relative;
-  padding: 132px 24px 96px;
+  padding: 10.645em 1.935em 7.742em;
 }
 
-.rk-windows {
+.rk-screens-stage {
   position: relative;
-  width: min(1400px, 100%);
-  margin: 34px auto 6px;
-  padding: 0 24px;
+  width: min(1240px, 100%);
+  margin: 54px auto 0;
+  aspect-ratio: 1240 / 570;
+  border-radius: 16px;
+  border: 1px solid var(--rk-line);
+  background: #170610;
+  overflow: hidden;
   isolation: isolate;
+  container-type: inline-size;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 60px 120px -70px rgba(0, 0, 0, 0.95);
 }
 
-/* the light: a hot core with the red burning out of it, feathered top and bottom */
-.rk-windows-glow {
-  position: absolute;
-  /* far past the stage on every side: the light has died out long before its
-     own edges, so it can never end on a line */
-  inset: -32% -26% -30%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(30% 34% at 44% 46%, var(--rk-bloom-hot) 0%, var(--rk-bloom-mid) 32%, transparent 66%),
-    radial-gradient(24% 26% at 66% 34%, var(--rk-bloom-soft) 0%, transparent 66%),
-    radial-gradient(46% 52% at 40% 52%, var(--rk-bloom-mid) 0%, transparent 72%),
-    radial-gradient(74% 82% at 52% 56%, var(--rk-bloom-deep) 0%, transparent 78%);
-  filter: blur(16px) saturate(1.18);
-  -webkit-mask-image: radial-gradient(58% 52% at 50% 50%, #000 30%, transparent 100%);
-  mask-image: radial-gradient(58% 52% at 50% 50%, #000 30%, transparent 100%);
-}
+/* --------------------------------------------------------------- the light */
 
-/* a breath of grain so the bloom never bands */
-.rk-windows-glow::after {
-  content: "";
+.rk-stage-bloom {
+  font-size: 1cqw;
   position: absolute;
   inset: 0;
-  opacity: 0.35;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 150% at 18% 40%, #5c0f22 0%, transparent 60%),
+    radial-gradient(70% 110% at 78% 26%, #52102f 0%, transparent 58%),
+    linear-gradient(268deg, rgba(10, 2, 6, 0.72) 0%, transparent 34%),
+    linear-gradient(100deg, #170509 0%, #34081a 44%, #1c0611 100%);
+}
+
+/* three bodies of light, as if a blurred screenshot were back there */
+.rk-bloom {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  filter: blur(5.161em);
+  will-change: transform;
+}
+
+.rk-bloom.is-a {
+  left: -2%;
+  top: 0%;
+  width: 58%;
+  height: 116%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 246, 243, 1) 0%,
+    rgba(255, 196, 198, 0.95) 22%,
+    rgba(255, 106, 130, 0.85) 48%,
+    rgba(190, 24, 58, 0.45) 74%,
+    transparent 100%
+  );
+}
+
+/* the second, tighter core: the white card that is out of focus in the middle */
+.rk-bloom.is-d {
+  left: 12%;
+  top: 34%;
+  width: 26%;
+  height: 58%;
+  background: radial-gradient(closest-side, rgba(255, 255, 252, 0.9) 0%, rgba(255, 214, 214, 0.55) 46%, transparent 100%);
+}
+
+.rk-bloom.is-b {
+  right: -2%;
+  top: -16%;
+  width: 48%;
+  height: 120%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 138, 172, 0.7) 0%,
+    rgba(150, 26, 84, 0.5) 50%,
+    transparent 88%
+  );
+}
+
+.rk-bloom.is-c {
+  left: 24%;
+  bottom: -46%;
+  width: 62%;
+  height: 110%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 196, 196, 0.5) 0%,
+    rgba(206, 46, 74, 0.42) 46%,
+    transparent 84%
+  );
+}
+
+/* film grain: this is what makes it read as a photograph rather than a gradient */
+.rk-bloom.is-e {
+  right: -14%;
+  top: -34%;
+  width: 62%;
+  height: 84%;
+  background: radial-gradient(closest-side, rgba(255, 176, 196, 0.42) 0%, rgba(206, 58, 104, 0.26) 52%, transparent 92%);
+}
+
+.rk-bloom-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.62;
   mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 14.516em 14.516em;
 }
 
-.rk-windows-field {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin: 0 auto;
-  min-height: clamp(400px, 36vw, 480px);
+/* corners fall away, so the stage sits into the page instead of being a slab */
+.rk-bloom-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(104% 92% at 40% 44%, transparent 22%, rgba(9, 2, 5, 0.8) 100%),
+    linear-gradient(180deg, rgba(8, 2, 4, 0.66) 0%, transparent 26%, transparent 70%, rgba(8, 2, 4, 0.58) 100%);
 }
 
-/* --------------------------------------------------------------- a window */
+/* --------------------------------------------------------------- the glass */
 
-.rk-window {
-  --win-t: translateY(0);
-  position: relative;
+.rk-stage-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* the scene is drawn once, at 1240px wide, and every size inside it is an em
+     of that width — so the whole picture scales like a photograph instead of
+     breaking apart as the frame narrows */
+  font-size: 1cqw;
+}
+
+.rk-panel {
+  position: absolute;
   display: flex;
   flex-direction: column;
   padding: 0;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: linear-gradient(180deg, rgba(64, 46, 52, 0.78) 0%, rgba(20, 14, 17, 0.88) 100%);
+  border-radius: 0.806em;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  background: linear-gradient(180deg, rgba(62, 36, 45, 0.5) 0%, rgba(22, 11, 16, 0.62) 100%);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.14) inset,
-    0 44px 90px -36px rgba(0, 0, 0, 0.92),
-    0 0 70px -26px rgba(255, 72, 98, 0.55);
-  backdrop-filter: blur(18px) saturate(1.12);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
-  color: #f4f0f1;
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 2.419em 4.839em -2.097em rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(1.613em) saturate(1.1);
+  -webkit-backdrop-filter: blur(1.613em) saturate(1.1);
+  color: #f0e8ea;
   font-family: inherit;
   text-align: left;
-  cursor: pointer;
   overflow: hidden;
-  transform: var(--win-t);
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s ease-in-out,
-    box-shadow 0.45s ease-in-out;
 }
 
-.rk-window:hover {
-  --win-t-lift: -7px;
-  transform: var(--win-t) translateY(-7px);
-  border-color: rgba(255, 140, 158, 0.42);
+/* the assistant window: the centre of the picture */
+.rk-panel.is-assistant {
+  z-index: 3;
+  left: 35%;
+  top: 1.4%;
+  width: 31.5%;
+  height: 64%;
+  cursor: pointer;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.rk-panel.is-assistant:hover {
+  border-color: rgba(255, 150, 164, 0.42);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.18) inset,
-    0 54px 100px -36px rgba(0, 0, 0, 0.95),
-    0 0 90px -24px rgba(255, 84, 110, 0.72);
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 2.419em 5.645em -1.774em rgba(0, 0, 0, 0.9),
+    0 0 4.032em -1.452em rgba(255, 90, 116, 0.6);
 }
 
-.rk-window:focus-visible {
-  outline: 2px solid var(--rk-ink);
+.rk-panel.is-assistant:focus-visible {
+  outline: 2px solid #fff;
   outline-offset: 3px;
 }
 
-.rk-window.is-main {
-  z-index: 3;
-  width: min(620px, 50%);
-}
-
-.rk-window.is-left,
-.rk-window.is-right {
-  position: absolute;
-  z-index: 2;
-  width: min(310px, 22%);
-  opacity: 0.95;
-}
-
-.rk-window.is-left {
-  --win-t: translateY(-50%) rotate(-4deg) scale(0.97);
-  left: -1%;
-  top: 46%;
-}
-
-.rk-window.is-right {
-  --win-t: translateY(-50%) rotate(4deg) scale(0.97);
-  right: -1%;
-  top: 55%;
-}
-
-/* chrome */
-.rk-win-chrome {
+/* a window bar */
+.rk-panel-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.07);
+  gap: 0.645em;
+  flex: none;
+  height: 2.419em;
+  padding: 0 0.806em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
 }
 
-.rk-win-dots {
+.rk-bar-dots {
   display: flex;
-  gap: 5px;
+  gap: 0.323em;
 }
 
-.rk-win-dots i {
-  width: 8px;
-  height: 8px;
+.rk-bar-dots i {
+  width: 0.565em;
+  height: 0.565em;
   border-radius: 50%;
-  background: #ff5f57;
+  background: rgba(16, 8, 12, 0.62);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.18);
 }
 
-.rk-win-dots i:nth-child(2) { background: #febc2e; }
-.rk-win-dots i:nth-child(3) { background: #28c840; }
-
-.rk-win-title {
-  font: 500 11px var(--rk-mono);
-  letter-spacing: 0.03em;
-  color: rgba(255, 255, 255, 0.68);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rk-win-plus {
-  margin-left: auto;
-  color: rgba(255, 255, 255, 0.36);
+.rk-bar-title {
   display: inline-flex;
-}
-
-.rk-win-body {
-  padding: 14px;
-}
-
-/* footer of a window */
-.rk-win-foot {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 11px 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-  background: rgba(12, 8, 10, 0.5);
-}
-
-.rk-win-foot b {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: -0.01em;
-}
-
-.rk-win-foot span {
-  font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.62);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  align-items: center;
+  gap: 0.323em;
+  margin: 0 auto;
+  font-size: 0.887em;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: rgba(255, 255, 255, 0.82);
   white-space: nowrap;
 }
 
-.rk-win-foot svg {
+.rk-bar-title b {
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: -0.242em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.rk-bar-title.is-left {
+  margin: 0;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.rk-bar-plus,
+.rk-bar-caret {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.rk-bar-plus {
   margin-left: auto;
-  align-self: center;
-  color: rgba(255, 255, 255, 0.5);
 }
 
-/* ------------------------------------------------------- the mini screens */
-
-.rk-win-days {
-  display: grid;
-  grid-template-columns: 32px repeat(5, minmax(0, 1fr));
-  gap: 5px;
-  margin-bottom: 5px;
-  font: 8.5px var(--rk-mono);
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.rk-win-days span:not(:first-child) { text-align: center; }
-
-.rk-win-grid {
+/* the conversation */
+.rk-panel-body {
+  flex: 1;
+  min-height: 0;
+  padding: 0.968em 1.129em 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-}
-
-.rk-win-row {
-  display: grid;
-  grid-template-columns: 32px repeat(5, minmax(0, 1fr));
-  gap: 5px;
-}
-
-.rk-win-hour {
-  display: flex;
-  align-items: center;
-  font: 8.5px var(--rk-mono);
-  color: rgba(255, 255, 255, 0.42);
-}
-
-.rk-win-cell {
-  display: block;
-  height: 24px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.055);
-}
-
-.rk-win-cell[data-empty="covered"] {
-  visibility: hidden;
-}
-
-.rk-win-cell[data-tone] {
-  border-color: transparent;
-}
-
-.rk-win-cell[data-tone="rose"] {
-  background: linear-gradient(180deg, rgba(226, 58, 84, 0.9), rgba(150, 32, 52, 0.75));
-}
-
-.rk-win-cell[data-tone="teal"] {
-  background: linear-gradient(180deg, rgba(72, 190, 168, 0.85), rgba(24, 108, 104, 0.7));
-}
-
-.rk-win-cell[data-tone="violet"] {
-  background: linear-gradient(180deg, rgba(150, 132, 226, 0.85), rgba(82, 68, 150, 0.7));
-}
-
-.rk-win-cell[data-tone="sand"] {
-  background: linear-gradient(180deg, rgba(226, 186, 118, 0.85), rgba(150, 112, 60, 0.7));
-}
-
-/* bookings */
-.rk-win-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 10.5px;
-}
-
-.rk-win-line:last-child { border-bottom: 0; }
-
-.rk-win-line b {
-  flex: none;
-  width: 44px;
-  font: 500 9.5px var(--rk-mono);
-  color: rgba(255, 255, 255, 0.52);
-}
-
-.rk-win-line span {
-  flex: 1;
-  min-width: 0;
-  color: rgba(255, 255, 255, 0.84);
+  gap: 0.887em;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.rk-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.726em;
+  margin: 0;
+  font-size: 0.968em;
+  line-height: 1.42;
+  letter-spacing: -0.005em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.rk-msg-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.452em;
+  height: 1.452em;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.75);
+  overflow: hidden;
+}
+
+.rk-msg-avatar.is-mark {
+  border-radius: 0.403em;
+  border-color: rgba(255, 122, 142, 0.35);
+  background: radial-gradient(circle at 50% 45%, rgba(226, 58, 84, 0.5), rgba(60, 12, 22, 0.8));
+  box-shadow: 0 0 0.806em -0.161em rgba(255, 78, 104, 0.65);
+}
+
+.rk-msg-avatar img {
+  display: block;
+  width: 1.048em;
+  height: 1.048em;
+}
+
+/* the code block: dark well, syntax in four quiet inks */
+.rk-code {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0.806em 0.968em;
+  border-radius: 0.565em;
+  background: rgba(9, 4, 7, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--rk-mono);
+  font-size: 0.685em;
+  line-height: 1.66;
+  letter-spacing: 0.005em;
+  color: rgba(236, 226, 230, 0.82);
+  overflow: hidden;
+  white-space: pre;
+}
+
+.rk-code .c-key { color: #f19db0; }
+.rk-code .c-str { color: #a9d8b6; }
+.rk-code .c-num { color: #f0c98a; }
+
+/* two sliders, hanging at the right edge */
+.rk-panel.is-sliders {
+  z-index: 4;
+  left: 85.5%;
+  top: 25%;
+  width: 13%;
+  gap: 0.726em;
+  padding: 0.726em 0.806em 0.806em;
+  border-radius: 0.645em;
+}
+
+.rk-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.403em;
+}
+
+.rk-slider span {
+  font-size: 0.726em;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.rk-slider-track {
+  position: relative;
+  display: block;
+  height: 0.323em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.rk-slider-track.is-warm {
+  background: linear-gradient(90deg, #f6c37a, #f08098 45%, #e2466b 100%);
+}
+
+.rk-slider-track.is-violet {
+  background: linear-gradient(90deg, #8a7df0, #b9a6ff 60%, #e6dcff 100%);
+}
+
+.rk-slider-track b {
+  position: absolute;
+  top: 50%;
+  width: 0.726em;
+  height: 0.726em;
+  margin-left: -0.363em;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle at 35% 30%, #ffffff, #d9d2e4 70%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* the account chip */
+.rk-chip {
+  position: absolute;
+  z-index: 4;
+  left: 76.5%;
+  top: 44.5%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.645em;
+  width: 20%;
+  height: 2.419em;
+  padding: 0 0.806em;
+  border-radius: 0.645em;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, rgba(46, 28, 36, 0.62), rgba(22, 12, 17, 0.72));
+  box-shadow: 0 1.613em 3.226em -1.774em rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(1.452em);
+  -webkit-backdrop-filter: blur(1.452em);
+  font-family: var(--rk-mono);
+  font-size: 0.806em;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.8);
   white-space: nowrap;
 }
 
-.rk-win-line em {
-  flex: none;
-  font-style: normal;
-  font-size: 8.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 999px;
-}
-
-.rk-win-line em[data-tone="ok"] { color: #8fd9b6; background: rgba(89, 212, 153, 0.12); }
-.rk-win-line em[data-tone="warn"] { color: #f0c07a; background: rgba(240, 180, 100, 0.12); }
-.rk-win-line em[data-tone="no"] { color: #f19aa4; background: rgba(226, 58, 84, 0.16); }
-
-/* examinations */
-.rk-win-seats {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 5px;
-}
-
-.rk-win-seats i {
-  height: 13px;
-  border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.rk-win-seats i[data-on="true"] {
-  border-color: transparent;
-  background: rgba(226, 58, 84, 0.8);
-}
-
-.rk-win-legend {
-  display: flex;
+.rk-chip-avatar {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 11px;
-  font: 9px var(--rk-mono);
-  letter-spacing: 0.04em;
+  justify-content: center;
+  flex: none;
+  width: 1.21em;
+  height: 1.21em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #cdb9c3, #6b4c5c 75%, #3a2531 100%);
+  color: rgba(20, 10, 14, 0.75);
+}
+
+/* the two search windows, cropped by the frame */
+.rk-panel.is-search-left {
+  z-index: 3;
+  left: 12.5%;
+  top: 71%;
+  width: 19.5%;
+  height: auto;
+  border-radius: 0.645em;
+}
+
+/* the panel behind it, only its top edge in shot */
+.rk-panel.is-peek {
+  z-index: 2;
+  left: 10.5%;
+  top: 66.5%;
+  width: 17%;
+  height: 9%;
+  border-radius: 0.645em;
+  opacity: 0.9;
+}
+
+.rk-panel.is-search-right {
+  z-index: 3;
+  left: 72%;
+  top: 73%;
+  width: 30%;
+  height: auto;
+  border-radius: 0.645em;
+}
+
+.rk-panel-bar.is-plain {
+  height: 2.097em;
+  gap: 0.484em;
+}
+
+.rk-search-body {
+  padding: 0.726em 0.806em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.565em;
+}
+
+.rk-search-label {
+  font-size: 0.685em;
+  letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.42);
 }
 
-.rk-win-legend span {
-  display: inline-flex;
+.rk-search-row {
+  display: flex;
   align-items: center;
-  gap: 5px;
-}
-
-.rk-win-legend i {
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-}
-
-.rk-win-legend i[data-tone="filled"] { background: rgba(226, 58, 84, 0.8); }
-.rk-win-legend i[data-tone="free"] { background: rgba(255, 255, 255, 0.14); }
-
-.rk-win-legend b {
-  margin-left: auto;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.66);
-}
-
-/* ------------------------------------------------------------- the chips */
-
-.rk-windows-chip {
-  position: absolute;
-  z-index: 4;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 11px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(26, 17, 20, 0.62);
-  box-shadow: 0 20px 44px -22px rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  font: 10.5px var(--rk-mono);
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.74);
-  pointer-events: none;
-}
-
-.rk-windows-chip.is-a {
-  left: 19%;
-  bottom: 13%;
-  transform: rotate(-3deg);
-}
-
-.rk-windows-chip.is-b {
-  right: 21%;
-  top: 9%;
-  transform: rotate(2.5deg);
-}
-
-.rk-chip-meter {
-  display: block;
-  width: 54px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
+  gap: 0.565em;
+  font-size: 0.766em;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
   overflow: hidden;
 }
 
-.rk-chip-meter i {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, #ff5f57, #febc2e);
+.rk-row-glyph {
+  flex: none;
+  width: 0.726em;
+  height: 0.726em;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
 }
+
+.rk-row-glyph.is-b {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.rk-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.484em;
+}
+
+.rk-tile {
+  display: block;
+  height: 5em;
+  border-radius: 0.403em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* the reference's grid is photographs, not swatches: mute them and let them
+     blur a little so they read as out-of-focus images */
+  filter: saturate(0.72) brightness(0.88) blur(0.032em);
+  box-shadow: inset 0 0 1.452em rgba(0, 0, 0, 0.55);
+}
+
+.rk-tile.is-a { background: radial-gradient(120% 120% at 30% 20%, #f0b6a8, #a4465c 55%, #3a1a28); }
+.rk-tile.is-b { background: radial-gradient(120% 120% at 40% 30%, #9a8ff0, #4b3fae 55%, #1d1533); }
+.rk-tile.is-c { background: radial-gradient(120% 120% at 30% 25%, #f2cd9a, #b06a35 55%, #2b1a12); }
+
+/* -------------------------------------------------------- the index below */
 
 /* the last section hands straight over to the footer — no dead band between them */
 .rk-body > .rk-section:last-of-type {
-  padding-bottom: 72px;
+  padding-bottom: 5.806em;
 }
 
 /* -------------------------------------------------------- the index below */
@@ -2008,16 +2097,16 @@
 .rk-screen-index {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 44px;
-  margin-top: 34px;
+  column-gap: 3.548em;
+  margin-top: 2.742em;
 }
 
 .rk-index-row {
   display: grid;
-  grid-template-columns: 28px 148px minmax(0, 1fr) 20px;
+  grid-template-columns: 2.258em 11.935em minmax(0, 1fr) 1.613em;
   align-items: center;
-  gap: 12px;
-  padding: 13px 6px;
+  gap: 0.968em;
+  padding: 1.048em 0.484em;
   border: 0;
   border-top: 1px solid var(--rk-line);
   background: none;
@@ -2041,9 +2130,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+  width: 2.097em;
+  height: 2.097em;
+  border-radius: 0.565em;
   border: 1px solid var(--rk-line);
   color: var(--rk-fg-soft);
   transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out,
@@ -2057,7 +2146,7 @@
 }
 
 .rk-index-row b {
-  font-size: 13.5px;
+  font-size: 1.089em;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--rk-fg);
@@ -2066,7 +2155,7 @@
 .rk-index-copy {
   display: -webkit-box;
   min-width: 0;
-  font-size: 12.5px;
+  font-size: 1.008em;
   line-height: 1.45;
   color: var(--rk-muted);
   overflow: hidden;
@@ -2088,28 +2177,43 @@
   color: var(--rk-red);
 }
 
-/* under 1180 the three-up composition stops having room to breathe: the hero
-   window keeps the stage on its own rather than three windows fighting */
-@media (max-width: 1180px) {
-  .rk-windows-chip { display: none; }
-  .rk-window.is-left,
-  .rk-window.is-right { display: none; }
-  .rk-window.is-main { width: min(640px, 82%); }
-  .rk-windows-field { min-height: clamp(340px, 32vw, 420px); }
-}
-
 @media (max-width: 1024px) {
   .rk-screen-index { column-gap: 28px; }
   .rk-index-row { grid-template-columns: 28px 128px minmax(0, 1fr) 20px; }
 }
 
+/* the scene keeps its shape down to the tablet, then stops pretending to be a
+   screenshot: the satellites leave, the assistant window takes the frame */
+/* under 1100 the type would be too small to read at picture scale, so the scene
+   switches to a fixed type size and the frame turns squarer to hold it; the
+   satellites that no longer fit drop away instead of shrinking into mush */
+@media (max-width: 1100px) {
+  .rk-screens-stage { aspect-ratio: 3 / 2; }
+  .rk-stage-scene { font-size: 13px; }
+  .rk-panel.is-sliders,
+  .rk-panel.is-peek,
+  .rk-chip { display: none; }
+  .rk-panel.is-assistant {
+    left: 11%;
+    top: 10%;
+    width: 78%;
+    height: auto;
+  }
+  .rk-panel.is-assistant .rk-panel-body { flex: none; overflow: visible; }
+  .rk-panel.is-assistant .rk-code { flex: 0 0 auto; }
+  .rk-panel.is-search-left { left: 6%; top: 80%; width: 36%; height: auto; }
+  .rk-panel.is-search-right { left: 56%; top: 76%; width: 50%; height: auto; }
+}
+
+@media (max-width: 900px) {
+  .rk-screens-stage { aspect-ratio: 4 / 3; }
+  .rk-panel.is-search-left { top: 82%; }
+  .rk-panel.is-search-right { top: 78%; }
+}
+
 @media (max-width: 860px) {
   .rk-screens-section { padding: 96px 20px 72px; }
-  .rk-windows { margin-top: 44px; }
-  .rk-windows-field { min-height: 0; }
-  .rk-window.is-left,
-  .rk-window.is-right { display: none; }
-  .rk-window.is-main { width: min(560px, 100%); }
+  .rk-screens-stage { margin-top: 40px; }
   .rk-screen-index { grid-template-columns: minmax(0, 1fr); }
   .rk-index-row {
     grid-template-columns: 26px minmax(0, 1fr) 18px;
@@ -2123,13 +2227,28 @@
 }
 
 @media (max-width: 620px) {
-  .rk-win-body { padding: 12px; }
-  .rk-win-hour { display: none; }
-  .rk-win-days { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .rk-win-days span:first-child { display: none; }
-  .rk-win-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .rk-win-cell { height: 20px; }
-  .rk-win-foot span { display: none; }
+  /* a phone gets the assistant window alone, in flow, so nothing is cut off */
+  .rk-screens-stage {
+    aspect-ratio: auto;
+    border-radius: 14px;
+    padding: 16px 14px;
+  }
+  .rk-stage-scene { position: relative; inset: auto; font-size: 13px; }
+  .rk-panel.is-search-left,
+  .rk-panel.is-search-right { display: none; }
+  .rk-panel.is-assistant {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: auto;
+    backdrop-filter: none;
+    background: rgba(22, 11, 16, 0.78);
+  }
+  .rk-msg { font-size: 12.5px; }
+  .rk-code { font-size: 9.4px; }
+  .rk-panel-bar { height: 32px; }
+  .rk-bar-title { font-size: 11.5px; }
 }
 
 

@@ -1,17 +1,18 @@
-import type { JSX } from "react";
 import { Icon } from "./Icon";
 
 /* ============================================================================
-   The screens — the app as objects in front of you.
+   The screens — one composed scene, not a row of cards.
 
-   Reference read: one real app window floating in front of a hot red light,
-   two smaller ones drifting behind it, a couple of chips hanging in the depth,
-   everything frosted and grainy. Built the same way the rest of the page is:
-   gradients and composited layers, no images, no WebGL, and the mini screens
-   are live DOM so they stay crisp at any size.
+   Reference read, translated literally: a single wide stage, softly rounded and
+   cropped, filled with a hot out-of-focus light; one assistant window sitting in
+   the middle of it, mid-conversation, with a code block running out of the
+   bottom of the frame; and the app's other surfaces drifting at the edges —
+   two sliders, an account chip, two search windows half out of shot. Everything
+   is frosted glass over the same light, everything is cropped by the frame.
 
-   The windows are deliberately dark in both themes — they are the product, and
-   the product is a dark app — while the light behind them changes with the page.
+   All of it is one stage: the light, the windows and the chips share a single
+   coordinate space and scale together, so on a phone the scene simply gets
+   smaller rather than falling into three separate blocks.
    ========================================================================== */
 
 export interface ScreenCounts {
@@ -30,199 +31,168 @@ export function screenLinks({ bookings, exams }: ScreenCounts) {
   ] as const;
 }
 
-function Chrome({ label }: { label: string }) {
+/* a window bar: three muted dots, a centred title, a plus */
+function Bar({ title }: { title: string }) {
   return (
-    <div className="rk-win-chrome">
-      <span className="rk-win-dots" aria-hidden="true">
+    <div className="rk-panel-bar">
+      <span className="rk-bar-dots" aria-hidden="true">
         <i />
         <i />
         <i />
       </span>
-      <span className="rk-win-title">{label}</span>
-      <span className="rk-win-plus" aria-hidden="true">
+      <span className="rk-bar-title">
+        {title}
+        <b aria-hidden="true">
+          <Icon name="chevronUp" size={9} />
+          <Icon name="chevronDown" size={9} />
+        </b>
+      </span>
+      <span className="rk-bar-plus" aria-hidden="true">
         <Icon name="plus" size={11} />
       </span>
     </div>
   );
 }
 
-/* ------------------------------------------------------------ mini screens */
-
-const DAYS = ["MON", "TUE", "WED", "THU", "FRI"];
-
-/* one week of blocks: start column, span, row, tone */
-const BLOCKS: [number, number, number, string][] = [
-  [0, 1, 0, "rose"],
-  [1, 2, 0, "teal"],
-  [3, 1, 0, "violet"],
-  [0, 2, 1, "sand"],
-  [2, 1, 1, "rose"],
-  [3, 2, 1, "teal"],
-  [0, 1, 2, "violet"],
-  [1, 1, 2, "sand"],
-  [2, 2, 2, "rose"],
-  [0, 2, 3, "teal"],
-  [2, 1, 3, "violet"],
-  [3, 1, 3, "sand"],
-  [1, 3, 4, "rose"],
-];
-
-function MosaicPreview() {
+function Sliders() {
   return (
-    <div className="rk-win-mosaic">
-      <div className="rk-win-days" aria-hidden="true">
-        <span />
-        {DAYS.map((day) => (
-          <span key={day}>{day}</span>
-        ))}
+    <div className="rk-panel is-sliders" aria-hidden="true">
+      <div className="rk-slider">
+        <span>Load</span>
+        <i className="rk-slider-track is-warm">
+          <b style={{ left: "88%" }} />
+        </i>
       </div>
-      <div className="rk-win-grid">
-        {Array.from({ length: 5 }).map((_, row) => {
-          /* one cell per free column, one spanning cell per booked block: the
-             row is a five-column grid and nothing is rendered twice */
-          const cells: JSX.Element[] = [];
-          for (let col = 0; col < 5; ) {
-            const block = BLOCKS.find((b) => b[2] === row && b[0] === col);
-            if (block) {
-              cells.push(
-                <span
-                  className="rk-win-cell"
-                  key={col}
-                  data-tone={block[3]}
-                  style={{ gridColumn: `span ${block[1]}` }}
-                />,
-              );
-              col += block[1];
-            } else {
-              cells.push(<span className="rk-win-cell" key={col} data-empty="true" />);
-              col += 1;
-            }
-          }
-          return (
-            <div className="rk-win-row" key={row} aria-hidden="true">
-              <span className="rk-win-hour">{9 + row}:00</span>
-              {cells}
-            </div>
-          );
-        })}
+      <div className="rk-slider">
+        <span>Balance</span>
+        <i className="rk-slider-track is-violet">
+          <b style={{ left: "32%" }} />
+        </i>
       </div>
     </div>
   );
 }
 
-function BookingsPreview() {
-  const rows = [
-    { id: "BR-01", label: "Spectra '27 inauguration", status: "approved", tone: "ok" },
-    { id: "BR-11a", label: "Robo-Wars arena", status: "approved", tone: "ok" },
-    { id: "BR-14", label: "Design review", status: "alternative", tone: "warn" },
-    { id: "BR-19", label: "Alumni dinner", status: "rejected", tone: "no" },
-  ];
+function SearchLeft() {
   return (
-    <div className="rk-win-rows">
-      {rows.map((row) => (
-        <div className="rk-win-line" key={row.id}>
-          <b>{row.id}</b>
-          <span>{row.label}</span>
-          <em data-tone={row.tone}>{row.status}</em>
+    <div className="rk-panel is-search-left" aria-hidden="true">
+      <div className="rk-panel-bar is-plain">
+        <span className="rk-bar-caret">
+          <Icon name="chevronLeft" size={9} />
+          <Icon name="chevronRight" size={9} />
+        </span>
+        <span className="rk-bar-title is-left">Search for sessions…</span>
+      </div>
+      <div className="rk-search-body">
+        <span className="rk-search-label">Favourites</span>
+        <span className="rk-search-row">
+          <i className="rk-row-glyph" />
+          Exam seating
+        </span>
+        <span className="rk-search-row">
+          <i className="rk-row-glyph is-b" />
+          Hall B · free 14:00
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function SearchRight() {
+  return (
+    <div className="rk-panel is-search-right" aria-hidden="true">
+      <div className="rk-panel-bar is-plain">
+        <span className="rk-bar-caret">
+          <Icon name="arrowLeft" size={10} />
+        </span>
+        <span className="rk-bar-title is-left">Search for rooms…</span>
+      </div>
+      <div className="rk-search-body">
+        <span className="rk-search-label">Grid items&nbsp;&nbsp;3</span>
+        <div className="rk-tiles">
+          <i className="rk-tile is-a" />
+          <i className="rk-tile is-b" />
+          <i className="rk-tile is-c" />
         </div>
-      ))}
-    </div>
-  );
-}
-
-function ExamsPreview() {
-  return (
-    <div className="rk-win-exams">
-      <div className="rk-win-seats" aria-hidden="true">
-        {Array.from({ length: 40 }).map((_, i) => (
-          <i key={i} data-on={[2, 3, 4, 7, 9, 11, 12, 17, 18, 21, 24, 26, 27, 31, 33, 36].includes(i) ? "true" : "false"} />
-        ))}
-      </div>
-      <div className="rk-win-legend">
-        <span>
-          <i data-tone="filled" /> seated
-        </span>
-        <span>
-          <i data-tone="free" /> free
-        </span>
-        <b>41 papers</b>
       </div>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ stage */
-
-export function ScreenWindows({
-  counts,
-  onOpen,
-}: {
-  counts: ScreenCounts;
-  onOpen: (to: string) => void;
-}) {
+export function ScreenStage({ onOpen }: { onOpen: (to: string) => void }) {
   return (
-    <div className="rk-windows">
-      <div className="rk-windows-glow" aria-hidden="true" />
-      <div className="rk-windows-field">
+    <div className="rk-screens-stage">
+      {/* the out-of-focus app behind everything: three soft bodies of light */}
+      <div className="rk-stage-bloom" aria-hidden="true">
+        <span className="rk-bloom is-a" />
+        <span className="rk-bloom is-b" />
+        <span className="rk-bloom is-c" />
+        <span className="rk-bloom is-d" />
+        <span className="rk-bloom is-e" />
+        <span className="rk-bloom-grain" />
+        <span className="rk-bloom-vignette" />
+      </div>
+
+      <div className="rk-stage-scene">
         <button
           type="button"
-          className="rk-window is-left"
-          onClick={() => onOpen("/bookings")}
-          aria-label="Open Bookings"
+          className="rk-panel is-assistant"
+          onClick={() => onOpen("/intelligence")}
+          aria-label="Open the Tessera assistant"
         >
-          <Chrome label="tessera — bookings" />
-          <div className="rk-win-body">
-            <BookingsPreview />
-          </div>
-          <div className="rk-win-foot">
-            <b>Bookings</b>
-            <span>{counts.bookings} requests, decided</span>
+          <Bar title="Tessera Assistant" />
+          <div className="rk-panel-body">
+            <p className="rk-msg">
+              <span className="rk-msg-avatar" aria-hidden="true">
+                <Icon name="people" size={11} />
+              </span>
+              Create a timetable for Spectra week that fits every rule.
+            </p>
+            <p className="rk-msg">
+              <span className="rk-msg-avatar is-mark" aria-hidden="true">
+                <img src="/brand/tessera-mark.png" alt="" width={13} height={13} />
+              </span>
+              Sure. Let&apos;s start off with creating these files:
+            </p>
+            <pre className="rk-code" aria-hidden="true">
+              <code>
+                <span className="c-key">import</span> {"{ solve }"}{" "}
+                <span className="c-key">from</span> <span className="c-str">&quot;@tessera/engine&quot;</span>;
+                {"\n"}
+                <span className="c-key">import</span> {"{ explain }"}{" "}
+                <span className="c-key">from</span> <span className="c-str">&quot;@tessera/ledger&quot;</span>;
+                {"\n\n"}
+                <span className="c-key">const</span> rules = {"{"}
+                {"\n  "}hard: [<span className="c-str">&quot;room-fit&quot;</span>,{" "}
+                <span className="c-str">&quot;no-clash&quot;</span>],{"\n  "}soft: [
+                <span className="c-str">&quot;compactness&quot;</span>,{" "}
+                <span className="c-str">&quot;lane-balance&quot;</span>],{"\n"}
+                {"}"};
+                {"\n\n"}
+                <span className="c-key">const</span> week = <span className="c-key">await</span> solve({"{"}
+                {"\n  "}sessions: <span className="c-num">189</span>,{"\n  "}rooms:{" "}
+                <span className="c-num">27</span>,{"\n  "}faculty: <span className="c-num">40</span>,{"\n  "}
+                rules,{"\n"}
+                {"}"});
+                {"\n\n"}week.decisions.forEach(explain);
+                {"\n"}week.writeTo(<span className="c-str">&quot;spectra-week.json&quot;</span>);
+              </code>
+            </pre>
           </div>
         </button>
 
-        <button
-          type="button"
-          className="rk-window is-main"
-          onClick={() => onOpen("/mosaic")}
-          aria-label="Open the Mosaic Board"
-        >
-          <Chrome label="tessera — mosaic board" />
-          <div className="rk-win-body">
-            <MosaicPreview />
-          </div>
-          <div className="rk-win-foot">
-            <b>Mosaic Board</b>
-            <span>Drag a session, watch the week hold its rules</span>
-            <Icon name="arrowUpRight" size={14} />
-          </div>
-        </button>
+        <Sliders />
 
-        <button
-          type="button"
-          className="rk-window is-right"
-          onClick={() => onOpen("/exams")}
-          aria-label="Open Examinations"
-        >
-          <Chrome label="tessera — examinations" />
-          <div className="rk-win-body">
-            <ExamsPreview />
-          </div>
-          <div className="rk-win-foot">
-            <b>Examinations</b>
-            <span>{counts.exams} papers seated</span>
-          </div>
-        </button>
-
-        <span className="rk-windows-chip is-a" aria-hidden="true">
-          <Icon name="pin" size={12} />
-          Block B · 204 free 14:00
-        </span>
-        <span className="rk-windows-chip is-b" aria-hidden="true">
-          <span className="rk-chip-meter">
-            <i style={{ width: "72%" }} />
+        <div className="rk-chip" aria-hidden="true">
+          <span className="rk-chip-avatar">
+            <Icon name="people" size={8} />
           </span>
-          Lane balance 72%
-        </span>
+          dean@cit.edu
+        </div>
+
+        <div className="rk-panel is-peek" aria-hidden="true" />
+        <SearchLeft />
+        <SearchRight />
       </div>
     </div>
   );
