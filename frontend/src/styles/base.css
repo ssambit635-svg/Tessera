@@ -23,6 +23,11 @@
   --muted-2: #6f6a61; /* never lighter than AA; hierarchy comes from size */
   --text-inverse: #f4f1e8;
   --text-inverse-soft: #b9b5ab;
+  /* what sits on an --ink surface: paper here, black when ink turns white */
+  --on-ink: #f4f1e8;
+  --ink-hover: #0f0f11;
+  /* the ink as channels, for every hairline and wash that is "a little ink" */
+  --ink-rgb: 25, 26, 28;
 
   /* --- lines ------------------------------------------------------------- */
   --line: rgba(25, 26, 28, 0.09);
@@ -30,6 +35,15 @@
   --line-3: rgba(25, 26, 28, 0.28);
   --line-inverse: rgba(244, 241, 232, 0.11);
   --line-inverse-2: rgba(244, 241, 232, 0.22);
+
+  /* --- the accent: what the chrome uses to say "this one" -----------------
+     Lime on the paper page; the landing's red on the black one. Category
+     colours (bookings are lime, exams violet…) stay what they are — this is
+     only the chrome: the active rail item, the chosen day, badges, switches. */
+  --accent: #d4f05a;
+  --accent-hover: #ddf76f;
+  --accent-ink: #191a1c;
+  --accent-rgb: 212, 240, 90;
 
   /* --- functional colour ------------------------------------------------- */
   --lime: #d4f05a;
@@ -88,6 +102,117 @@
   --font-body: "Geist", "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
   --font-serif: "Instrument Serif", "Cormorant Garamond", Georgia, serif;
+
+  /* --- shell surfaces ---------------------------------------------------- */
+  --rail-top: #1d1e21;
+  --rail-mid: #17181a;
+  --rail-bottom: #141416;
+  --rail-edge: #1b1c1f;
+  --frame-glow-1: rgba(212, 240, 90, 0.07);
+  --frame-glow-2: rgba(169, 133, 232, 0.09);
+  --canvas-edge: rgba(255, 255, 255, 0.5);
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-strong: rgba(255, 253, 248, 0.9);
+  --col-active: #fbf6e6;
+  --seg-bg: #e9e5da;
+  --rail-next-glow: rgba(169, 133, 232, 0.28);
+  --rail-next-top: #26272b;
+  --rail-next-bottom: #1c1d20;
+  --art-pale: #cfc2f5;
+  --art-mid: #a985e8;
+  --art-deep: #7e5cc4;
+  --art-top: #d4f05a;
+}
+
+/* ============================================================================
+   The black page. The same workspace, wearing what the landing wears: the
+   stage black, hairline white lines, paper-white type, and the house red where
+   the paper page uses lime. `data-theme` is written on <html> before first
+   paint by the head script in index.html, so a reload never flashes paper.
+   Category colours keep their hue and lose their opacity — a violet exam is
+   still violet, it is just lit from behind instead of printed.
+   ========================================================================== */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* surfaces — the landing's stack: #0a0a0b page, #101011 raised, #161617 card */
+  --void: #050506;
+  --void-soft: #0b0b0c;
+  --paper: #0e0e0f;
+  --paper-2: #131315;
+  --ivory: #151517;
+  --card: #161618;
+  --card-soft: #121214;
+
+  /* the loud tone turns white, exactly as the landing's pill does */
+  --ink: #f4f1e8;
+  --ink-2: #ffffff;
+  --ink-3: #e3dfd5;
+  --ink-hover: #ffffff;
+  --on-ink: #0a0a0b;
+  --ink-rgb: 244, 241, 232;
+
+  /* type */
+  --text: #f4f4f6;
+  --text-soft: #c2c7ca;
+  --muted: #9c9c9d;
+  --muted-2: #8e8f93;
+
+  /* lines */
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.14);
+  --line-3: rgba(255, 255, 255, 0.24);
+  --line-inverse: rgba(244, 241, 232, 0.09);
+  --line-inverse-2: rgba(244, 241, 232, 0.18);
+
+  /* the accent is the landing's red */
+  --accent: #e23a54;
+  --accent-hover: #ea4a62;
+  --accent-ink: #ffffff;
+  --accent-rgb: 226, 58, 84;
+
+  /* category inks lift so they read on their own tint */
+  --lime-ink: #dcef96;
+  --violet-ink: #d3c6f7;
+  --coral-ink: #f7a898;
+  --sky-ink: #b8dcf1;
+  --sage-ink: #b9e1cd;
+  --sand-ink: #ead9b8;
+
+  /* tints: lit from behind, not printed */
+  --tint-lime: rgba(212, 240, 90, 0.14);
+  --tint-violet: rgba(169, 133, 232, 0.17);
+  --tint-sky: rgba(142, 201, 233, 0.15);
+  --tint-sage: rgba(191, 226, 209, 0.14);
+  --tint-sand: rgba(239, 224, 196, 0.14);
+  --tint-coral: rgba(241, 107, 85, 0.16);
+  --tint-neutral: rgba(255, 255, 255, 0.05);
+
+  /* elevation: on black a shadow is a deeper black */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.3), 0 12px 26px -18px rgba(0, 0, 0, 0.8);
+  --shadow-3: 0 2px 8px rgba(0, 0, 0, 0.4), 0 26px 60px -30px rgba(0, 0, 0, 0.9);
+  --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.5), 0 30px 70px -34px rgba(0, 0, 0, 0.95);
+
+  /* shell surfaces */
+  --rail-top: #121214;
+  --rail-mid: #0e0e10;
+  --rail-bottom: #0b0b0c;
+  --rail-edge: #0f0f11;
+  --frame-glow-1: rgba(226, 58, 84, 0.1);
+  --frame-glow-2: rgba(226, 58, 84, 0.05);
+  --canvas-edge: rgba(255, 255, 255, 0.06);
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-strong: rgba(22, 22, 24, 0.86);
+  --col-active: rgba(255, 255, 255, 0.04);
+  --seg-bg: rgba(255, 255, 255, 0.06);
+  --rail-next-glow: rgba(226, 58, 84, 0.24);
+  --rail-next-top: #1b1b1e;
+  --rail-next-bottom: #121214;
+  --art-pale: #f3a7b3;
+  --art-mid: #e23a54;
+  --art-deep: #8e1f33;
+  --art-top: #f4f1e8;
 }
 
 *,
@@ -119,8 +244,8 @@ body {
 }
 
 ::selection {
-  background: var(--lime);
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 h1,
@@ -285,7 +410,7 @@ svg {
 /* --------------------------------------------------------------- scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(25, 26, 28, 0.22) transparent;
+  scrollbar-color: rgba(var(--ink-rgb), 0.22) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -298,14 +423,14 @@ svg {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(25, 26, 28, 0.18);
+  background: rgba(var(--ink-rgb), 0.18);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(25, 26, 28, 0.3);
+  background: rgba(var(--ink-rgb), 0.3);
   background-clip: content-box;
 }
 

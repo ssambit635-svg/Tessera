@@ -5,6 +5,7 @@ import { useUi } from "../lib/ui";
 import { EXTRA_ROUTES, findNav } from "../lib/nav";
 import { Icon } from "./Icon";
 import { tintFor } from "../lib/persona";
+import { useTheme } from "../lib/theme";
 
 interface Notice {
   id: string;
@@ -69,6 +70,7 @@ function useNotices(): Notice[] {
 export function TopBar() {
   const { user, personas, switchPersona, signOut } = useWorkspace();
   const { setPaletteOpen, setMobileNavOpen } = useUi();
+  const { light, toggle: toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
@@ -126,6 +128,18 @@ export function TopBar() {
           <Icon name="search" size={14} />
           <span>Search spaces, people, sessions</span>
           <kbd>⌘K</kbd>
+        </button>
+
+        {/* the same switch as the landing nav: sun on the black page, moon on the cream one */}
+        <button
+          type="button"
+          className="icon-btn theme-toggle"
+          onClick={toggleTheme}
+          aria-label={light ? "Switch to the black page" : "Switch to the cream page"}
+          aria-pressed={light}
+          title={light ? "Black page" : "Cream page"}
+        >
+          <Icon name={light ? "moon" : "sun"} size={16} />
         </button>
 
         <div style={{ position: "relative" }}>
@@ -193,7 +207,7 @@ export function TopBar() {
               <b>{displayUser.name.split(" ").slice(0, 2).join(" ")}</b>
               <span>{displayUser.role.replace(/_/g, " ")}</span>
             </span>
-            <Icon name="chevronDown" size={12} />
+            <span className="pc-caret"><Icon name="chevronDown" size={12} /></span>
           </button>
           {profileOpen ? (
             <div className="popover menu" style={{ right: 0, top: "calc(100% + 8px)", width: 288 }}>
