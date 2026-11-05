@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Icon } from "./Icon";
 
 /* ============================================================================
@@ -61,20 +62,25 @@ function Caret() {
   return <i className="rk-caret" aria-hidden="true" />;
 }
 
-/* two sliders, hanging off the right edge: a spectrum and a grey-to-violet ramp */
+/* the solver's soft-rule weights, hanging off the right edge: the two knobs
+   the code block names — compactness and lane balance */
 function Sliders() {
   return (
     <div className="rk-panel is-sliders">
       <div className="rk-slider">
-        <span>Load</span>
-        <i className="rk-slider-track is-hue">
-          <b style={{ left: "60%" }} />
+        <span>
+          Compactness<b>58</b>
+        </span>
+        <i className="rk-slider-track is-compact">
+          <b style={{ left: "58%" }} />
         </i>
       </div>
       <div className="rk-slider">
-        <span>Balance</span>
-        <i className="rk-slider-track is-violet">
-          <b style={{ left: "45%" }} />
+        <span>
+          Lane balance<b>40</b>
+        </span>
+        <i className="rk-slider-track is-balance">
+          <b style={{ left: "40%" }} />
         </i>
       </div>
     </div>
@@ -96,12 +102,29 @@ function Chip() {
   );
 }
 
-/* a swatch grid: one warm row, two violet rows, fading to the right */
-function Dots() {
+/* a room's week at a glance: four days across, three slots down, the taken
+   ones lit — the reference's swatch grid, with the board's meaning */
+const SLOT_DAYS = ["M", "T", "W", "T"] as const;
+const SLOT_ROWS: ReadonlyArray<readonly [string, readonly (0 | 1)[]]> = [
+  ["09", [1, 0, 1, 1]],
+  ["11", [0, 1, 1, 0]],
+  ["14", [0, 0, 1, 0]],
+];
+
+function Slots() {
   return (
-    <div className="rk-dots">
-      {Array.from({ length: 12 }, (_, k) => (
-        <i key={k} />
+    <div className="rk-slots">
+      <b />
+      {SLOT_DAYS.map((day, k) => (
+        <b key={`d${k}`}>{day}</b>
+      ))}
+      {SLOT_ROWS.map(([hour, cells]) => (
+        <Fragment key={hour}>
+          <b>{hour}</b>
+          {cells.map((busy, k) => (
+            <i key={k} className={busy ? "is-busy" : undefined} />
+          ))}
+        </Fragment>
       ))}
     </div>
   );
@@ -189,7 +212,7 @@ export function ScreenStage({ onOpen }: { onOpen: (to: string) => void }) {
         <div className="rk-stage-scene">
           <Sliders />
           <Chip />
-          <Dots />
+          <Slots />
           <span className="rk-toggle">
             <b />
           </span>
