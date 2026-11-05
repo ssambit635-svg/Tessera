@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Layers, useWorkspace } from "../lib/workspace";
 import { Icon } from "../components/Icon";
 import { tintFor } from "../lib/persona";
+import { useTheme } from "../lib/theme";
 
 /** Every layer controls something you can see on the board. No decorative toggles. */
 const LAYER_COPY: [keyof Layers, string][] = [
@@ -15,6 +16,7 @@ export default function Settings() {
   const { data, source, user, personas, switchPersona, reload, railCollapsed, setRailCollapsed, layers, toggleLayer } =
     useWorkspace();
   const [motion, setMotion] = useState(() => window.localStorage.getItem("tessera.motion") !== "reduced");
+  const { light, setTheme } = useTheme();
   const displayUser = user ?? { email: "admin@cit.edu", name: "Campus operations", role: "admin" };
 
   const setReducedMotion = (value: boolean) => {
@@ -132,6 +134,20 @@ export default function Settings() {
             </div>
           </div>
           <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {/* the same choice as the switch in the top bar and on the landing nav */}
+            <div className="settings-row">
+              <Icon name={light ? "sun" : "moon"} size={13} />
+              <span style={{ flex: 1 }}>
+                Cream page
+                <span className="settings-hint">{light ? "On paper · black and red is one tap away" : "Off · the black and red page"}</span>
+              </span>
+              <button
+                className={`switch ${light ? "on" : ""}`}
+                onClick={() => setTheme(light ? "dark" : "light")}
+                aria-label="Toggle the cream page"
+                aria-pressed={light}
+              />
+            </div>
             <div className="settings-row">
               <Icon name="list" size={13} />
               <span style={{ flex: 1 }}>Collapse the navigation rail</span>

@@ -127,10 +127,11 @@ function NextUp() {
         <span style={{ color: "rgba(244,241,232,.55)", fontSize: 11.5 }}>{next.roomName}</span>
       </h4>
       <svg className="next-art" viewBox="0 0 90 74" fill="none" aria-hidden="true">
-        <path d="M10 24 45 8l35 16-35 16z" fill="#CFC2F5" opacity="0.5" />
-        <path d="M10 24v26l35 16V40z" fill="#A985E8" opacity="0.85" />
-        <path d="M80 24v26L45 66V40z" fill="#7E5CC4" opacity="0.9" />
-        <path d="M28 16l17-8 17 8-17 8z" fill="#D4F05A" opacity="0.9" />
+        {/* the block takes its colours from the dress: violet and lime on paper, the house red on black */}
+        <path d="M10 24 45 8l35 16-35 16z" fill="var(--art-pale)" opacity="0.5" />
+        <path d="M10 24v26l35 16V40z" fill="var(--art-mid)" opacity="0.85" />
+        <path d="M80 24v26L45 66V40z" fill="var(--art-deep)" opacity="0.9" />
+        <path d="M28 16l17-8 17 8-17 8z" fill="var(--art-top)" opacity="0.9" />
       </svg>
       <div className="next-actions">
         <button className="rail-btn" onClick={() => setDismissed(true)}>
