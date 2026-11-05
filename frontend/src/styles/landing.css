@@ -2036,7 +2036,7 @@
   vertical-align: -0.18em;
 }
 
-/* two sliders, hanging off the right edge */
+/* the solver's weights, hanging off the right edge */
 .rk-panel.is-sliders {
   z-index: 4;
   left: 89.6%;
@@ -2061,6 +2061,14 @@
   line-height: 1.3;
   letter-spacing: 0;
   color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+.rk-slider span b {
+  margin-left: 0.6em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .rk-slider-track {
@@ -2070,12 +2078,13 @@
   border-radius: 999px;
 }
 
-.rk-slider-track.is-hue {
-  background: linear-gradient(90deg, #e84a3c 0%, #f0a030 16%, #e8d848 30%, #58c05c 46%, #2fb8b0 58%, #2f7fe6 72%, #9a4fe0 86%, #e84a9a 100%);
+/* the house red, from ember to rose */
+.rk-slider-track.is-compact {
+  background: linear-gradient(90deg, #3a0c16 0%, #a8203a 45%, #e23a54 72%, #ff9aa8 100%);
 }
 
-.rk-slider-track.is-violet {
-  background: linear-gradient(90deg, #6e6670 0%, #8a6a9e 55%, #a07ad0 100%);
+.rk-slider-track.is-balance {
+  background: linear-gradient(90deg, #5e5660 0%, #8a4a5c 55%, #e07a8e 100%);
 }
 
 .rk-slider-track b {
@@ -2144,37 +2153,40 @@
   height: 0.75em;
 }
 
-/* the swatch grid under the field */
-.rk-dots {
+/* a room's week under the field: day initials across, hours down, the taken
+   slots lit in the house red, the free ones left as rings */
+.rk-slots {
   position: absolute;
   z-index: 4;
-  left: 87.6%;
-  top: 52.7%;
+  left: 84.6%;
+  top: 49%;
   display: grid;
-  grid-template-columns: repeat(4, 1em);
-  gap: 1.93em 2.25em;
+  grid-template-columns: 1.6em repeat(4, 1em);
+  gap: 1.2em 2.1em;
+  align-items: center;
+  justify-items: center;
 }
 
-.rk-dots i {
+.rk-slots b {
+  font-size: 0.86em;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.rk-slots i {
   display: block;
   width: 1em;
   height: 1em;
   border-radius: 50%;
-  background: #6e3f8e;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26);
 }
 
-.rk-dots i:nth-child(1) { background: #7a4a3c; }
-.rk-dots i:nth-child(2) { background: #74463b; }
-.rk-dots i:nth-child(3) { background: #6a4139; }
-.rk-dots i:nth-child(4) { background: #553536; }
-.rk-dots i:nth-child(5) { background: #7a419f; }
-.rk-dots i:nth-child(6) { background: #743f8d; }
-.rk-dots i:nth-child(7) { background: #653a78; }
-.rk-dots i:nth-child(8) { background: #563a5b; }
-.rk-dots i:nth-child(9) { background: #753c8c; }
-.rk-dots i:nth-child(10) { background: #6b3c7a; }
-.rk-dots i:nth-child(11) { background: #5c3760; }
-.rk-dots i:nth-child(12) { background: #4c3249; }
+.rk-slots i.is-busy {
+  background: #e4506a;
+  box-shadow: 0 0 0.6em -0.1em rgba(255, 90, 120, 0.6);
+}
 
 /* the toggle at the left edge */
 .rk-toggle {
@@ -2506,7 +2518,7 @@
   .rk-panel.is-sliders,
   .rk-panel.is-search-left.is-ghost,
   .rk-toggle,
-  .rk-dots,
+  .rk-slots,
   .rk-chip { display: none; }
   .rk-window {
     left: 11%;
